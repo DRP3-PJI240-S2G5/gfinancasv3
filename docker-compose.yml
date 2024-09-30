@@ -1,24 +1,4 @@
 services:
-
-  backend:
-    image: back-gfinancas
-    hostname: back-gfinancas
-    build:
-      context: ./
-      dockerfile: Dockerfile
-    env_file:
-      - .env
-    command: bash -c "python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
-    ports:
-      - 8000:8000
-    expose:
-      - "8000"
-    volumes:
-      - ./:/app
-    depends_on:
-      gfinancas_db:
-        condition: service_healthy
-
   gfinancas_db:
     image: "postgres:15-alpine"
     ports:
@@ -40,6 +20,7 @@ services:
       timeout: 5s
       retries: 5
       #- "./docker/postgres/pg_hba.conf:/usr/local/etc/postgres/postgres.conf"
+
   pgadmin:
     image: dpage/pgadmin4
     ports:
@@ -55,11 +36,29 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@mail.com
       PGADMIN_DEFAULT_PASSWORD: 123mudar!
       FORCE_SCRIPT_NAME: "/pgadmin"
+  
+  backend:
+    hostname: back-gfinancas
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    #command: bash -c "python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
+    command: bash -c "python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - 8000:8000
+    expose:
+      - "8000"
+    volumes:
+      - ./:/app
+    depends_on:
+      gfinancas_db:
+        condition: service_healthy
 
   frontend:
     build:
       context: ./frontend
-    image: front-gfinancas
     hostname: front-gfinancas
     command: npm run dev -- --host
     ports:

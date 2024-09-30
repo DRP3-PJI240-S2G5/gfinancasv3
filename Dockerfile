@@ -1,14 +1,14 @@
 FROM python:3.11-slim
 
-WORKDIR /app
-
-
+ENV APP_HOME=/app
+WORKDIR ${APP_HOME}
 
 # Install basic SO and Python
 RUN apt-get update --fix-missing \
     && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
+    netcat-traditional \
     wget curl vim locales zip unzip apt-utils \
     && rm -rf /var/lib/apt/lists/* \
     && pip install --no-cache-dir uWSGI==2.0.25.1 uwsgitop==0.12
@@ -28,6 +28,11 @@ COPY requirements-dev.txt ./
 
 RUN pip install --no-cache-dir -r requirements-dev.txt
 
+COPY ./entrypoint.sh .
+RUN sed -i 's/\r$//g' ${APP_HOME}/entrypoint.sh
+# Adicionar permissão para o script de entrada
+RUN chmod +x ${APP_HOME}/entrypoint.sh
+
 ENV PYTHONUNBUFFERED=1 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONIOENCODING=UTF-8
@@ -39,6 +44,6 @@ ENV GIT_HASH=$GIT_HASH
 
 COPY . ./
 
-EXPOSE 8000
-
+# Comando de entrada
+ENTRYPOINT ["/app/entrypoint.sh"]
 
