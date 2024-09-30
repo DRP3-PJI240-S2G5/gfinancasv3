@@ -26,5 +26,12 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    hmr: {
+      protocol: 'ws', // Usa WebSocket para HMR
+      host: 'localhost', // Define o host para HMR
+    },
+    watch: {
+      usePolling: true, // Garante que mudanças no sistema de arquivos sejam detectadas
+    },
   },
 })

@@ -3,10 +3,10 @@
     <v-responsive class="d-flex align-center text-center fill-height">
       <v-img contain height="240" src="@/assets/logo.svg" />
       <blockquote class="blockquote text-h5">
-        &#8220;Primeiro, resolva o problema. Depois, escreva o código.&#8221;
+        &#8220;First of all, resolva o probleama. Depois, escreva o código.&#8221;
         <footer>
           <small>
-            <em>&mdash; John Johnson &mdash;</em>
+            <em>&mdash; Joahn Johnson &mdash;</em>
           </small>
         </footer>
       </blockquote>

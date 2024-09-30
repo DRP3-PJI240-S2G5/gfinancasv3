@@ -50,6 +50,10 @@ services:
       - 8000:8000
     expose:
       - "8000"
+    develop:
+      watch:
+        - action: rebuild
+          path: ./gfinancas
     volumes:
       - ./:/app
     depends_on:
@@ -67,6 +71,10 @@ services:
       - "3000"
     env_file:
       - .env
+    develop:
+      watch:
+        - action: rebuild
+          path: ./frontend
     volumes:
       - /frontend/node_modules
       - ./frontend:/frontend
