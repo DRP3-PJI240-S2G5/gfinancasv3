@@ -16,10 +16,10 @@ services:
     volumes:
       - ./:/app
     depends_on:
-      postgres:
+      gfinancas_db:
         condition: service_healthy
 
-  postgres:
+  gfinancas_db:
     image: "postgres:15-alpine"
     ports:
       - 15432:5432
@@ -40,6 +40,21 @@ services:
       timeout: 5s
       retries: 5
       #- "./docker/postgres/pg_hba.conf:/usr/local/etc/postgres/postgres.conf"
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - 5050:5050
+    expose:
+      - 5050
+    volumes:
+      - pg-data:/var/lib/pgadmin
+    environment:
+      PGADMIN_LISTEN_ADDRESS: "0.0.0.0"
+      PGADMIN_LISTEN_PORT: 5050
+      PGADMIN_DEFAULT_SERVER: gfinancas_db
+      PGADMIN_DEFAULT_EMAIL: admin@mail.com
+      PGADMIN_DEFAULT_PASSWORD: 123mudar!
+      FORCE_SCRIPT_NAME: "/pgadmin"
 
   frontend:
     build:
@@ -68,3 +83,4 @@ services:
 
 volumes:
   postgres_data:
+  pg-data:
