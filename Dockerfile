@@ -28,10 +28,10 @@ COPY requirements-dev.txt ./
 
 RUN pip install --no-cache-dir -r requirements-dev.txt
 
-COPY ./entrypoint.sh .
-RUN sed -i 's/\r$//g' ${APP_HOME}/entrypoint.sh
+COPY ./docker/bin/entrypoint.sh ./docker/bin/
+RUN sed -i 's/\r$//g' ${APP_HOME}/docker/bin/entrypoint.sh
 # Adicionar permissão para o script de entrada
-RUN chmod +x ${APP_HOME}/entrypoint.sh
+RUN chmod +x ${APP_HOME}/docker/bin/entrypoint.sh
 
 ENV PYTHONUNBUFFERED=1 
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -45,5 +45,5 @@ ENV GIT_HASH=$GIT_HASH
 COPY . ./
 
 # Comando de entrada
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/app/docker/bin/entrypoint.sh"]
 

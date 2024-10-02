@@ -71,10 +71,6 @@ services:
       - "3000"
     env_file:
       - .env
-    develop:
-      watch:
-        - action: rebuild
-          path: ./frontend
     volumes:
       - /frontend/node_modules
       - ./frontend:/frontend
