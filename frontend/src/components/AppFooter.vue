@@ -1,9 +1,9 @@
 <template>
-  <v-footer :absolute="!fixed" app>
+  <v-footer :absolute="!fixed" color="#D40000" app>
     <v-container>
       <v-row justify="center">
         <v-col cols="12" lg="6" md="6" align-self="center" class="pa-0">
-          <div class="px-5 text-grey text-center">
+          <div class="px-5 text-center">
             <span v-if="user" class="pl-4">
               <v-icon>mdi-account</v-icon>
               {{ user.username }}
@@ -12,12 +12,12 @@
           </div>
         </v-col>
         <v-col cols="12" lg="6" md="6" align-self="center" class="pa-0">
-          <div class="px-5 text-grey text-center">
+          <div class="px-5 text-center">
             <span class="px-5">API: {{ apiBaseUrl }}</span>
           </div>
         </v-col>
         <v-col cols="12" align-self="center" class="pa-0 text-center">
-          <span> &copy; {{ new Date().getFullYear() }} - Djàvue Template </span>
+          <span> &copy; {{ new Date().getFullYear() }} - GFinanças                                                                                                                                                                                                                                          </span>
         </v-col>
       </v-row>
     </v-container>

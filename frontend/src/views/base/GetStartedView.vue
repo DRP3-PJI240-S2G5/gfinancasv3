@@ -60,7 +60,7 @@
           </p>
           <p>Obrigado por utilizar este template.</p>
           <div class="text-xs-right">
-            <em><small>&mdash; Enzo Pascal 🎩</small></em>
+            <em><small>&mdash; Fernando Soares 🎩</small></em>
           </div>
           <hr class="my-3" />
         </v-card-text>

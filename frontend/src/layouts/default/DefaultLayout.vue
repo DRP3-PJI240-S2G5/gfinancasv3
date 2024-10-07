@@ -15,7 +15,7 @@
 <script setup>
 import { ref } from "vue"
 
-const theme = ref("dark")
+const theme = ref("light")
 
 function onThemeClick() {
   theme.value = theme.value === "light" ? "dark" : "light"

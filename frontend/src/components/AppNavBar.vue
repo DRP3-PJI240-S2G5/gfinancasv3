@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar>
+  <v-app-bar color="#038C4C">
     <v-app-bar-title>{{ title }}</v-app-bar-title>
     <template #append>
       <v-btn icon="mdi-heart" :to="{ name: 'base-home' }"></v-btn>
