@@ -54,3 +54,8 @@ export default {
   },
 }
 </script>
+<style scoped>
+.v-main {
+  background-color: azure;
+}
+</style>

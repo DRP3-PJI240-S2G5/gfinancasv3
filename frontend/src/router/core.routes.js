@@ -1,16 +1,16 @@
 // Composables
 import DefaultLayout from "@/layouts/default/DefaultLayout.vue"
-import DepartamentoListView from "@/views/core/DepartamentoListView.vue"
+import InitialView from "@/views/core/InitialView.vue"
 
 export default [
   {
-    path: "/departamentos",
+    path: "/inicial",
     component: DefaultLayout,
     children: [
       {
-        path: "list",
-        name: "departamentos-list",
-        component: DepartamentoListView,
+        path: "",
+        name: "inicial",
+        component: InitialView,
       },
     ],
   },

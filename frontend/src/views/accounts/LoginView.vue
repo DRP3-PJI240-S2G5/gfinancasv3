@@ -72,7 +72,7 @@ export default {
     await this.accountsStore.whoAmI()
     if (this.loggedUser) {
       this.baseStore.showSnackbar("Usuário já logado", "warning")
-      this.showDepartamentos()
+      this.showInicial()
     }
   },
   methods: {
@@ -83,11 +83,11 @@ export default {
         return
       }
       console.log("logged")
-      this.showDepartamentos()
+      this.showInicial()
     },
-    showDepartamentos() {
-      this.$router.push({ name: "departamentos-list" })
-      console.log("--> departamentos")
+    showInicial() {
+      this.$router.push({ name: "inicial" })
+      console.log("--> inicial")
     },
   },
 }
