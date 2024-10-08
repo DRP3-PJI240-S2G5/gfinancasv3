@@ -59,8 +59,4 @@ export default {
 }
 </script>
 
-<style scoped>
-.fill-height {
-  background-color: azure;
-}
-</style>
+<style scoped></style>

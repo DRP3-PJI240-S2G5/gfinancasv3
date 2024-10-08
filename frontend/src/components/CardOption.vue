@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-auto" max-width="400" hover link>
+  <v-card class="mx-auto card-option" max-width="400" hover link>
     <v-card-title class="headline"> {{ cardOptionTitle }} </v-card-title>
     <v-card-text>
       {{ cardOptionDescription }}
@@ -22,3 +22,4 @@ export default {
   }
 }
 </script>
+<style scoped></style>
