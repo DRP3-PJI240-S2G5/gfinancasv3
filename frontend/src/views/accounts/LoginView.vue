@@ -6,8 +6,8 @@
         <v-form>
           <v-text-field
             v-model="username"
-            label="E-Mail"
-            prepend-inner-icon="mdi-email-fast-outline"
+            label="username"
+            prepend-inner-icon="mdi-account"
             variant="outlined"
             required
             @keyup.enter="login"></v-text-field>
@@ -25,7 +25,7 @@
             block
             size="large"
             rounded="pill"
-            color="primary"
+            color="#038C4C"
             append-icon="mdi-chevron-right"
             @click="login">
             Login
@@ -35,7 +35,7 @@
             block
             size="large"
             rounded="pill"
-            color="primary"
+            color="#038C4C"
             variant="outlined"
             :to="{ name: 'base-home' }">
             Início
