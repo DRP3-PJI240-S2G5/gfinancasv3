@@ -5,7 +5,7 @@
       <!-- Botão de Voltar -->
       <v-btn v-if="!isHomePage" icon="mdi-arrow-left" @click="goBack"></v-btn>
 
-      <v-btn icon="mdi-heart" :to="{ name: 'base-home' }"></v-btn>
+      <v-btn v-if="!isHomePage" icon="mdi-home" :to="{ name: 'inicial' }" exact> </v-btn>
       <v-btn icon="mdi-magnify"></v-btn>
       <v-btn
         :prepend-icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'"

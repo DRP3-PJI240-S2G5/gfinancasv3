@@ -14,7 +14,7 @@ export default [
         component: InitialView,
       },
       {
-        path: "/inicial/administracao",
+        path: "administracao",
         name: "administracao",
         component: AdminView,
       },

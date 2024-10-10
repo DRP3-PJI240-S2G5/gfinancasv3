@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container class="mt-10">
     <v-row justify="center">
       <v-col cols="4">
         <card-option cardOptionTitle="Administração" cardOptionDescription="Administração geral do sistema" cardOptionLink="/inicial/administracao">
