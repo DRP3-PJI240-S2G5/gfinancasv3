@@ -1,6 +1,9 @@
 <template>
   <v-card class="mx-auto card-option" max-width="400" hover link :to="cardOptionLink">
-    <v-card-title class="headline"> {{ cardOptionTitle }} </v-card-title>
+    <v-card-title>
+      <v-icon class="mr-2" left>{{ cardOptionIcon }}</v-icon>
+      <span class="headline"> {{ cardOptionTitle }} </span>
+    </v-card-title>
     <v-card-text>
       {{ cardOptionDescription }}
     </v-card-text>
@@ -22,6 +25,11 @@ export default {
     cardOptionLink: {
       type: String,
       required: true
+    },
+    cardOptionIcon: {
+      type: String, // Adicionando a propriedade para o ícone
+      required: false,
+      default: 'mdi-information' // Definindo um ícone padrão
     }
   }
 }

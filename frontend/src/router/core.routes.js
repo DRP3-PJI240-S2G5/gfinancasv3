@@ -1,21 +1,21 @@
 // Composables
 import DefaultLayout from "@/layouts/default/DefaultLayout.vue"
-import InitialView from "@/views/core/InitialView.vue"
 import AdminView from "@/views/core/AdminView.vue"
+import GastosView from "@/views/core/GastosView.vue"
 
 export default [
   {
-    path: "/inicial",
+    path: "/",
     component: DefaultLayout,
     children: [
       {
-        path: "",
-        name: "inicial",
-        component: InitialView,
+        path: "gastos",
+        name: "gastos",
+        component: GastosView,
       },
       {
-        path: "administracao",
-        name: "administracao",
+        path: "gestao",
+        name: "gestao",
         component: AdminView,
       },
     ],
