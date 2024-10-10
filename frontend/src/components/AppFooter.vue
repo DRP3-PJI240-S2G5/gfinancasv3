@@ -13,7 +13,7 @@
         </v-col>
         <v-col cols="12" lg="6" md="6" align-self="center" class="pa-0">
           <div class="px-5 text-center">
-            <span class="px-5">API: {{ apiBaseUrl }}</span>
+            <span class="px-5">Você está em: {{ currentPath }}</span> <!-- Aqui exibimos o path atual -->
           </div>
         </v-col>
         <v-col cols="12" align-self="center" class="pa-0 text-center">
@@ -36,9 +36,18 @@ export default {
       default: null,
     },
   },
-  data: () => ({
-    apiBaseUrl: import.meta.env.VITE_API_BASE_URL,
-    nodeEnv: import.meta.env.VITE_NODE_ENV,
-  }),
+  data() {
+    return{
+      apiBaseUrl: import.meta.env.VITE_API_BASE_URL,
+      nodeEnv: import.meta.env.VITE_NODE_ENV,
+      currentPath: this.$route.path, // Obtém o caminho atual da URL
+    };
+  },
+  watch: {
+    // Observa mudanças na rota para atualizar o caminho atual
+    $route(to) {
+      this.currentPath = to.path;
+    },
+  },
 }
 </script>

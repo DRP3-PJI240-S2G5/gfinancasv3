@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-auto card-option" max-width="400" hover link>
+  <v-card class="mx-auto card-option" max-width="400" hover link :to="cardOptionLink">
     <v-card-title class="headline"> {{ cardOptionTitle }} </v-card-title>
     <v-card-text>
       {{ cardOptionDescription }}
@@ -16,6 +16,10 @@ export default {
       required: true
     },
     cardOptionDescription: {
+      type: String,
+      required: true
+    },
+    cardOptionLink: {
       type: String,
       required: true
     }

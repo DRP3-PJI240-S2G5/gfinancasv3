@@ -2,6 +2,9 @@
   <v-app-bar color="#038C4C">
     <v-app-bar-title>{{ title }}</v-app-bar-title>
     <template #append>
+      <!-- Botão de Voltar -->
+      <v-btn v-if="!isHomePage" icon="mdi-arrow-left" @click="goBack"></v-btn>
+
       <v-btn icon="mdi-heart" :to="{ name: 'base-home' }"></v-btn>
       <v-btn icon="mdi-magnify"></v-btn>
       <v-btn
@@ -35,12 +38,29 @@ export default {
     },
   },
   emits: ["themeClick"],
-  data: () => {
-    return {}
+  data() {
+    return {
+      currentPath: this.$route.name, // Obtém o nome da rota atual
+    };
+  },
+  computed: {
+    // Computa se a rota atual é a rota inicial
+    isHomePage() {
+      return this.$route.name === 'inicial'; // Nome da rota inicial
+    },
   },
   methods: {
     themeClick() {
       this.$emit("themeClick")
+    },
+    goBack() {
+      this.$router.go(-1); // Método para voltar para a página anterior
+    },
+  },
+  watch: {
+    // Atualiza a rota sempre que houver mudança
+    $route(to) {
+      this.currentPath = to.name;
     },
   },
 }

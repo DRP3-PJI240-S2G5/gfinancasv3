@@ -2,17 +2,17 @@
   <v-container>
     <v-row justify="center">
       <v-col cols="4">
-        <card-option cardOptionTitle="Administração" cardOptionDescription="Administração geral do sistema" cardOptionLink="/inicial/administracao">
+        <card-option cardOptionTitle="Usuários" cardOptionDescription="Administração geral do sistema">
         </card-option>
       </v-col>
 
       <v-col cols="4">
-        <card-option cardOptionTitle="Gestão Departamentos" cardOptionDescription="Gestão dos Departamentos" cardOptionLink="/administracao">
+        <card-option cardOptionTitle="Gestão Departamentos" cardOptionDescription="Gestão dos Departamentos">
         </card-option>
       </v-col>
 
       <v-col cols="4">
-        <card-option cardOptionTitle="Gastos e despesas" cardOptionDescription="Lançamentos de gastos e/ou despesas" cardOptionLink="/administracao">
+        <card-option cardOptionTitle="Gastos e despesas" cardOptionDescription="Lançamentos de gastos e/ou despesas">
         </card-option>
       </v-col>
 
@@ -24,12 +24,12 @@
     </v-row>
     <v-row justify="center">
       <v-col cols="4">
-        <card-option cardOptionTitle="Consultas" cardOptionDescription="Normas e Leis correlatas" cardOptionLink="/administracao">
+        <card-option cardOptionTitle="Consultas" cardOptionDescription="Normas e Leis correlatas">
         </card-option>
       </v-col>
 
       <v-col cols="4">
-        <card-option cardOptionTitle="Relatórios" cardOptionDescription="Relatórios gerais do sistema" cardOptionLink="/administracao">
+        <card-option cardOptionTitle="Relatórios" cardOptionDescription="Relatórios gerais do sistema">
         </card-option>
       </v-col>
 
