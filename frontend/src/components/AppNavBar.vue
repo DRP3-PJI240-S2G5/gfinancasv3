@@ -10,8 +10,7 @@
       <v-btn
         :prepend-icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'"
         @click.stop="themeClick"></v-btn>
-
-      <v-btn icon="mdi-dots-vertical">
+      <v-btn v-if="loggedUser" icon="mdi-dots-vertical">
         <v-icon icon="mdi-dots-vertical" />
         <v-menu activator="parent">
           <v-list>
@@ -24,6 +23,8 @@
 </template>
 
 <script>
+import { useAccountsStore } from "@/stores/accountsStore"; // Importa a store
+
 export default {
   props: {
     title: {
@@ -47,6 +48,11 @@ export default {
     // Computa se a rota atual é a rota inicial
     isHomePage() {
       return this.$route.name === 'inicial'; // Nome da rota inicial
+    },
+    // Obtém o estado do usuário logado da store
+    loggedUser() {
+      const accountStore = useAccountsStore();
+      return accountStore.loggedUser;
     },
   },
   methods: {

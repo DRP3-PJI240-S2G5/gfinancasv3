@@ -18,6 +18,7 @@
           <v-btn
             color="primary"
             href="https://semelp.pindamonhangaba.sp.gov.br/"
+            target="_blank"
             min-width="228"
             rel="noopener noreferrer"
             size="x-large"
