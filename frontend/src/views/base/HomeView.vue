@@ -37,7 +37,7 @@
             :to="{ name: 'accounts-login' }"
             class="my-4 mr-2">
             <v-icon icon="mdi-account-arrow-right-outline" size="large" start />
-            Login
+            Entrar
           </v-btn>
           <v-btn
             v-else
@@ -48,7 +48,7 @@
             variant="flat"
             :to="{ name: 'accounts-logout' }">
             <v-icon icon="mdi-account-arrow-right-outline" size="large" start />
-            Logout
+            Sair
           </v-btn>
           <v-btn
             v-if="loggedUser"
