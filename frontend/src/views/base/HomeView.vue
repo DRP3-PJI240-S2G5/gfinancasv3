@@ -1,17 +1,13 @@
 <template>
   <v-container class="fill-height">
-    <v-row justify="center"><v-card-title class="text-h6 text-md-h5 text-lg-h4">Secretaria Municipal de Esportes e Lazer</v-card-title></v-row>
     <v-responsive class="d-flex align-center text-center fill-height">
-
-
+      <v-card-title class="text-h6 text-md-h5 text-lg-h4">Secretaria Municipal de Esportes e Lazer</v-card-title>
+      <div class="py-6" />
       <div class="d-flex justify-center align-center">
         <v-img class="mx-2" contain height="200" src="@/assets/bandeira-pinda-v2.svg" />
         <v-img class="mx-2" contain height="200" src="@/assets/cropped-semelp.png" />
         <v-img class="mx-2" contain height="200" src="@/assets/brasao-pinda.png" />
       </div>
-
-      <div class="py-4" />
-
       <div class="text-body-1 mt-n1 pt-4">Gerenciameno Financeiro - SEMELP</div>
       <h1 class="text-h4 font-weight-bold">Sistema G Finanças</h1>
 
