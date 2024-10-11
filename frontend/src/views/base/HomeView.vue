@@ -1,19 +1,19 @@
 <template>
   <v-container class="fill-height">
+    <v-row justify="center"><v-card-title class="text-h6 text-md-h5 text-lg-h4">Secretaria Municipal de Esportes e Lazer</v-card-title></v-row>
     <v-responsive class="d-flex align-center text-center fill-height">
-      <v-img contain height="240" src="@/assets/logo.svg" />
-      <blockquote class="blockquote text-h5">
-        &#8220;Primeiro, resolva o problema. Teste do Dev Conteiner Depois, escreva o código.&#8221;
-        <footer>
-          <small>
-            <em>&mdash; Joahn Johnson &mdash;</em>
-          </small>
-        </footer>
-      </blockquote>
 
-      <div class="text-body-1 mb-n1 pt-4">Bem-vindo ao template</div>
-      <h1 class="text-h2 font-weight-bold">Djàvue</h1>
-      <code>Vue3 + Vuetify + Vite</code>
+
+      <div class="d-flex justify-center align-center">
+        <v-img class="mx-2" contain height="200" src="@/assets/bandeira-pinda-v2.svg" />
+        <v-img class="mx-2" contain height="200" src="@/assets/cropped-semelp.png" />
+        <v-img class="mx-2" contain height="200" src="@/assets/brasao-pinda.png" />
+      </div>
+
+      <div class="py-4" />
+
+      <div class="text-body-1 mt-n1 pt-4">Gerenciameno Financeiro - SEMELP</div>
+      <h1 class="text-h4 font-weight-bold">Sistema G Finanças</h1>
 
       <div class="py-6" />
 
@@ -21,14 +21,14 @@
         <v-col cols="auto">
           <v-btn
             color="primary"
-            :to="{ name: 'base-getstarted' }"
+            href="https://semelp.pindamonhangaba.sp.gov.br/"
             min-width="228"
             rel="noopener noreferrer"
             size="x-large"
             variant="flat"
-            class="my-4">
-            <v-icon icon="mdi-speedometer" size="large" start />
-            Get Started
+            class="my-4 mr-2">
+            <v-icon icon="mdi-exit-to-app" size="large" start />
+            portal SEMELP
           </v-btn>
           <v-btn
             v-if="!loggedUser"
@@ -38,7 +38,7 @@
             size="x-large"
             variant="flat"
             :to="{ name: 'accounts-login' }"
-            class="my-4">
+            class="my-4 mr-2">
             <v-icon icon="mdi-account-arrow-right-outline" size="large" start />
             Login
           </v-btn>
@@ -61,7 +61,7 @@
             size="x-large"
             variant="flat"
             :to="{ name: 'departamentos-list' }"
-            class="my-4">
+            class="my-4 mr-2">
             <v-icon icon="mdi-folder-star-multiple" size="large" start />
             departamentos
           </v-btn>
