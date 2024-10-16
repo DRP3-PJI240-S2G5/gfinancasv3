@@ -1,11 +1,13 @@
 <template>
-  <v-card class="mx-auto card-option" max-width="400" hover link :to="cardOptionLink">
+  <v-card class="mx-auto card-option mb-4" variant="outlined" max-width="400" hover link :to="cardOptionLink" style="min-height: 100px;">
     <v-card-title>
       <v-icon class="mr-2" left>{{ cardOptionIcon }}</v-icon>
       <span class="headline"> {{ cardOptionTitle }} </span>
     </v-card-title>
     <v-card-text>
       {{ cardOptionDescription }}
+      <br>
+
     </v-card-text>
   </v-card>
 </template>

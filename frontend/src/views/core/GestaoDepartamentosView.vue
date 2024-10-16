@@ -1,20 +1,19 @@
 <template>
   <v-container class="mt-10">
-    <v-row justify="center"><v-card-title class="text-h6 text-md-h5 text-lg-h4">Administração do Sistema</v-card-title></v-row>
+    <v-row justify="center"><v-card-title class="text-h6 text-md-h5 text-lg-h4">Gestão dos Departamentos</v-card-title></v-row>
     <v-row justify="center">
       <v-col cols="4">
-        <card-option cardOptionTitle="Usuários" cardOptionDescription="Cadastro de novos usuários" cardOptionLink="/gestao/usuarios" cardOptionIcon="mdi-account">
+        <card-option cardOptionTitle="Usuários" cardOptionDescription="Cadastro de novos departamentos" cardOptionLink="/gestao/usuarios" cardOptionIcon="mdi-store-plus">
         </card-option>
       </v-col>
 
       <v-col cols="4">
-        <card-option cardOptionTitle="Departamentos/Entidades" cardOptionDescription="Cadastro de novos departamentos/entidades" cardOptionLink="/gestao/entidades" cardOptionIcon="mdi-store-plus">
+        <card-option cardOptionTitle="Departamentos/Entidades" cardOptionDescription="Aatribuição de usuários" cardOptionLink="/gestao/entidades" cardOptionIcon="mdi-badge-account-horizontal">
         </card-option>
       </v-col>
 
       <v-col cols="4">
-        <card-option cardOptionTitle="Permissionamentos" cardOptionDescription="Atribuição de acessos e permissões" cardOptionLink="/gestao/permissoes" cardOptionIcon="mdi-account-lock">
-        </card-option>
+
       </v-col>
 
       <!-- Vou deixar esse laço for aqui para refatorar. Colocar todos os botões em um laço for
