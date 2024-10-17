@@ -1,6 +1,6 @@
 // Composables
 import DefaultLayout from "@/layouts/default/DefaultLayout.vue"
-import GestaoView from "@/views/core/GestaoView.vue"
+import GestaoSistemaView from "@/views/core/GestaoSistemaView.vue"
 import GastosView from "@/views/core/GastosView.vue"
 import InitialView from "@/views/base/InitialView.vue"
 import RelatoriosView from "@/views/core/RelatoriosView.vue"
@@ -27,7 +27,7 @@ export default [
       {
         path: "gestao",
         name: "gestao",
-        component: GestaoView,
+        component: GestaoSistemaView,
         meta: { requiresAuth: true },  // Esta rota requer autenticação
       },
       {

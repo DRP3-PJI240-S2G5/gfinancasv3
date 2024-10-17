@@ -3,12 +3,12 @@
     <v-row justify="center"><v-card-title class="text-h6 text-md-h5 text-lg-h4">Gerenciamento de Finanças</v-card-title></v-row>
     <v-row justify="center">
       <v-col cols="4">
-        <card-option cardOptionTitle="Administração" cardOptionDescription="Administração geral do sistema" cardOptionLink="/gestao" cardOptionIcon="mdi-cog-outline">
+        <card-option cardOptionTitle="Administração do Sistema" cardOptionDescription="Administração geral do sistema" cardOptionLink="/gestao" cardOptionIcon="mdi-cog-outline">
         </card-option>
       </v-col>
 
       <v-col cols="4">
-        <card-option cardOptionTitle="Gestão Departamentos" cardOptionDescription="Gestão dos Departamentos" cardOptionLink="/gdepartamentos" cardOptionIcon="mdi-store-cog-outline">
+        <card-option cardOptionTitle="Departamentos (Adm)" cardOptionDescription="Gestão dos Departamentos" cardOptionLink="/gdepartamentos" cardOptionIcon="mdi-store-cog-outline" >
         </card-option>
       </v-col>
 

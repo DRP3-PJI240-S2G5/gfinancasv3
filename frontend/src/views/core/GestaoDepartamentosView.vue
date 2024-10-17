@@ -3,12 +3,12 @@
     <v-row justify="center"><v-card-title class="text-h6 text-md-h5 text-lg-h4">Gestão dos Departamentos</v-card-title></v-row>
     <v-row justify="center">
       <v-col cols="4">
-        <card-option cardOptionTitle="Usuários" cardOptionDescription="Cadastro de novos departamentos" cardOptionLink="/gestao/usuarios" cardOptionIcon="mdi-store-plus">
+        <card-option cardOptionTitle="Criar novo" cardOptionDescription="Cadastro de novos departamentos" cardOptionLink="/gdepartamentos/criar" cardOptionIcon="mdi-store-plus">
         </card-option>
       </v-col>
 
       <v-col cols="4">
-        <card-option cardOptionTitle="Departamentos/Entidades" cardOptionDescription="Aatribuição de usuários" cardOptionLink="/gestao/entidades" cardOptionIcon="mdi-badge-account-horizontal">
+        <card-option cardOptionTitle="Adicionar Colaboradores" cardOptionDescription="Atribuição de usuários" cardOptionLink="/gdepartamentos/addcolaborador" cardOptionIcon="mdi-badge-account-horizontal">
         </card-option>
       </v-col>
 
