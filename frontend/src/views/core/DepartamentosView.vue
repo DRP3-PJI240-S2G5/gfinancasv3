@@ -21,7 +21,7 @@
 <script>
 import { mapState } from "pinia"
 import { useBaseStore } from "@/stores/baseStore"
-import { usecoreStore } from "@/stores/coreStore"
+import { useCoreStore } from "@/stores/coreStore"
 import Departamento from "@/components/Departamento.vue"
 import DepartamentoForm from "@/components/DepartamentoForm.vue"
 
@@ -30,11 +30,11 @@ export default {
   components: { Departamento, DepartamentoForm },
   setup() {
     const baseStore = useBaseStore()
-    const coreStore = usecoreStore()
+    const coreStore = useCoreStore()
     return { baseStore, coreStore }
   },
   computed: {
-    ...mapState(usecoreStore, ["departamentos", "departamentosLoading"]),
+    ...mapState(useCoreStore, ["departamentos", "departamentosLoading"]),
   },
   mounted() {
     this.getDepartamentos()

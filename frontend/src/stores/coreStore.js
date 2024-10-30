@@ -1,7 +1,7 @@
 import { defineStore } from "pinia"
 import coreApi from "@/api/core.api.js"
 
-export const usecoreStore = defineStore("coreStore", {
+export const useCoreStore = defineStore("coreStore", {
   state: () => ({
     departamentos: [],
     departamentosLoading: false,
