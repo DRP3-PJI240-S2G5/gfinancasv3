@@ -28,8 +28,6 @@
 
 <script>
 import { mapState } from "pinia"
-import { useBaseStore } from "@/stores/baseStore"
-import { usecoreStore } from "@/stores/coreStore"
 import CardOption from "@/components/CardOption.vue"
 
 export default {

@@ -7,7 +7,7 @@
       </v-col>
 
       <v-col cols="4">
-        <card-option cardOptionTitle="Departamentos/Entidades" cardOptionDescription="Cadastro de novos departamentos/entidades" cardOptionLink="/gestao/entidades" cardOptionIcon="mdi-store-plus">
+        <card-option cardOptionTitle="Departamentos/Entidades" cardOptionDescription="Cadastro de novos departamentos/entidades" cardOptionLink="/gestao/departamentos" cardOptionIcon="mdi-store-plus">
         </card-option>
       </v-col>
 
@@ -27,8 +27,6 @@
 
 <script>
 import { mapState } from "pinia"
-import { useBaseStore } from "@/stores/baseStore"
-import { usecoreStore } from "@/stores/coreStore"
 import CardOption from "@/components/CardOption.vue"
 
 export default {

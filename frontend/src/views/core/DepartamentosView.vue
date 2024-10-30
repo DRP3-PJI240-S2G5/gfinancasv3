@@ -1,5 +1,5 @@
 <template>
-  <v-container class="fill-height">
+  <v-container class="mt-10">
     <v-row justify="center" align="center">
       <v-col cols="12">
         <v-card>
@@ -26,7 +26,7 @@ import Departamento from "@/components/Departamento.vue"
 import DepartamentoForm from "@/components/DepartamentoForm.vue"
 
 export default {
-  name: "DepartamentosList",
+  name: "DepartamentosView",
   components: { Departamento, DepartamentoForm },
   setup() {
     const baseStore = useBaseStore()

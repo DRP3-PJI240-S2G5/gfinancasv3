@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-auto card-option" max-width="400" hover link :to="cardOptionLink">
+  <v-card class="mx-auto card-option" max-width="400" hover :to="cardOptionLink">
     <v-card-title>
       <v-icon class="mr-2" left>{{ cardOptionIcon }}</v-icon>
       <span class="headline"> {{ cardOptionTitle }} </span>

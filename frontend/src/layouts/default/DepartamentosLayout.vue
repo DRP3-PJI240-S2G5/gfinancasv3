@@ -15,7 +15,7 @@
 <script setup>
 import { ref } from "vue"
 
-const theme = ref("light")
+const theme = ref("dark")
 
 function onThemeClick() {
   theme.value = theme.value === "light" ? "dark" : "light"
@@ -26,14 +26,13 @@ function onThemeClick() {
 import { mapState } from "pinia"
 import { useBaseStore } from "@/stores/baseStore"
 import { useAccountsStore } from "@/stores/accountsStore"
-import { RouterView } from 'vue-router';
 import AppSnackbar from "@/components/AppSnackbar.vue"
 import AppErrorDialog from "@/components/AppErrorDialog.vue"
 import AppNavBar from "@/components/AppNavBar.vue"
 import AppFooter from "@/components/AppFooter.vue"
 
 export default {
-  name: "DefaultLayout",
+  name: "DepartamentosLayout",
   components: {
     AppSnackbar,
     AppErrorDialog,
@@ -55,4 +54,3 @@ export default {
   },
 }
 </script>
-<style scoped></style>
