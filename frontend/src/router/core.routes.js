@@ -25,9 +25,21 @@ export default [
       },
       {
         path: "gestao",
-        name: "gestao",
-        component: DepartamentosView,
         meta: { requiresAuth: true },  // Esta rota requer autenticação
+        children: [
+          {
+            path: "",
+            name: "gestao",
+            component: GestaoView,
+            meta: { requiresAuth: true },  // Esta rota requer autenticação
+          },
+          {
+            path: "departamentos",
+            name: "departamentos",
+            component: DepartamentosView,
+            meta: { requiresAuth: true },  // Esta rota requer autenticação
+          },
+        ],
       },
     ],
   },
