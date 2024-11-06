@@ -1,5 +1,4 @@
 import logging
-
 from ..models import Departamento
 from gfinancas.base.exceptions import BusinessError
 
