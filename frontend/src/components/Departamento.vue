@@ -1,7 +1,7 @@
 <template>
   <v-card>
     <v-card-text>
-      <div>{{ departamento.id }}</div>
+      <div v-if="departamento && departamento.id">{{ departamento.id }}</div>
       
       <!-- Exibição de Nome -->
       <span class="ma-0 pa-0 text-h6" v-if="!isEditing">

@@ -16,7 +16,7 @@ export const useCoreStore = defineStore("coreStore", {
     async addNewDepartamento(departamentoData) {
       try {
         const response = await coreApi.addNewDepartamento(departamentoData);
-        const newDepartamento = response.data;
+        const newDepartamento ={ id: Date.now(), ...response.data }; // ID temporário
         this.departamentos.push(newDepartamento) // Adiciona o novo departamento à lista
         return newDepartamento
       } catch (error) {

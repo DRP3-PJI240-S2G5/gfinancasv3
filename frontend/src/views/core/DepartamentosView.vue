@@ -36,6 +36,7 @@
 </template>
 
 <script>
+import { watch } from "vue";
 import { mapState } from "pinia"
 import { useBaseStore } from "@/stores/baseStore"
 import { useCoreStore } from "@/stores/coreStore"
@@ -48,6 +49,18 @@ export default {
   setup() {
     const baseStore = useBaseStore()
     const coreStore = useCoreStore()
+    // Watcher para monitorar mudanças no array `departamentos`
+    watch(
+      () => coreStore.departamentos,
+      (newDepartamentos) => {
+        // Reatividade para assegurar a atualização
+        if (newDepartamentos.length) {
+          console.log("Departamentos carregados ou atualizados:", newDepartamentos);
+        }
+      },
+      { deep: true }
+    );
+    
     return { baseStore, coreStore }
   },
   data() {
