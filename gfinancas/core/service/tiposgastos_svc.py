@@ -14,3 +14,21 @@ def add_tipo_gasto(descricao):
     tipo_gasto.save()
     logger.info("SERVICE tipo de gasto created.")
     return tipo_gasto.to_dict_json()
+
+def update_tipo_gasto(tipo_gasto_id, new_descricao):
+    logger.info("SERVICE update tipo gasto")
+
+    try:
+        tipo_gasto = TipoGasto.objects.get(id=tipo_gasto_id)
+    except TipoGasto.DoesNotExist:
+        raise BusinessError("TipoGasto not found")
+
+    tipo_gasto.descricao = new_descricao
+    tipo_gasto.save()
+    logger.info("SERVICE tipo gasto updated.")
+    return tipo_gasto.to_dict_json()
+
+def list_tipos_gastos():
+    logger.info("SERVICE list tipos de gasto")
+    tipos_gastos_list = TipoGasto.objects.all()
+    return [item.to_dict_json() for item in tipos_gastos_list]

@@ -17,4 +17,10 @@ export default {
     const response = await api.post("/api/accounts/logout")
     return response.data
   },
+
+  // Método para buscar todos os usuários
+  get_users: async () => {
+    const response = await api.get("/api/accounts/users")
+    return response.data
+  },
 }

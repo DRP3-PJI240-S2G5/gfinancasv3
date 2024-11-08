@@ -14,3 +14,21 @@ def add_elemento(nome):
     elemento.save()
     logger.info("SERVICE elemento created.")
     return elemento.to_dict_json()
+
+def update_elemento(elemento_id, new_nome):
+    logger.info("SERVICE update elemento")
+
+    try:
+        elemento = Elemento.objects.get(id=elemento_id)
+    except Elemento.DoesNotExist:
+        raise BusinessError("Elemento not found")
+
+    elemento.nome = new_nome
+    elemento.save()
+    logger.info("SERVICE elemento updated.")
+    return elemento.to_dict_json()
+
+def list_elementos():
+    logger.info("SERVICE list elementos")
+    elementos_list = Elemento.objects.all()
+    return [item.to_dict_json() for item in elementos_list]

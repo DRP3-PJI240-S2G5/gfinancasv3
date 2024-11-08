@@ -4,7 +4,9 @@ import json
 from django.contrib import auth
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
+from django.contrib.auth import get_user_model
+from django.views.decorators.http import require_http_methods
+from ..commons.django_views_utils import ajax_login_required
 
 logger = logging.getLogger(__name__)
 
@@ -56,3 +58,18 @@ def whoami(request):
 
     logger.info("API whoami")
     return JsonResponse(user_data)
+
+@require_http_methods(["GET"])
+@ajax_login_required
+def users(request):
+    """
+    Retorna todos os usuários
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({"message": "Unauthorized"}, status=401)
+
+    # Obter todos os usuários
+    users = get_user_model().objects.all()
+    users_list = [user.to_dict_json() for user in users]
+
+    return JsonResponse({"users": users_list}, safe=False)

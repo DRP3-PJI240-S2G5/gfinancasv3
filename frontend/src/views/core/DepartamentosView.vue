@@ -3,11 +3,28 @@
     <v-row justify="center" align="center">
       <v-col cols="12">
         <v-card>
-          <v-card-title class="headline"> Departamentos </v-card-title>
+          <!-- Título e Botão na mesma linha -->
+          <v-row no-gutters align="center">
+            <v-col>
+              <v-card-title class="headline">
+                Departamentos
+              </v-card-title>
+            </v-col>
+            <!-- Botão "+" posicionado no canto direito -->
+            <v-col class="d-flex justify-end">
+              <v-btn
+                @click="toggleForm"
+                color="primary"
+                fab
+                small>
+              <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </v-col>
+          </v-row>
         </v-card>
       </v-col>
 
-      <v-col cols="12">
+      <v-col cols="12" v-if="showForm">
         <departamento-form :form-label="'New Departamento'" @new-departamento="addNewDepartamento" />
       </v-col>
 
@@ -33,6 +50,11 @@ export default {
     const coreStore = useCoreStore()
     return { baseStore, coreStore }
   },
+  data() {
+    return {
+      showForm: false, // Variável para controlar a visibilidade do formulário
+    }
+  },
   computed: {
     ...mapState(useCoreStore, ["departamentos", "departamentosLoading"]),
   },
@@ -47,6 +69,9 @@ export default {
       const newDepartamento = await this.coreStore.addNewDepartamento(departamento)
       this.baseStore.showSnackbar(`New departamento added #${ newDepartamento.id }`)
       this.getDepartamentos()
+    },
+    toggleForm() {
+      this.showForm = !this.showForm; // Alterna a visibilidade do formulário
     },
   },
 }
