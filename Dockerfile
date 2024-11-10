@@ -46,4 +46,3 @@ COPY . ./
 
 # Comando de entrada
 ENTRYPOINT ["/app/docker/bin/entrypoint.sh"]
-
