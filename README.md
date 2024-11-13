@@ -1,4 +1,4 @@
-# 🏆 GFinancas
+# 🏆 G Financas 4.0
 
 ## Entendendo o projeto
 
@@ -28,7 +28,7 @@ classDiagram
 Visao geral
 
 ```shell
-gfinancas                   👉 Pasta raiz do projeto
+gfinancas4                   👉 Pasta raiz do projeto
  ├── README.md
  ├── manage.py                     👉 Django CLI (Ponto de entrada)
  ├── requirements.txt              👉 Dependencias principais
@@ -37,14 +37,14 @@ gfinancas                   👉 Pasta raiz do projeto
  ├── Dockerfile                    👉 Receita para rodar projeto
  ├── tox.ini
  ├── uwsgi.ini
- └── gfinancas              👉 base do projeto
+ └── gfinancas4              👉 base do projeto
     ├── base                       👉 app para regras fora do "core"
     │   └── ...
     ├── accounts                   👉 app relacionado a usuarios e autenticacao
     │   └── ...
     ├── core                       👉 app principal com o "core business" 
     │   └── ...
-    └── gfinancas           👉 centraliza configuracoes do projeto
+    └── gfinancas4           👉 centraliza configuracoes do projeto
         ├── api.py
         ├── settings.py            👉 Configuracoes principal do Django
         ├── urls.py                👉 Configuracao principal/inicial das rotas no Django

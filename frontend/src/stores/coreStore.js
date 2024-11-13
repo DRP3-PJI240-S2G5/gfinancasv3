@@ -13,30 +13,18 @@ export const useCoreStore = defineStore("coreStore", {
       this.departamentos = response.departamentos
       this.departamentosLoading = false
     },
-    async addNewDepartamento(departamentoData) {
-      try {
-        const response = await coreApi.addNewDepartamento(departamentoData);
-        const newDepartamento = response.data;
-        this.departamentos.push(newDepartamento) // Adiciona o novo departamento à lista
-        return newDepartamento
-      } catch (error) {
-        console.error("Erro ao adicionar departamento:", error)
-        return null;
-      }
+    async addNewDepartamento(departamento) {
+      const newDepartamento = await coreApi.addNewDepartamento(departamento)
+      return newDepartamento
     },
-    async updateDepartamento(departamentoId, updatedData) {
-      try {
-        const updatedDepartamento = await coreApi.updateDepartamento(departamentoId, updatedData)
-        // Atualiza o departamento na lista
-        const index = this.departamentos.findIndex(dept => dept.id === departamentoId)
-        if (index !== -1) {
-          this.departamentos[index] = updatedDepartamento
-        }
-        return updatedDepartamento
-      } catch (error) {
-        console.error("Erro ao atualizar departamento:", error)
-        return null // Garantir que o valor retornado seja algo controlável
+    async updateDepartamento(updatedDepartamento) {
+      const departamento = await coreApi.updateDepartamento(updatedDepartamento);
+      // Atualiza o departamento na lista
+      const index = this.departamentos.findIndex(d => d.id === departamento.id);
+      if (index !== -1) {
+        this.departamentos[index] = departamento;
       }
+      return departamento;
     },
   },
 })

@@ -11,11 +11,8 @@ import App from "./App.vue"
 import { createApp } from "vue"
 
 // Plugins
-
 import { mockServer } from "@/apimock"
-
 import { registerPlugins } from "@/plugins"
-
 
 // Settings
 import { environment } from "@/settings"

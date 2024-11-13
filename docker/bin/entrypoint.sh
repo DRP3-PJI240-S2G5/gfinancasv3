@@ -24,7 +24,7 @@ if [ ! -f /app/user_admin_created ]; then
   # Criar o usuário admin
   echo "Criando usuario admin"
   #python manage.py shell -c "from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'admin@mail.com', '123mudar!')"
-  python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin', 'admin@mail.com', 'admin01!')"
+  python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin', 'admin@mail.com', '123mudar!')"
 
   # Criar o arquivo de flag
   touch /app/user_admin_created

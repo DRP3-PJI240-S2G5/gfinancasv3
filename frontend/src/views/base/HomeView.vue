@@ -50,18 +50,6 @@
             <v-icon icon="mdi-account-arrow-right-outline" size="large" start />
             Logout
           </v-btn>
-          <v-btn
-            v-if="loggedUser"
-            color="primary"
-            min-width="228"
-            rel="noopener noreferrer"
-            size="x-large"
-            variant="flat"
-            :to="{ name: 'departamentos-list' }"
-            class="my-4 mr-2">
-            <v-icon icon="mdi-folder-star-multiple" size="large" start />
-            departamentos
-          </v-btn>
         </v-col>
       </v-row>
     </v-responsive>

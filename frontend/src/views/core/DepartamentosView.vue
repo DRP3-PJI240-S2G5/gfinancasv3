@@ -1,5 +1,5 @@
 <template>
-  <v-container class="mt-10">
+  <v-container class="fill-height">
     <v-row justify="center" align="center">
       <v-col cols="12">
         <v-card>
@@ -12,12 +12,8 @@
             </v-col>
             <!-- Botão "+" posicionado no canto direito -->
             <v-col class="d-flex justify-end">
-              <v-btn
-                @click="toggleForm"
-                color="primary"
-                fab
-                small>
-              <v-icon>mdi-plus</v-icon>
+              <v-btn @click="toggleForm" color="primary" fab small>
+                <v-icon>mdi-plus</v-icon>
               </v-btn>
             </v-col>
           </v-row>
@@ -25,11 +21,11 @@
       </v-col>
 
       <v-col cols="12" v-if="showForm">
-        <departamento-form :form-label="'New Departamento'" @new-departamento="addNewDepartamento" />
+        <departamento-form :form-label="'Novo Departamento'" @new-departamento="addNewDepartamento" />
       </v-col>
 
       <v-col v-for="item in departamentos" :key="item.id" cols="12">
-        <departamento :departamento="item" />
+        <departamento :departamento="item" @updateDepartamento="updateDepartamento"/>
       </v-col>
     </v-row>
   </v-container>
@@ -43,7 +39,7 @@ import Departamento from "@/components/Departamento.vue"
 import DepartamentoForm from "@/components/DepartamentoForm.vue"
 
 export default {
-  name: "DepartamentosView",
+  name: "DepartamentosList",
   components: { Departamento, DepartamentoForm },
   setup() {
     const baseStore = useBaseStore()
@@ -67,8 +63,14 @@ export default {
     },
     async addNewDepartamento(departamento) {
       const newDepartamento = await this.coreStore.addNewDepartamento(departamento)
-      this.baseStore.showSnackbar(`New departamento added #${ newDepartamento.id }`)
+      this.baseStore.showSnackbar(`Novo departamento adicionado #${newDepartamento.id}`)
       this.getDepartamentos()
+    },
+    async updateDepartamento(updatedDepartamento) {
+      await this.coreStore.updateDepartamento(updatedDepartamento)
+      this.baseStore.showSnackbar(`Departamento #${updatedDepartamento.id} atualizado  com sucesso`)
+      this.getDepartamentos()
+      this.showForm = !this.showForm;
     },
     toggleForm() {
       this.showForm = !this.showForm; // Alterna a visibilidade do formulário
@@ -78,6 +80,11 @@ export default {
 </script>
 
 <style scoped>
+@font-face {
+  font-family: 'Material Design Icons';
+  src: url('/node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff2?v=7.0.96') format('woff2');
+  font-display: swap;
+}
 .done {
   text-decoration: line-through;
 }

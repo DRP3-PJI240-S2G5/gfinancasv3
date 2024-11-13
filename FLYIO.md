@@ -23,6 +23,6 @@ Para fazer deploy via Github Actions (CD)
 
 OTHERS COMMANDS:
 fly status
-fly ssh console -a gfinancas
+fly ssh console -a gfinancas4
 fly logs --debug
  

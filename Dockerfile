@@ -7,11 +7,11 @@ WORKDIR ${APP_HOME}
 RUN apt-get update --fix-missing \
     && apt-get install -y --no-install-recommends \
     build-essential \
-    libpq-dev \
     netcat-traditional \
+    libpq-dev \
     wget curl vim locales zip unzip apt-utils \
     && rm -rf /var/lib/apt/lists/* \
-    && pip install --no-cache-dir uWSGI==2.0.25.1 uwsgitop==0.12
+    && pip install --no-cache-dir uWSGI==2.0.25.1 uwsgitop==0.12 djangorestframework
 
 # Replace shell with bash so we can source files
 SHELL ["/bin/bash", "-c"]
@@ -46,4 +46,3 @@ COPY . ./
 
 # Comando de entrada
 ENTRYPOINT ["/app/docker/bin/entrypoint.sh"]
-

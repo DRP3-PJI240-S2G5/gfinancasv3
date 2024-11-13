@@ -4,7 +4,7 @@
     <app-snackbar />
     <VApp :theme="theme">
       <app-nav-bar :theme="theme" @theme-click="onThemeClick"></app-nav-bar>
-      <VMain>
+      <VMain :style="{ backgroundColor: theme === 'light' ? '#FFD' : '' }">
         <RouterView />
       </VMain>
       <app-footer :fixed="true" :user="loggedUser" />
@@ -26,14 +26,13 @@ function onThemeClick() {
 import { mapState } from "pinia"
 import { useBaseStore } from "@/stores/baseStore"
 import { useAccountsStore } from "@/stores/accountsStore"
-import { RouterView } from 'vue-router';
 import AppSnackbar from "@/components/AppSnackbar.vue"
 import AppErrorDialog from "@/components/AppErrorDialog.vue"
 import AppNavBar from "@/components/AppNavBar.vue"
 import AppFooter from "@/components/AppFooter.vue"
 
 export default {
-  name: "DefaultLayout",
+  name: "DepartamentosLayout",
   components: {
     AppSnackbar,
     AppErrorDialog,
@@ -55,4 +54,3 @@ export default {
   },
 }
 </script>
-<style scoped></style>

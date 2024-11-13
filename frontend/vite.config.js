@@ -25,11 +25,14 @@ export default defineConfig({
     extensions: [".js", ".json", ".jsx", ".mjs", ".ts", ".tsx", ".vue"],
   },
   server: {
+    host: 'frontend',
     port: 3000,
     hmr: {
-      protocol: 'ws', // Usa WebSocket para HMR
-      host: 'localhost', // Define o host para HMR
+      protocol: 'ws', // Usando ws para o protocolo WebSocket
+      host: 'localhost', // Host da máquina onde o Vite está sendo executado
+      port: 3000, // Porta que o Vite está ouvindo
     },
+    cors: true,
     watch: {
       usePolling: true, // Garante que mudanças no sistema de arquivos sejam detectadas
     },
