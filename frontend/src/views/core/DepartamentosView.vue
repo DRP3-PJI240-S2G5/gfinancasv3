@@ -25,7 +25,7 @@
       </v-col>
 
       <v-col v-for="item in departamentos" :key="item.id" cols="12">
-        <departamento :departamento="item" @updateDepartamento="updateDepartamento"/>
+        <departamento :departamento="item" @updateDepartamento="updateDepartamento" />
       </v-col>
     </v-row>
   </v-container>
@@ -65,6 +65,7 @@ export default {
       const newDepartamento = await this.coreStore.addNewDepartamento(departamento)
       this.baseStore.showSnackbar(`Novo departamento adicionado #${newDepartamento.id}`)
       this.getDepartamentos()
+      this.showForm = !this.showForm;
     },
     async updateDepartamento(updatedDepartamento) {
       await this.coreStore.updateDepartamento(updatedDepartamento)
@@ -85,6 +86,7 @@ export default {
   src: url('/node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff2?v=7.0.96') format('woff2');
   font-display: swap;
 }
+
 .done {
   text-decoration: line-through;
 }

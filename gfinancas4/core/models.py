@@ -10,7 +10,7 @@ class Departamento(models.Model):
         User, 
         on_delete=models.CASCADE,
         related_name="departamentos",
-        verbose_name="Responsável"
+        verbose_name="responsavel"
     )
 
     def to_dict_json(self):
