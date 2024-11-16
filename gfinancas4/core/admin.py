@@ -6,17 +6,40 @@ from .models import Departamento, Subordinacao
 class DepartamentoAdmin(admin.ModelAdmin):
     list_display = ("id", "nome", "description", "tipoEntidade", "responsavelId", "done")
     list_filter = ("responsavelId", "tipoEntidade")  # Adiciona filtros laterais para "done" e "TipoEntidade"
+    search_fields = ("nome", "description")
     fieldsets = (
         (None, {"fields": ( "nome", "description", "tipoEntidade", "responsavelId", "done")}),
     )
 
+
+@admin.action(description="Remover subordinação selecionada")
+def remover_subordinacao(modeladmin, request, queryset):
+    """Ação para remover as subordinações selecionadas."""
+    count = queryset.count()
+    queryset.delete()
+    modeladmin.message_user(request, f"{count} subordinação(ões) removida(s) com sucesso.")
+
 class SubordinacaoAdmin(admin.ModelAdmin):
-    list_display = ("IdDepartamentoA", "IdDepartamentoB", "dataSubordinacao", "Observacao")
+    list_display = ("id", "IdDepartamentoA_nome", "IdDepartamentoB_nome", "dataSubordinacao", "Observacao")
     list_filter = ("dataSubordinacao",)
-    search_fields = ("IdDepartamentoA__description", "IdDepartamentoB__description")
-    fieldsets = (
-        (None, {"fields": ("IdDepartamentoA", "IdDepartamentoB", "dataSubordinacao", "Observacao")}),
+    search_fields = (
+        "IdDepartamentoA_nome", "IdDepartamentoA_description",
+        "IdDepartamentoB_nome", "IdDepartamentoB_description"
     )
+    fieldsets = (
+        (None, {"fields": ("IdDepartamentoA", "IdDepartamentoB", "Observacao")}),
+    )
+    actions = [remover_subordinacao]
+
+    def IdDepartamentoA_nome(self, obj):
+        """Exibe o nome do departamento A na lista."""
+        return obj.IdDepartamentoA.nome
+    IdDepartamentoA_nome.short_description = "Departamento Superior"
+
+    def IdDepartamentoB_nome(self, obj):
+        """Exibe o nome do departamento B na lista."""
+        return obj.IdDepartamentoB.nome
+    IdDepartamentoB_nome.short_description = "Departamento Subordinado"
 
 admin.site.register(Departamento, DepartamentoAdmin)
 admin.site.register(Subordinacao, SubordinacaoAdmin)

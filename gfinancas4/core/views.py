@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import get_object_or_404
 from ..commons.django_views_utils import ajax_login_required
-from .service import departamentos_svc
+from .service import departamentos_svc, subordinacao_svc
 from .models import Departamento
 from ..accounts.models import User
 
@@ -87,3 +87,38 @@ def list_departamentos(request):
     return JsonResponse({"departamentos": departamentos})
 
 
+@csrf_exempt
+#@ajax_login_required
+@require_http_methods(["POST"])
+def add_subordinacao(request):
+    """Adiciona uma relação de subordinação entre departamentos."""
+    logger.info("API add subordinacao.")
+    body = json.loads(request.body)
+    
+    id_departamento_a = body.get("IdDepartamentoA")
+    id_departamento_b = body.get("IdDepartamentoB")
+    observacao = body.get("Observacao", "")
+    
+    # Valida os departamentos
+    departamento_a = get_object_or_404(Departamento, id=id_departamento_a)
+    departamento_b = get_object_or_404(Departamento, id=id_departamento_b)
+    
+    # Previne laços de subordinação direta
+    if id_departamento_a == id_departamento_b:
+        return JsonResponse(
+            {"error": "Um departamento não pode ser subordinado a si mesmo."}, 
+            status=400
+        )
+    
+    try:
+        subordinacao = subordinacao_svc.add_subordinacao(departamento_a, departamento_b, observacao)
+        return JsonResponse(subordinacao, status=201)
+    except ValueError as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+@require_http_methods(["GET"])
+#@ajax_login_required
+def list_subordinacoes(request):
+    """Lista as relações de subordinação entre departamentos."""
+    subordinacoes = subordinacao_svc.list_subordinacoes()
+    return JsonResponse({"subordinacoes": subordinacoes}, status=200)

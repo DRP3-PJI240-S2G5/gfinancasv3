@@ -13,6 +13,9 @@ class Departamento(models.Model):
         verbose_name="responsavel"
     )
 
+    def __str__(self):
+        return self.nome
+    
     def to_dict_json(self):
         return {
             "id": self.id,
@@ -42,8 +45,14 @@ class Subordinacao(models.Model):
 
     def to_dict_json(self):
         return {
-            "IdDepartamentoA": self.IdDepartamentoA.id if self.IdDepartamentoA else None,
-            "IdDepartamentoB": self.IdDepartamentoB.id if self.IdDepartamentoB else None,
+            "IdDepartamentoA": {
+                "id": self.IdDepartamentoA.id,
+                "nome": self.IdDepartamentoA.nome,
+            },
+            "IdDepartamentoB": {
+                "id": self.IdDepartamentoB.id,
+                "nome": self.IdDepartamentoB.nome,
+            },
             "dataSubordinacao": self.dataSubordinacao,
             "Observacao": self.Observacao,
         }
