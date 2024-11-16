@@ -4,6 +4,7 @@ import GestaoView from "@/views/core/GestaoView.vue"
 import GastosView from "@/views/core/GastosView.vue"
 import InitialView from "@/views/base/InitialView.vue"
 import DepartamentosView from "@/views/core/DepartamentosView.vue"
+import UsersView from "@/views/accounts/UsersView.vue"
 
 export default [
   {
@@ -38,6 +39,12 @@ export default [
             name: "departamentos",
             component: DepartamentosView,
             meta: { requiresAuth: true },  // Esta rota requer autenticação
+          },
+          {
+            path: "usuarios",
+            name: "usuarios",
+            component: UsersView,
+            meta: { requiresAuth: true },
           },
         ],
       },
