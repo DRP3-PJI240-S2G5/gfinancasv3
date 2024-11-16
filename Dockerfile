@@ -11,7 +11,7 @@ RUN apt-get update --fix-missing \
     libpq-dev \
     wget curl vim locales zip unzip apt-utils \
     && rm -rf /var/lib/apt/lists/* \
-    && pip install --no-cache-dir uWSGI==2.0.25.1 uwsgitop==0.12 djangorestframework
+    && pip install --no-cache-dir uWSGI==2.0.25.1 uwsgitop==0.12 djangorestframework==3.15.2
 
 # Replace shell with bash so we can source files
 SHELL ["/bin/bash", "-c"]
