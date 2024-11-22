@@ -1,7 +1,8 @@
 from ..models import Verba
 
-def add_verba(departamento, user, descricao):
+def add_verba(valor, departamento, user, descricao):
     verba = Verba(
+        valor=valor,
         departamento=departamento,
         user=user,
         descricao=descricao

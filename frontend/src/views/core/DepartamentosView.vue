@@ -71,7 +71,6 @@ export default {
       await this.coreStore.updateDepartamento(updatedDepartamento)
       this.baseStore.showSnackbar(`Departamento #${updatedDepartamento.id} atualizado  com sucesso`)
       this.getDepartamentos()
-      this.showForm = !this.showForm;
     },
     toggleForm() {
       this.showForm = !this.showForm; // Alterna a visibilidade do formulário

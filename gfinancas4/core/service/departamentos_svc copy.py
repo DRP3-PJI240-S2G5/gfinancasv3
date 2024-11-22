@@ -1,12 +1,13 @@
 import logging
-from typing import List, Dict
-from ...accounts.models import User
+
 from ..models import Departamento
+from ...accounts.models import User
 from gfinancas4.base.exceptions import BusinessError
 
 logger = logging.getLogger(__name__)
 
-def add_departamento(new_departamento: Departamento) -> Dict:
+
+def add_departamento(new_departamento: Departamento) -> dict:
     logger.info("SERVICE add new departamento")
     
     if not isinstance(new_departamento, Departamento):
@@ -35,7 +36,8 @@ def update_departamento(departamento: Departamento) -> dict:
     
     return departamento.to_dict_json()
 
-def list_departamentos() -> List[Dict]:
+def list_departamentos():
     logger.info("SERVICE list departamentos")
+    
     departamentos_list = Departamento.objects.all()
     return [item.to_dict_json() for item in departamentos_list]

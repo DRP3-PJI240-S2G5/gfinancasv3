@@ -48,7 +48,6 @@ def add_departamento(request):
 
     return JsonResponse(new_departamento, status=201)
 
-
 @csrf_exempt
 @ajax_login_required
 @require_http_methods(["PUT"])   #  VERIFIQUE iSSO DEPOIS QUE FUNCIONAR
@@ -79,7 +78,7 @@ def update_departamento(request):
         return JsonResponse(updated_departamento, status=200)
     except ValueError as e:
         return JsonResponse({"error": str(e)}, status=500)
-
+    
 @require_http_methods(["GET"])
 @ajax_login_required
 def list_departamentos(request):
@@ -148,6 +147,42 @@ def add_responsabilidade(request):
 @ajax_login_required
 @require_http_methods(["GET"])
 def list_responsabilidades(request):
-    responsabilidades = Responsabilidade.objects.all()
-    data = [resp.to_dict_json() for resp in responsabilidades]
-    return JsonResponse(data, safe=False, status=200)
+    if request.method == "GET":
+        responsabilidades = Responsabilidade.objects.all()
+        data = [resp.to_dict_json() for resp in responsabilidades]
+        return JsonResponse(data, safe=False, status=200)
+    return JsonResponse({"error": "Método não permitido."}, status=405)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["PUT"])
+def update_responsabilidade(request, id):
+    data = json.loads(request.body)
+    try:
+        responsabilidade = Responsabilidade.objects.get(id=id)
+        if "usuario_id" in data:
+            responsabilidade.IdUser = User.objects.get(id=data["usuario_id"])
+        if "departamento_id" in data:
+            responsabilidade.IdDepartamento = Departamento.objects.get(id=data["departamento_id"])
+        if "observacao" in data:
+            responsabilidade.Observacao = data["observacao"]
+        responsabilidade.save()
+        return JsonResponse(responsabilidade.to_dict_json(), status=200)
+    except Responsabilidade.DoesNotExist:
+        return JsonResponse({"error": "Responsabilidade não encontrada."}, status=404)
+    except User.DoesNotExist:
+        return JsonResponse({"error": "Usuário não encontrado."}, status=404)
+    except Departamento.DoesNotExist:
+        return JsonResponse({"error": "Departamento não encontrado."}, status=404)
+
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["DELETE"])
+def delete_responsabilidade(request, id):
+    try:
+        responsabilidade = Responsabilidade.objects.get(id=id)
+        responsabilidade.delete()
+        return JsonResponse({"message": "Responsabilidade deletada com sucesso."}, status=200)
+    except Responsabilidade.DoesNotExist:
+        return JsonResponse({"error": "Responsabilidade não encontrada."}, status=404)
