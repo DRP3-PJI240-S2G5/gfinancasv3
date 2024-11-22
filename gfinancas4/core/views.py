@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import get_object_or_404
 from ..commons.django_views_utils import ajax_login_required
-from .service import departamentos_svc, subordinacao_svc
+from . import service
 from .models import Departamento, Responsabilidade
 from ..accounts.models import User
 
@@ -44,7 +44,7 @@ def add_departamento(request):
         done=done
     )
 
-    new_departamento = departamentos_svc.add_departamento(departamento)
+    new_departamento = service.add_departamento(departamento)
 
     return JsonResponse(new_departamento, status=201)
 
@@ -75,7 +75,7 @@ def update_departamento(request):
     departamento.done = body.get("done", departamento.done)
 
     try:
-        updated_departamento = departamentos_svc.update_departamento(departamento)
+        updated_departamento = service.update_departamento(departamento)
         return JsonResponse(updated_departamento, status=200)
     except ValueError as e:
         return JsonResponse({"error": str(e)}, status=500)
@@ -85,7 +85,7 @@ def update_departamento(request):
 def list_departamentos(request):
     """Lista Departamentos"""
     logger.info("API list departamentos")
-    departamentos = departamentos_svc.list_departamentos()
+    departamentos = service.list_departamentos()
     return JsonResponse({"departamentos": departamentos})
 
 
@@ -113,7 +113,7 @@ def add_subordinacao(request):
         )
     
     try:
-        subordinacao = subordinacao_svc.add_subordinacao(departamento_a, departamento_b, observacao)
+        subordinacao = service.add_subordinacao(departamento_a, departamento_b, observacao)
         return JsonResponse(subordinacao, status=201)
     except ValueError as e:
         return JsonResponse({"error in add_subordinacao": str(e)}, status=500)
@@ -122,7 +122,7 @@ def add_subordinacao(request):
 @ajax_login_required
 def list_subordinacoes(request):
     """Lista as relações de subordinação entre departamentos."""
-    subordinacoes = subordinacao_svc.list_subordinacoes()
+    subordinacoes = service.list_subordinacoes()
     return JsonResponse({"subordinacoes": subordinacoes}, status=200)
 
 @csrf_exempt
@@ -137,7 +137,7 @@ def add_responsabilidade(request):
         responsabilidade = Responsabilidade.objects.create(
             IdUser=usuario,
             IdDepartamento=departamento,
-            Observacao=observacao
+            observacao=observacao
         )
         return JsonResponse(responsabilidade.to_dict_json(), status=201)
     except User.DoesNotExist:
