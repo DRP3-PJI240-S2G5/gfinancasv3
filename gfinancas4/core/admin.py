@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-from .models import Departamento, Subordinacao
-
+from .models import Departamento, Subordinacao, Responsabilidade
 
 class DepartamentoAdmin(admin.ModelAdmin):
     list_display = ("id", "nome", "description", "tipoEntidade", "responsavelId", "done")
@@ -41,5 +40,24 @@ class SubordinacaoAdmin(admin.ModelAdmin):
         return obj.IdDepartamentoB.nome
     IdDepartamentoB_nome.short_description = "Departamento Subordinado"
 
+class ResponsabilidadeAdmin(admin.ModelAdmin):
+    list_display = ("id", "usuario_nome", "departamento_nome", "dataCriacao", "Observacao")
+    search_fields = ("IdUser__username", "IdDepartamento__nome")
+    list_filter = ("dataCriacao",)
+    fieldsets = (
+        (None, {"fields": ("IdUser", "IdDepartamento", "Observacao")}),
+    )
+
+    def usuario_nome(self, obj):
+        """Exibe o nome do usuário associado à responsabilidade."""
+        return obj.IdUser.username
+    usuario_nome.short_description = "Usuário"
+
+    def departamento_nome(self, obj):
+        """Exibe o nome do departamento associado à responsabilidade."""
+        return obj.IdDepartamento.nome
+    departamento_nome.short_description = "Departamento"
+
 admin.site.register(Departamento, DepartamentoAdmin)
 admin.site.register(Subordinacao, SubordinacaoAdmin)
+admin.site.register(Responsabilidade, ResponsabilidadeAdmin)

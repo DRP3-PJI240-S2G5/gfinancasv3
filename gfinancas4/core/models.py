@@ -56,3 +56,27 @@ class Subordinacao(models.Model):
             "dataSubordinacao": self.dataSubordinacao,
             "Observacao": self.Observacao,
         }
+    
+class Responsabilidade(models.Model):
+    IdUser = models.ForeignKey(User, on_delete=models.CASCADE, related_name="responsabilidades")
+    IdDepartamento = models.ForeignKey(Departamento, on_delete=models.CASCADE, related_name="responsaveis")
+    dataCriacao = models.DateTimeField(auto_now_add=True)
+    Observacao = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.IdUser} é responsável por {self.IdDepartamento} desde {self.dataCriacao}"
+
+    def to_dict_json(self):
+        return {
+            "id": self.id,
+            "usuario": {
+                "id": self.IdUser.id,
+                "username": self.IdUser.username,
+            },
+            "departamento": {
+                "id": self.IdDepartamento.id,
+                "nome": self.IdDepartamento.nome,
+            },
+            "data_criacao": self.dataCriacao.isoformat(),
+            "observacao": self.Observacao,
+        }

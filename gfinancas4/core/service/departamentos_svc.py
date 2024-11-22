@@ -29,7 +29,7 @@ def update_departamento(departamento: Departamento) -> dict:
     responsavel = User.objects.filter(id=departamento.responsavelId.id).first()
     
     try:
-        departamento.save()  # Salva o departamento, incluindo os dados atualizados
+        departamento.save()
         logger.info(f"Departamento {departamento.id} atualizado com sucesso.")
     except Exception as e:
         raise ValueError(f"UPDATE_VIEW_Erro ao atualizar o departamento: {str(e)}")

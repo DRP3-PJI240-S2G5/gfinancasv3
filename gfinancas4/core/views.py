@@ -8,13 +8,14 @@ from django.views.decorators.http import require_http_methods
 from django.shortcuts import get_object_or_404
 from ..commons.django_views_utils import ajax_login_required
 from .service import departamentos_svc, subordinacao_svc
-from .models import Departamento
+from .models import Departamento, Responsabilidade
 from ..accounts.models import User
 
 logger = logging.getLogger(__name__)
 
 @csrf_exempt
 @ajax_login_required
+@require_http_methods(["POST"])
 def add_departamento(request):
     """Adiciona Departamento"""
     
@@ -88,7 +89,7 @@ def list_departamentos(request):
 
 
 @csrf_exempt
-#@ajax_login_required
+@ajax_login_required
 @require_http_methods(["POST"])
 def add_subordinacao(request):
     """Adiciona uma relação de subordinação entre departamentos."""
@@ -117,8 +118,71 @@ def add_subordinacao(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 @require_http_methods(["GET"])
-#@ajax_login_required
+@ajax_login_required
 def list_subordinacoes(request):
     """Lista as relações de subordinação entre departamentos."""
     subordinacoes = subordinacao_svc.list_subordinacoes()
     return JsonResponse({"subordinacoes": subordinacoes}, status=200)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["POST"])
+def add_responsabilidade(request):
+    data = json.loads(request.body)
+    try:
+        usuario = User.objects.get(id=data.get("usuario_id"))
+        departamento = Departamento.objects.get(id=data.get("departamento_id"))
+        observacao = data.get("observacao", "")
+        responsabilidade = Responsabilidade.objects.create(
+            IdUser=usuario,
+            IdDepartamento=departamento,
+            Observacao=observacao
+        )
+        return JsonResponse(responsabilidade.to_dict_json(), status=201)
+    except User.DoesNotExist:
+        return JsonResponse({"error": "Usuário não encontrado."}, status=404)
+    except Departamento.DoesNotExist:
+        return JsonResponse({"error": "Departamento não encontrado."}, status=404)
+
+@ajax_login_required
+@require_http_methods(["GET"])
+def list_responsabilidades(request):
+    if request.method == "GET":
+        responsabilidades = Responsabilidade.objects.all()
+        data = [resp.to_dict_json() for resp in responsabilidades]
+        return JsonResponse(data, safe=False, status=200)
+    return JsonResponse({"error": "Método não permitido."}, status=405)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["PUT"])
+def update_responsabilidade(request, id):
+    data = json.loads(request.body)
+    try:
+        responsabilidade = Responsabilidade.objects.get(id=id)
+        if "usuario_id" in data:
+            responsabilidade.IdUser = User.objects.get(id=data["usuario_id"])
+        if "departamento_id" in data:
+            responsabilidade.IdDepartamento = Departamento.objects.get(id=data["departamento_id"])
+        if "observacao" in data:
+            responsabilidade.Observacao = data["observacao"]
+        responsabilidade.save()
+        return JsonResponse(responsabilidade.to_dict_json(), status=200)
+    except Responsabilidade.DoesNotExist:
+        return JsonResponse({"error": "Responsabilidade não encontrada."}, status=404)
+    except User.DoesNotExist:
+        return JsonResponse({"error": "Usuário não encontrado."}, status=404)
+    except Departamento.DoesNotExist:
+        return JsonResponse({"error": "Departamento não encontrado."}, status=404)
+
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["DELETE"])
+def delete_responsabilidade(request, id):
+    try:
+        responsabilidade = Responsabilidade.objects.get(id=id)
+        responsabilidade.delete()
+        return JsonResponse({"message": "Responsabilidade deletada com sucesso."}, status=200)
+    except Responsabilidade.DoesNotExist:
+        return JsonResponse({"error": "Responsabilidade não encontrada."}, status=404)
