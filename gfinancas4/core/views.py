@@ -116,7 +116,7 @@ def add_subordinacao(request):
         subordinacao = subordinacao_svc.add_subordinacao(departamento_a, departamento_b, observacao)
         return JsonResponse(subordinacao, status=201)
     except ValueError as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse({"error in add_subordinacao": str(e)}, status=500)
 
 @require_http_methods(["GET"])
 @ajax_login_required

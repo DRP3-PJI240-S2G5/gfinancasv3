@@ -1,7 +1,7 @@
 from ..models import User, Despesa, Elemento, Departamento, TipoGasto
 from gfinancas4.base.exceptions import BusinessError
 
-def add_despesa(user, departamento, valor, elemento, tipo_gasto, justificativa):
+def add_despesa(user, departamento, valor, elemento, tipo_gasto, justificativa) -> dict:
     # Verificar campos obrigatórios
     if not all([user.id, valor, elemento.id, tipo_gasto.id, departamento.id, justificativa]):
         raise BusinessError("Todos os campos obrigatórios devem ser preenchidos.")
@@ -21,5 +21,5 @@ def add_despesa(user, departamento, valor, elemento, tipo_gasto, justificativa):
     despesa.save()
     return despesa.to_dict_json()
 
-def list_despesas():
+def list_despesas() -> list[dict]:
     return [desp.to_dict_json() for desp in Despesa.objects.all()]

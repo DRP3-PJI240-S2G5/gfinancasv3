@@ -21,7 +21,7 @@ def add_subordinacao(departamento_a: Departamento, departamento_b: Departamento,
     logger.info(f"Relação de subordinação criada: {subordinacao}")
     return subordinacao.to_dict_json()
 
-def list_subordinacoes():
+def list_subordinacoes() -> list[dict]:
     """Busca e retorna todas as relações de subordinação no formato JSON."""
     logger.info("SERVICE list subordinacoes")
     subordinacoes = Subordinacao.objects.all()

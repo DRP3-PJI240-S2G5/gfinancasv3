@@ -1,5 +1,5 @@
 import logging
-
+from typing import List, Dict
 from ..models import Departamento
 from ...accounts.models import User
 from gfinancas4.base.exceptions import BusinessError
@@ -36,7 +36,7 @@ def update_departamento(departamento: Departamento) -> dict:
     
     return departamento.to_dict_json()
 
-def list_departamentos():
+def list_departamentos() -> List[dict]:
     logger.info("SERVICE list departamentos")
     
     departamentos_list = Departamento.objects.all()

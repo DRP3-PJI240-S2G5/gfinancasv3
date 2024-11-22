@@ -50,6 +50,10 @@ def login(request):
     body = json.loads(request.body)
     username = body["username"]
     password = body["password"]
+
+    if not username or not password:
+        return JsonResponse({"message": "Invalid credentials"}, status=400)
+
     user_authenticated = auth.authenticate(username=username, password=password)
     user_dict = None
     if user_authenticated is not None:
