@@ -19,14 +19,14 @@ def remover_subordinacao(modeladmin, request, queryset):
     modeladmin.message_user(request, f"{count} subordinação(ões) removida(s) com sucesso.")
 
 class SubordinacaoAdmin(admin.ModelAdmin):
-    list_display = ("id", "IdDepartamentoA_nome", "IdDepartamentoB_nome", "dataSubordinacao", "Observacao")
+    list_display = ("id", "IdDepartamentoA_nome", "IdDepartamentoB_nome", "dataSubordinacao", "observacao")
     list_filter = ("dataSubordinacao",)
     search_fields = (
         "IdDepartamentoA_nome", "IdDepartamentoA_description",
         "IdDepartamentoB_nome", "IdDepartamentoB_description"
     )
     fieldsets = (
-        (None, {"fields": ("IdDepartamentoA", "IdDepartamentoB", "Observacao")}),
+        (None, {"fields": ("IdDepartamentoA", "IdDepartamentoB", "observacao")}),
     )
     actions = [remover_subordinacao]
 
@@ -41,11 +41,11 @@ class SubordinacaoAdmin(admin.ModelAdmin):
     IdDepartamentoB_nome.short_description = "Departamento Subordinado"
 
 class ResponsabilidadeAdmin(admin.ModelAdmin):
-    list_display = ("id", "usuario_nome", "departamento_nome", "dataCriacao", "Observacao")
-    search_fields = ("IdUser__username", "IdDepartamento__nome")
+    list_display = ("id", "usuario_nome", "departamento_nome", "dataCriacao", "observacao")
+    search_fields = ("IdUser__username", "departamento")
     list_filter = ("dataCriacao",)
     fieldsets = (
-        (None, {"fields": ("IdUser", "IdDepartamento", "Observacao")}),
+        (None, {"fields": ("user", "departamento", "observacao")}),
     )
 
     def usuario_nome(self, obj):

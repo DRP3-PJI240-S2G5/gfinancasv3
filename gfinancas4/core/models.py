@@ -38,7 +38,7 @@ class Subordinacao(models.Model):
         related_name="departamentos_subordinados"
     )
     dataSubordinacao = models.DateTimeField(auto_now_add=True)
-    Observacao = models.TextField(blank=True, null=True)
+    observacao = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.departamentoB} subordinado a {self.departamentoA} desde {self.dataSubordinacao}"

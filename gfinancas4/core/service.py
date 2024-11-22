@@ -1,7 +1,7 @@
 import logging
 from typing import List, Dict
-from ..models import Departamento, Responsabilidade, Verba, Elemento, TipoGasto, Despesa, Subordinacao
-from ...accounts.models import User
+from .models import Departamento, Responsabilidade, Verba, Elemento, TipoGasto, Despesa, Subordinacao
+from ..accounts.models import User
 from gfinancas4.base.exceptions import BusinessError
 
 logger = logging.getLogger(__name__)
