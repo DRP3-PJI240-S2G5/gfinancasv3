@@ -6,7 +6,7 @@
           <!-- Título e Botão na mesma linha -->
           <v-row no-gutters align="center">
             <v-col>
-              <v-card-title class="headline">
+              <v-card-title class="headline" align="center">
                 Departamentos
               </v-card-title>
             </v-col>

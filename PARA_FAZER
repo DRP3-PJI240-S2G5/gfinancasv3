@@ -1,3 +1,4 @@
+-> Criar novo componente Departamento.vue, criar subordinação, para cada Dep, mostrar subordinados, colocar botão de add verba em cada Dep
 -> Add membros em departamentos
 -> Inserir Paginação nas listagens
 -> Criar testes unitarios
