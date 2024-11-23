@@ -129,11 +129,16 @@ def list_subordinacoes(request):
 @ajax_login_required
 @require_http_methods(["POST"])
 def add_responsabilidade(request):
+    """Adiciona uma responsabilidade a um usuário em um departamento."""
+    logger.info("API add responsabilidade.")
+    
+    body = json.loads(request.body)
+    
+    usuario_id = body.get("usuario_id")
+    departamento_id = body.get("departamento_id")
+    observacao = body.get("observacao", "")
+    
     try:
-        usuario_id = request.data.get("usuario_id")
-        departamento_id = request.data.get("departamento_id")
-        observacao = request.data.get("observacao", "")
-        
         # Obtém os objetos de usuário e departamento
         usuario = User.objects.get(id=usuario_id)
         departamento = Departamento.objects.get(id=departamento_id)
@@ -149,10 +154,17 @@ def add_responsabilidade(request):
     except BusinessError as e:
         return JsonResponse({"error": str(e)}, status=400)
 
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["PUT"])
 def update_responsabilidade_view(request, id):
+    """Atualiza uma responsabilidade existente."""
+    logger.info("API update responsabilidade.")
+    
+    body = json.loads(request.body)
+    observacao = body.get("observacao", "")
+    
     try:
-        observacao = request.data.get("observacao", "")
-        
         # Obtém a responsabilidade pela ID
         responsabilidade = Responsabilidade.objects.get(id=id)
         
@@ -168,6 +180,9 @@ def update_responsabilidade_view(request, id):
 @ajax_login_required
 @require_http_methods(["GET"])
 def list_responsabilidades(request):
+    """Lista todas as responsabilidades associadas a departamentos."""
+    logger.info("API list responsabilidades.")
+    
     try:
         # Chama o serviço para listar as responsabilidades
         response_data = service.list_responsabilidades()

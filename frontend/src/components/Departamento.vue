@@ -1,7 +1,7 @@
 <template>
   <v-card>
     <v-card-text>
-      <div>#{{ departamento.id }}</div>
+      <div v-if="!hideFields">#{{ departamento.id }}</div>
 
       <!-- Exibição de Nome -->
       <span class="ma-0 pa-0 text-h6" v-if="!isEditing">
@@ -10,25 +10,24 @@
       <v-text-field v-if="isEditing" v-model="editNome" label="Nome" outlined></v-text-field>
       <p></p>
 
-      <!-- Exibição de Descrição -->
-      <span class="ma-0 pa-0 text-h6" v-if="!isEditing">
+      <!-- Exibição de Descrição (condicional com hideFields) -->
+      <span class="ma-0 pa-0 text-h6" v-if="!isEditing && !hideFields">
         Descrição: {{ departamento.description }}
       </span>
-      <v-text-field v-if="isEditing" v-model="editDescription" label="Descrição do Departamento"
-        outlined></v-text-field>
+      <v-text-field v-if="isEditing && !hideFields" v-model="editDescription" label="Descrição do Departamento" outlined></v-text-field>
       <p></p>
 
-      <!-- Exibição de Tipo Entidade -->
-      <span class="ma-0 pa-0 text-h6" v-if="!isEditing">
+      <!-- Exibição de Tipo Entidade (condicional com hideFields) -->
+      <span class="ma-0 pa-0 text-h6" v-if="!isEditing && !hideFields">
         Tipo de Entidade: {{ departamento.tipoEntidade }}
       </span>
-      <v-select 
-        v-if="isEditing" 
+      <v-select
+        v-if="isEditing && !hideFields"
         v-model="editTipoEntidade"
         :items="tipoEntidadeOptions"
         item-value="id"
-        item-text="title" 
-        label="Tipo de Entidade" 
+        item-text="title"
+        label="Tipo de Entidade"
         outlined>
       </v-select>
       <p></p>
@@ -37,19 +36,19 @@
       <span class="ma-0 pa-0 text-h6" v-if="!isEditing">
         Responsável: {{ departamento.responsavelId ? responsavelNome : 'Não atribuído' }}
       </span>
-      <v-select 
-        v-if="isEditing" 
-        v-model="editResponsavelId" 
-        :items="mappedUsers" 
+      <v-select
+        v-if="isEditing"
+        v-model="editResponsavelId"
+        :items="mappedUsers"
         label="Responsável"
-        item-text="title" 
-        item-value="id" 
+        item-text="title"
+        item-value="id"
         outlined></v-select>
     </v-card-text>
 
     <!-- Botões de Ação -->
     <v-card-actions>
-      <v-btn v-if="!isEditing" @click="startEditing" color="primary">Editar</v-btn>
+      <v-btn v-if="!isEditing && !hideFields" @click="startEditing" color="primary">Editar</v-btn>
       <v-btn v-if="isEditing" @click="saveChanges" color="success">Salvar</v-btn>
       <v-btn v-if="isEditing" @click="cancelEditing" color="error">Cancelar</v-btn>
     </v-card-actions>
@@ -66,6 +65,10 @@ export default {
     departamento: {
       type: Object,
       required: true,
+    },
+    hideFields: {
+      type: Boolean,
+      default: false, // Por padrão, os campos são visíveis
     },
   },
   emits: ["updateDepartamento"],
@@ -124,7 +127,7 @@ export default {
       editDescription.value = props.departamento.description;
       editTipoEntidade.value = props.departamento.tipoEntidade;
       editResponsavelId.value = props.departamento.responsavelId;
-      editDone = props.departamento.done;
+      editDone.value = props.departamento.done;
     };
 
     return {
@@ -143,5 +146,3 @@ export default {
   },
 };
 </script>
-
-<style scoped></style>

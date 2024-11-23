@@ -10,12 +10,22 @@
                 Departamentos
               </v-card-title>
             </v-col>
+            <!-- Botão "+" posicionado no canto direito -->
+            <v-col class="d-flex justify-end">
+              <v-btn @click="toggleForm" color="primary" fab small>
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </v-col>
           </v-row>
         </v-card>
       </v-col>
 
+      <v-col cols="12" v-if="showForm">
+        <departamento-form :form-label="'Novo Departamento'" @new-departamento="addNewDepartamento" />
+      </v-col>
+
       <v-col v-for="item in departamentos" :key="item.id" cols="12">
-        <departamento :departamento="item" @updateDepartamento="updateDepartamento" :hideFields="true"/>
+        <departamento :departamento="item" @updateDepartamento="updateDepartamento" />
       </v-col>
     </v-row>
   </v-container>

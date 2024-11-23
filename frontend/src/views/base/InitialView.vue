@@ -7,7 +7,7 @@
       </v-col>
 
       <v-col cols="4">
-        <card-option cardOptionTitle="Gestão Departamentos" cardOptionDescription="Gestão dos Departamentos" cardOptionLink="/inicial" cardOptionIcon="mdi-store-cog">
+        <card-option cardOptionTitle="Gestão Departamentos" cardOptionDescription="Gestão dos Departamentos" cardOptionLink="/departamentos" cardOptionIcon="mdi-store-cog">
         </card-option>
       </v-col>
 
