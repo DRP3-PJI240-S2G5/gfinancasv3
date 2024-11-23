@@ -33,7 +33,7 @@ def add_departamento(request):
         if not responsavel:
             return JsonResponse({"update_error": f"Responsável com ID {responsavelId} não encontrado."}, status=404)
     except ValueError as e:
-        return JsonResponse({"get_responsavel_error", str(e)}, status=500)
+        return JsonResponse({"get_responsavel_error": str(e)}, status=500)
     
     
     departamento = Departamento(
@@ -129,25 +129,49 @@ def list_subordinacoes(request):
 @ajax_login_required
 @require_http_methods(["POST"])
 def add_responsabilidade(request):
-    data = json.loads(request.body)
     try:
-        usuario = User.objects.get(id=data.get("usuario_id"))
-        departamento = Departamento.objects.get(id=data.get("departamento_id"))
-        observacao = data.get("observacao", "")
-        responsabilidade = Responsabilidade.objects.create(
-            IdUser=usuario,
-            IdDepartamento=departamento,
-            observacao=observacao
-        )
-        return JsonResponse(responsabilidade.to_dict_json(), status=201)
+        usuario_id = request.data.get("usuario_id")
+        departamento_id = request.data.get("departamento_id")
+        observacao = request.data.get("observacao", "")
+        
+        # Obtém os objetos de usuário e departamento
+        usuario = User.objects.get(id=usuario_id)
+        departamento = Departamento.objects.get(id=departamento_id)
+        
+        # Chama o serviço para adicionar a responsabilidade
+        response_data = service.add_responsabilidade(usuario, departamento, observacao)
+        return JsonResponse(response_data, status=201)
+    
     except User.DoesNotExist:
-        return JsonResponse({"error": "Usuário não encontrado."}, status=404)
+        return JsonResponse({"error": "Usuário não encontrado"}, status=400)
     except Departamento.DoesNotExist:
-        return JsonResponse({"error": "Departamento não encontrado."}, status=404)
+        return JsonResponse({"error": "Departamento não encontrado"}, status=400)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+def update_responsabilidade_view(request, id):
+    try:
+        observacao = request.data.get("observacao", "")
+        
+        # Obtém a responsabilidade pela ID
+        responsabilidade = Responsabilidade.objects.get(id=id)
+        
+        # Chama o serviço para atualizar a responsabilidade
+        response_data = service.update_responsabilidade(responsabilidade, observacao)
+        return JsonResponse(response_data, status=200)
+    
+    except Responsabilidade.DoesNotExist:
+        return JsonResponse({"error": "Responsabilidade não encontrada"}, status=400)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
 
 @ajax_login_required
 @require_http_methods(["GET"])
 def list_responsabilidades(request):
-    responsabilidades = Responsabilidade.objects.all()
-    data = [resp.to_dict_json() for resp in responsabilidades]
-    return JsonResponse(data, safe=False, status=200)
+    try:
+        # Chama o serviço para listar as responsabilidades
+        response_data = service.list_responsabilidades()
+        return JsonResponse(response_data, safe=False, status=200)
+    
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

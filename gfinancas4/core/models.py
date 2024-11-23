@@ -27,70 +27,69 @@ class Departamento(models.Model):
         }
 
 class Subordinacao(models.Model):
-    departamentoA = models.ForeignKey(
-        Departamento, 
-        on_delete=models.CASCADE, 
+    superior = models.ForeignKey(  
+        Departamento,
+        on_delete=models.CASCADE,
         related_name="departamentos_superiores"
     )
-    departamentoB = models.ForeignKey(
-        Departamento, 
-        on_delete=models.CASCADE, 
+    subordinado = models.ForeignKey( 
+        Departamento,
+        on_delete=models.CASCADE,
         related_name="departamentos_subordinados"
     )
-    dataSubordinacao = models.DateTimeField(auto_now_add=True)
+    data_subordinacao = models.DateTimeField(auto_now_add=True) 
     observacao = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.departamentoB} subordinado a {self.departamentoA} desde {self.dataSubordinacao}"
+        return f"{self.subordinado} subordinado a {self.superior} desde {self.data_subordinacao}"
 
     def to_dict_json(self):
         return {
-            "departamentoA": {
-                "id": self.departamentoA.id,
-                "nome": self.departamentoA.nome,
+            "superior": {
+                "id": self.superior.id,
+                "nome": self.superior.nome,
             },
-            "departamentoB": {
-                "id": self.departamentoB.id,
-                "nome": self.departamentoB.nome,
+            "subordinado": {
+                "id": self.subordinado.id,
+                "nome": self.subordinado.nome,
             },
-            "dataSubordinacao": self.dataSubordinacao,
-            "Observacao": self.Observacao,
+            "data_subordinacao": self.data_subordinacao.isoformat(),
+            "observacao": self.observacao,
         }
     
 class Responsabilidade(models.Model):
-    
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="responsabilidades")
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name="responsabilidades")
     departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE, related_name="responsaveis")
-    dataCriacao = models.DateTimeField(auto_now_add=True)
+    data_criacao = models.DateTimeField(auto_now_add=True)  # Alterado para snake_case
     observacao = models.TextField(blank=True, null=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['user', 'departamento'], name='unique_user_departamento_responsabilidade')
+            models.UniqueConstraint(fields=["usuario", "departamento"], name="unique_user_dep_resp")
         ]
 
     def __str__(self):
-        return f"{self.user} é responsável por {self.departamento} desde {self.dataCriacao}"
+        return f"{self.usuario} é responsável por {self.departamento} desde {self.data_criacao}"
 
     def to_dict_json(self):
         return {
             "id": self.id,
             "usuario": {
-                "id": self.user.id,
-                "username": self.user.username,
+                "id": self.usuario.id,
+                "username": self.usuario.username,
             },
             "departamento": {
                 "id": self.departamento.id,
                 "nome": self.departamento.nome,
             },
-            "data_criacao": self.dataCriacao.isoformat(),
+            "data_criacao": self.data_criacao.isoformat(),
             "observacao": self.observacao,
         }
 
 class Verba(models.Model):
+    valor = models.DecimalField(max_digits=10, decimal_places=2)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="verbas_estipuladas", verbose_name="usuário que atribuiu")
     departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE, related_name="verbas", verbose_name="verbas atribuidas")
-    dataAtribuicao = models.DateTimeField(auto_now_add=True)
     ano = models.IntegerField(verbose_name="Ano")
     descricao = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -102,7 +101,7 @@ class Verba(models.Model):
         ]
 
     def __str__(self):
-        return f"Verba para {self.departamento} atribuída em {self.dataAtribuicao}"
+        return f"Verba para {self.departamento} atribuída em {self.created_at}"
 
     def to_dict_json(self):
         return {
@@ -115,11 +114,10 @@ class Verba(models.Model):
                 "id": self.user.id,
                 "username": self.user.username,
             },
-            "dataAtribuicao": self.dataAtribuicao,
             "ano": self.ano,
             "descricao": self.descricao,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
         }
 
 class Elemento(models.Model):
@@ -150,6 +148,29 @@ class TipoGasto(models.Model):
             "descricao": self.descricao,
         }
 
+class ElementoTipoGasto(models.Model):
+    elemento = models.ForeignKey(Elemento, on_delete=models.CASCADE, related_name="tipos_gasto")
+    tipo_gasto = models.ForeignKey(TipoGasto, on_delete=models.CASCADE, related_name="elementos")
+
+    class Meta:
+        unique_together = ('elemento', 'tipo_gasto')  # Garantir que cada par (Elemento, TipoGasto) seja único
+
+    def __str__(self):
+        return f"{self.elemento.elemento} - {self.tipo_gasto.tipoGasto}"
+
+    def to_dict_json(self):
+        return {
+            "id": self.id,
+            "elemento": {
+                "id": self.elemento.id,
+                "elemento": self.elemento.elemento,
+            },
+            "tipoGasto": {
+                "id": self.tipo_gasto.id,
+                "tipoGasto": self.tipo_gasto.tipoGasto,
+            }
+        }
+
 class Despesa(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="despesas")
     valor = models.DecimalField(max_digits=10, decimal_places=2)
@@ -175,8 +196,14 @@ class Despesa(models.Model):
                 "username": self.user.username,
             },
             "valor": self.valor,
-            "elemento": self.elemento.id,
-            "tipoGasto": self.tipoGasto.id,
+            "elemento": {
+                "id": self.elemento.id,
+                "elemento": self.elemento.elemento,
+            },
+            "tipoGasto": {
+                "id": self.tipoGasto.id,
+                "tipoGasto": self.tipoGasto.tipoGasto,
+            },
             "justificativa": self.justificativa,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
