@@ -62,9 +62,9 @@ export default {
         this.coreStore.departamentos = this.coreStore.departamentos.map(departamento => ({
           ...departamento,
           gastos: [
-            { id: 1, descricao: "Compra de materiais", valor: 150.00 },
-            { id: 2, descricao: "Manutenção de equipamentos", valor: 300.00 },
-            { id: 3, descricao: "Treinamento", valor: 450.00 },
+            { id: 1, descricao: "Compra de materiais", valor: 10542.00 },
+            { id: 2, descricao: "Manutenção de equipamentos", valor: 8540.00 },
+            { id: 3, descricao: "Treinamento", valor: 8360.00 },
           ],
         }));
       });
