@@ -15,7 +15,7 @@
       </v-col>
 
       <v-col v-for="item in departamentos" :key="item.id" cols="12">
-        <departamento :departamento="item" @updateDepartamento="updateDepartamento" :hideFields="true"/>
+        <f-departamento :departamento="item"/>
       </v-col>
     </v-row>
   </v-container>
@@ -25,12 +25,11 @@
 import { mapState } from "pinia"
 import { useBaseStore } from "@/stores/baseStore"
 import { useCoreStore } from "@/stores/coreStore"
-import Departamento from "@/components/Departamento.vue"
-import DepartamentoForm from "@/components/DepartamentoForm.vue"
+import FDepartamento from "@/components/FDepartamento.vue"
 
 export default {
   name: "DepartamentosList",
-  components: { Departamento, DepartamentoForm },
+  components: { FDepartamento },
   setup() {
     const baseStore = useBaseStore()
     const coreStore = useCoreStore()
@@ -38,7 +37,6 @@ export default {
   },
   data() {
     return {
-      showForm: false, // Variável para controlar a visibilidade do formulário
     }
   },
   computed: {
@@ -50,20 +48,6 @@ export default {
   methods: {
     getDepartamentos() {
       this.coreStore.getDepartamentos()
-    },
-    async addNewDepartamento(departamento) {
-      const newDepartamento = await this.coreStore.addNewDepartamento(departamento)
-      this.baseStore.showSnackbar(`Novo departamento adicionado #${newDepartamento.id}`)
-      this.getDepartamentos()
-      this.showForm = !this.showForm;
-    },
-    async updateDepartamento(updatedDepartamento) {
-      await this.coreStore.updateDepartamento(updatedDepartamento)
-      this.baseStore.showSnackbar(`Departamento #${updatedDepartamento.id} atualizado  com sucesso`)
-      this.getDepartamentos()
-    },
-    toggleForm() {
-      this.showForm = !this.showForm; // Alterna a visibilidade do formulário
     },
   },
 }
