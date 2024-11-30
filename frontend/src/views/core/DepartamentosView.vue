@@ -14,8 +14,17 @@
         </v-card>
       </v-col>
 
-      <v-col v-for="item in departamentos" :key="item.id" cols="12">
-        <f-departamento :departamento="item"/>
+      <v-col
+        v-for="item in departamentos"
+        :key="item.id"
+        cols="12"
+        v-show="!activeDepartmentId || activeDepartmentId === item.id"
+      >
+        <f-departamento
+          :departamento="item"
+          :is-active="activeDepartmentId === item.id"
+          @toggle-department="toggleDepartment"
+        />
       </v-col>
     </v-row>
   </v-container>
@@ -28,7 +37,7 @@ import { useCoreStore } from "@/stores/coreStore"
 import FDepartamento from "@/components/FDepartamento.vue"
 
 export default {
-  name: "DepartamentosList",
+  name: "DepartamentosView",
   components: { FDepartamento },
   setup() {
     const baseStore = useBaseStore()
@@ -37,6 +46,7 @@ export default {
   },
   data() {
     return {
+      activeDepartmentId: null, // Armazena o departamento expandido
     }
   },
   computed: {
@@ -47,20 +57,22 @@ export default {
   },
   methods: {
     getDepartamentos() {
-      this.coreStore.getDepartamentos()
+     // Simula uma chamada à API e insere detalhes fake
+      this.coreStore.getDepartamentos().then(() => {
+        this.coreStore.departamentos = this.coreStore.departamentos.map(departamento => ({
+          ...departamento,
+          gastos: [
+            { id: 1, descricao: "Compra de materiais", valor: 150.00 },
+            { id: 2, descricao: "Manutenção de equipamentos", valor: 300.00 },
+            { id: 3, descricao: "Treinamento", valor: 450.00 },
+          ],
+        }));
+      });
+    },
+    toggleDepartment(departmentId) {
+      this.activeDepartmentId =
+        this.activeDepartmentId === departmentId ? null : departmentId;
     },
   },
 }
 </script>
-
-<style scoped>
-@font-face {
-  font-family: 'Material Design Icons';
-  src: url('/node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff2?v=7.0.96') format('woff2');
-  font-display: swap;
-}
-
-.done {
-  text-decoration: line-through;
-}
-</style>
