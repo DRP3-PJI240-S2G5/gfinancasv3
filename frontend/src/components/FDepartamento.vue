@@ -2,21 +2,21 @@
     <v-container>
       <v-card>
         <v-card-title class="text-overline">
-          {{ cardOptionTitle }}
-  
+          {{ departamento.nome }}
+
           <div class="text-green-darken-3 text-h3 font-weight-bold">90%</div>
-  
+
           <div class="text-h6 text-medium-emphasis font-weight-regular">
-            $2,938.00 remaining
+            $2,938.00 restante
           </div>
         </v-card-title>
         <br>
         <v-card-text>
           <div
-            :style="`right: calc(${review} - 32px)`"
+            :style="`right: calc(${review} - 0px)`"
             class="position-absolute mt-n8 text-caption text-green-darken-3"
           >
-            Eligibility review
+            Meta
           </div>
           <v-progress-linear
             color="green-darken-3"
@@ -32,18 +32,18 @@
               inline
             ></v-badge>
           </v-progress-linear>
-  
+
           <div class="d-flex justify-space-between py-3">
             <span class="text-green-darken-3 font-weight-medium">
-              $26,442.00 remitted
+              $26,442.00<br>gastos e despesas
             </span>
-  
-            <span class="text-medium-emphasis"> $29,380.00 total </span>
+
+            <span class="text-medium-emphasis"> $29,380.00<br>verba total </span>
           </div>
         </v-card-text>
-  
+
         <v-divider></v-divider>
-  
+
         <v-list-item
           append-icon="mdi-chevron-right"
           lines="two"
@@ -57,7 +57,7 @@
 export default {
   data: () => ({ review: '30%' }),
   props: {
-    fdepartamento: {
+    departamento: {
       type: Object,
       required: true,
     },

@@ -39,7 +39,7 @@ import Departamento from "@/components/Departamento.vue"
 import DepartamentoForm from "@/components/DepartamentoForm.vue"
 
 export default {
-  name: "DepartamentosList",
+  name: "GDepartamentosList",
   components: { Departamento, DepartamentoForm },
   setup() {
     const baseStore = useBaseStore()
