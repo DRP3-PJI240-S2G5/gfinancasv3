@@ -1,5 +1,50 @@
 # 🏆 G Financas 4.0
 
+## Executando o projeto:
+## PASSO A PASSO DEPLOY DO AMBIENTE
+
+até momento com:
+
+- Projeto Django inicializado, mas "limpo"
+- banco PostgreSQL na porta 5432
+- PGAdmin (para visualização do banco, não é algo necessário)
+- criação do user admin tanto para o pgadmin tanto para o projeto Django
+
+links utilizados:
+ - https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/
+ - https://docs.djangoproject.com/en/5.1/intro/tutorial02/
+ - https://v2.vuejs.org/v2/cookbook/dockerize-vuejs-app
+ - https://dev.to/kiranparajuli589/how-to-dockerize-your-django-vuejs-application-2347
+ 
+## Pré-requisitos:
+Docker (no Windows, Docker Desktop, no Linux, ou o Docker Desktop ou o docker + docker compose )
+Git
+Não precisa instalar Python ou qqer outra coisa
+
+## Sequências de comandos em uma máquina já com os pré-requisitos:
+
+git clone https://github.com/DRP3-PJI240-S2G5/gfinancas.git
+
+cd gfinancas
+
+docker compose up -d 
+
+<opcionalmente>
+docker compose logs -f
+
+## OBSERVAÇÕES
+A Aplicação Django esta sendo "servida" em http://localhost, o PGAdmin em localhost:5050
+Não sei como automatizar a conexão do PGAdmin com o banco, então isso tem q ser feito manualmente: 
+host/address = gfinancas_db
+Maintenance database = gfinancas_db
+username = gfinancas_user
+password = 123mudar
+
+### USER ADMIN Django
+em locahost/admin, abrirá uma pagina de genrenciamento.
+user: admin
+pass: admin01!
+
 ## Entendendo o projeto
 
 ## BACKEND Django API
