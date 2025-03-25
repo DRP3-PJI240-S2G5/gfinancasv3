@@ -17,23 +17,51 @@
         </card-option>
       </v-col>
 
-      <!-- Vou deixar esse laço for aqui para refatorar. Colocar todos os botões em um laço for
-      <v-col v-for=" item in departamentos" :key="item.id" cols="12">
-
+      <v-col 
+        v-for="item in departamentos" 
+        :key="item.id" 
+        cols="12"
+      >
+        <card-option 
+          :cardOptionTitle="item.nome" 
+          cardOptionDescription="#" 
+          :cardOptionLink="`/gastos/${item.slug || item.id}`"
+        />
       </v-col>
-      -->
     </v-row>
   </v-container>
 </template>
 
 <script>
 import { mapState } from "pinia"
+import { useBaseStore } from "@/stores/baseStore"
+import { useCoreStore } from "@/stores/coreStore"
 import CardOption from "@/components/CardOption.vue"
 
 export default {
-  components: {
-    CardOption
-  }
+  name: "GastosView",
+  components: { CardOption },
+  setup() {
+    const baseStore = useBaseStore()
+    const coreStore = useCoreStore()
+    return { baseStore, coreStore }
+  },
+  data() {
+    return {
+      
+    }
+  },
+  computed: {
+    ...mapState(useCoreStore, ["departamentos", "departamentosLoading"]),
+  },
+  mounted() {
+    this.getDepartamentos()
+  },
+  methods: {
+    getDepartamentos() {
+      this.coreStore.getDepartamentos();
+    }
+  },
 }
 </script>
 
