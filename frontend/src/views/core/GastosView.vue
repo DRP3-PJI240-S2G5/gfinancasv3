@@ -3,12 +3,12 @@
     <v-row justify="center"><v-card-title class="text-h6 text-md-h5 text-lg-h4">Gastos e Despesas</v-card-title></v-row>
     <v-row justify="center">
       <v-col cols="4">
-        <card-option cardOptionTitle="Gabinete Teste Secretário" cardOptionDescription="#" cardOptionLink="/gastos/gabsecretario">
+        <card-option cardOptionTitle="Gabinete  Secretário" cardOptionDescription="#" cardOptionLink="/gastos/gabsecretario">
         </card-option>
       </v-col>
 
       <v-col cols="4">
-        <card-option cardOptionTitle="Departamentos teste de Esportes" cardOptionDescription="#" cardOptionLink="/gastos/esportes">
+        <card-option cardOptionTitle="Departamentos  de Esportes" cardOptionDescription="#" cardOptionLink="/gastos/esportes">
         </card-option>
       </v-col>
 
