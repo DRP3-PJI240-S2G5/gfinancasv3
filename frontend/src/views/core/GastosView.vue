@@ -8,7 +8,7 @@
       </v-col>
 
       <v-col cols="4">
-        <card-option cardOptionTitle="Departamentos de Esportes" cardOptionDescription="#" cardOptionLink="/gastos/esportes">
+        <card-option cardOptionTitle="Departamentos teste de Esportes" cardOptionDescription="#" cardOptionLink="/gastos/esportes">
         </card-option>
       </v-col>
 
