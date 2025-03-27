@@ -13,7 +13,7 @@
       </v-col>
 
       <v-col cols="4">
-        <card-option cardOptionTitle="Departamentos de Lazer" cardOptionDescription="#" cardOptionLink="/gastos/lazer">
+        <card-option cardOptionTitle="Departamentos asdasdasdde Lazer" cardOptionDescription="#" cardOptionLink="/gastos/lazer">
         </card-option>
       </v-col>
 
