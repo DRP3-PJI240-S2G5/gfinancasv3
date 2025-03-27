@@ -54,6 +54,14 @@ export default [
         name: "gastos",
         component: GastosView,
         meta: { requiresAuth: true },  // Esta rota requer autenticação
+        children: [
+          {
+            path: "addGastos",
+            name: "addGastos",
+            component: AddGastosView,
+            meta: { requiresAuth: true },
+          },
+        ]
       },
 
     ],
