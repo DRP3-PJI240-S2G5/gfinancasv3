@@ -2,26 +2,12 @@
   <v-container class="mt-10">
     <v-row justify="center"><v-card-title class="text-h6 text-md-h5 text-lg-h4">Gastos e Despesas</v-card-title></v-row>
     <v-row justify="center">
-      <v-col cols="4">
-        <card-option cardOptionTitle="Gabinete  Secretário" cardOptionDescription="#" cardOptionLink="/gastos/gabsecretario">
-        </card-option>
-      </v-col>
-
-      <v-col cols="4">
-        <card-option cardOptionTitle="Departamentos  de Esportes" cardOptionDescription="#" cardOptionLink="/gastos/esportes">
-        </card-option>
-      </v-col>
-
-      <v-col cols="4">
-        <card-option cardOptionTitle="Departamentos de Lazer" cardOptionDescription="#" cardOptionLink="/gastos/lazer">
-        </card-option>
-      </v-col>
-
       <v-col 
         v-for="item in departamentos" 
         :key="item.id" 
         cols="12"
-      >
+        sm="6"
+        md="4">
         <card-option 
           :cardOptionTitle="item.nome" 
           cardOptionDescription="#" 
