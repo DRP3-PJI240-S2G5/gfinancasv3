@@ -22,6 +22,12 @@
       </v-col>
       -->
     </v-row>
+    <v-row justify="center">
+      <v-col cols="4">
+        <card-option cardOptionTitle="Elementos/Tipos de Gastos" cardOptionDescription="Listagem de categorias" cardOptionLink="/gestao/categorias" cardOptionIcon="mdi-currency-usd">
+        </card-option>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 

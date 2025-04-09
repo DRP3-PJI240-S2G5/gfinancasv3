@@ -4,6 +4,7 @@ import GestaoView from "@/views/core/GestaoView.vue"
 import GastosView from "@/views/core/GastosView.vue"
 import InitialView from "@/views/base/InitialView.vue"
 import GDepartamentosView from "@/views/core/GDepartamentosView.vue"
+import CategoriasView from "@/views/core/CategoriasView.vue"
 import DepartamentosView from "@/views/core/DepartamentosView.vue"
 import UsersView from "@/views/accounts/UsersView.vue"
 
@@ -39,6 +40,12 @@ export default [
             path: "usuarios",
             name: "usuarios",
             component: UsersView,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: "categorias",
+            name: "categorias",
+            component: CategoriasView,
             meta: { requiresAuth: true },
           },
         ],

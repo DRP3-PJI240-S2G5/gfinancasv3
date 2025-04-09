@@ -14,7 +14,7 @@ class Departamento(models.Model):
     )
 
     def __str__(self):
-        return self.nome
+        return f"{self.nome}"
     
     def to_dict_json(self):
         return {

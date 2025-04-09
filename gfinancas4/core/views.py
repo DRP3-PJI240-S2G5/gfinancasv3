@@ -190,3 +190,17 @@ def list_responsabilidades(request):
     
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+@ajax_login_required
+@require_http_methods(["GET"])
+def list_elementos(request):
+    """Lista todos os elementos."""
+    logger.info("API list elementos.")
+    
+    try:
+        # Chama o serviço para listar as responsabilidades
+        response_data = service.list_elementos()
+        return JsonResponse({"elementos": response_data}, safe=False, status=200)
+    
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

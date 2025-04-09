@@ -4,7 +4,9 @@ import coreApi from "@/api/core.api.js"
 export const useCoreStore = defineStore("coreStore", {
   state: () => ({
     departamentos: [],
+    elementos: [],
     departamentosLoading: false,
+    elementosLoading: false,
   }),
   actions: {
     async getDepartamentos() {
@@ -25,6 +27,12 @@ export const useCoreStore = defineStore("coreStore", {
         this.departamentos[index] = departamento;
       }
       return departamento;
+    },
+    async getElementos() {
+      this.elementosLoading = true
+      const response = await coreApi.getElementos()
+      this.elementos = response.elementos
+      this.elementosLoading = false
     },
   },
 })

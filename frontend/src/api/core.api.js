@@ -19,4 +19,8 @@ export default {
     );
     return response.data;
   },
+  getElementos: async () => {
+    const response = await api.get("/api/core/elementos/list")
+    return response.data
+  },
 }

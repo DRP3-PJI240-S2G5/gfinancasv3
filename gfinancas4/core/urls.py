@@ -16,4 +16,6 @@ urlpatterns = [
     path("responsabilidades/list", views.list_responsabilidades, name="list_responsabilidades"),
     #path("responsabilidades/update/<int:id>", views.update_responsabilidade, name="update_responsabilidade"),
     #path("responsabilidades/delete/<int:id>", views.delete_responsabilidade, name="delete_responsabilidade"),
+    # elementos
+    path("elementos/list", views.list_elementos, name="list_elementos"),
 ]
