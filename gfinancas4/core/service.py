@@ -205,6 +205,6 @@ def update_tipo_gasto(tipo_gasto: TipoGasto, descricao: str = None) -> dict:
     tipo_gasto.save()
     return tipo_gasto.to_dict_json()
 
-def list_tipos_gasto() -> List[dict]:
+def list_tipo_gastos() -> List[dict]:
     logger.info("SERVICE list tipos_gasto")
     return [tg.to_dict_json() for tg in TipoGasto.objects.all()]

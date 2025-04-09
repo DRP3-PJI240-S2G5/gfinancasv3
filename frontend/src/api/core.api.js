@@ -23,4 +23,8 @@ export default {
     const response = await api.get("/api/core/elementos/list")
     return response.data
   },
+  getTipoGastos: async () => {
+    const response = await api.get("/api/core/tipo-gastos/list")
+    return response.data
+  },
 }

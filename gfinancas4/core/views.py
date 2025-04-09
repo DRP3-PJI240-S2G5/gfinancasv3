@@ -204,3 +204,17 @@ def list_elementos(request):
     
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+@ajax_login_required
+@require_http_methods(["GET"])
+def list_tipo_gastos(request):
+    """Lista todos os Tipos de Gastos."""
+    logger.info("API list tipo gastos.")
+    
+    try:
+        # Chama o serviço para listar o tipo de gastos
+        response_data = service.list_tipo_gastos()
+        return JsonResponse({"tipoGastos": response_data}, safe=False, status=200)
+    
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

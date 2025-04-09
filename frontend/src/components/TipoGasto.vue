@@ -2,12 +2,12 @@
   <v-card>
     <v-card-text>
       <span class="ma-0 pa-0 text-h6" >
-        {{elemento.id}}: {{ elemento.elemento }}
+        {{tipoGasto.id}}: {{ tipoGasto.tipoGasto }}
       </span>
       <p></p>
 
       <span class="ma-0 pa-0 text-h6" >
-        Descrição: {{ elemento.descricao }}
+        Descrição: {{ tipoGasto.descricao }}
       </span>
     </v-card-text>
 
@@ -20,7 +20,7 @@
 <script>
 export default {
   props: {
-    elemento: {
+    tipoGasto: {
       type: Object,
       required: true,
     },

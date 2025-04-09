@@ -5,8 +5,10 @@ export const useCoreStore = defineStore("coreStore", {
   state: () => ({
     departamentos: [],
     elementos: [],
+    tipoGastos: [],
     departamentosLoading: false,
     elementosLoading: false,
+    tipoGastosLoading: false,
   }),
   actions: {
     async getDepartamentos() {
@@ -33,6 +35,12 @@ export const useCoreStore = defineStore("coreStore", {
       const response = await coreApi.getElementos()
       this.elementos = response.elementos
       this.elementosLoading = false
+    },
+    async getTipoGastos() {
+      this.tipoGastosLoading = true
+      const response = await coreApi.getTipoGastos()
+      this.tipoGastos = response.tipoGastos
+      this.tipoGastosLoading = false
     },
   },
 })

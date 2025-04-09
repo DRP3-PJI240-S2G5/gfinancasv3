@@ -33,19 +33,19 @@
               <v-card-title class="headline">Tipos de Gastos</v-card-title>
             </v-col>
           <v-col class="d-flex justify-end">
-              <v-btn @click="toggleFormUser" color="primary" fab small>
+              <v-btn @click="toggleFormTipoGasto" color="primary" fab small>
                 <v-icon>mdi-plus</v-icon>
               </v-btn>
             </v-col>
           </v-row>
         </v-card>
 
-        <div v-if="showFormUser" class="mb-4">
-          <user-form :form-label="'Novo Usuario'" @new-user="addNewUser" />
+        <div v-if="showFormTipoGasto" class="mb-4">
+          <tipo-gasto-form :form-label="'Novo Usuario'" @new-user="addNewTipoGasto" />
         </div>
 
-        <div v-for="item in users" :key="`col2-${item.id}`" class="mb-2">
-          <user :user="item" />
+        <div v-for="item in tipoGastos" :key="`col2-${item.id}`" class="mb-2">
+          <tipo-gasto :tipoGasto="item" />
         </div>
       </v-col>
     </v-row>
@@ -58,14 +58,14 @@ import { mapState } from "pinia"
 import { useBaseStore } from "@/stores/baseStore"
 import { useCoreStore } from "@/stores/coreStore"
 import { useAccountsStore } from "@/stores/accountsStore"
-import User from "@/components/User.vue"
-import UserForm from "@/components/UserForm.vue"
+import TipoGasto from "@/components/TipoGasto.vue"
+import TipoGastoForm from "@/components/TipoGastoForm.vue"
 import Elemento from "@/components/Elemento.vue"
 import ElementoForm from "@/components/ElementoForm.vue"
 
 export default {
   name: "UsersList",
-  components: { User, UserForm, Elemento, ElementoForm },
+  components: { TipoGasto, TipoGastoForm, Elemento, ElementoForm },
   setup() {
     const baseStore = useBaseStore()
     const accountsStore = useAccountsStore()
@@ -74,30 +74,31 @@ export default {
   },
   data() {
     return {
-      showFormUser: false,
+      showFormTipoGasto: false,
       showFormElemento: false,
     }
   },
   computed: {
     ...mapState(useAccountsStore, ["users", "usersLoading"]),
-    ...mapState(useCoreStore, ["elementos", "elementosLoading"]),
+    ...mapState(useCoreStore, ["elementos", "elementosLoading", "tipoGastos", "tipoGastosLoading"]),
   },
   mounted() {
-    this.getUsers()
+    this.getTipoGastos()
     this.getElementos()
+    console.log("TGs no mounted:", this.tipoGastos)
   },
   methods: {
-    getUsers() {
-      this.accountsStore.getUsers()
+    getTipoGastos() {
+      this.coreStore.getTipoGastos()
     },
-    async addNewUser(user) {
-      const newUser = await this.accountsStore.addNewUser(user)
-      this.baseStore.showSnackbar(`Novo usuário adicionado #${newUser.username}`)
-      this.getUsers()
-      this.showFormUser = !this.showFormUser;
+    async addNewTipoGasto(tipoGasto) {
+      const newTipoGasto = await this.coreStore.addNewTipoGasto(tipoGasto)
+      this.baseStore.showSnackbar(`Novo usuário adicionado #${newTipoGasto.tipoGasto}`)
+      this.getTipoGastos()
+      this.showFormTipoGasto = !this.showFormTipoGasto;
     },
-    toggleFormUser() {
-      this.showFormUser = !this.showFormUser;
+    toggleFormTipoGasto() {
+      this.showFormTipoGasto = !this.showFormTipoGasto;
     },
 
     getElementos() {
