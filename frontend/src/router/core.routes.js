@@ -55,7 +55,12 @@ export default [
         component: GastosView,
         meta: { requiresAuth: true },  // Esta rota requer autenticação
       },
-
+      {
+        path: "gastos/:departamento",
+        name: "gastos-por-departamento",
+        component: () => import("@/views/core/DepartamentoGastosView.vue"),
+        meta: { requiresAuth: true },
+      },
     ],
   },
 ]

@@ -2,16 +2,16 @@
   <v-container class="mt-10">
     <v-row justify="center"><v-card-title class="text-h6 text-md-h5 text-lg-h4">Gastos e Despesas</v-card-title></v-row>
     <v-row justify="center">
-      <v-col 
-        v-for="item in departamentos" 
-        :key="item.id" 
+      <v-col
+        v-for="item in departamentos"
+        :key="item.id"
         cols="12"
         sm="6"
         md="4">
-        <card-option 
-          :cardOptionTitle="item.nome" 
-          cardOptionDescription="#" 
-          :cardOptionLink="`/gastos/${item.slug || item.id}`"
+        <card-option
+          :cardOptionTitle="item.nome"
+          cardOptionDescription="#"
+          :cardOptionLink="`/gastos/${item.id}`"
         />
       </v-col>
     </v-row>
@@ -34,7 +34,7 @@ export default {
   },
   data() {
     return {
-      
+
     }
   },
   computed: {
