@@ -39,6 +39,14 @@
                 required
               />
 
+              <v-textarea
+                v-model="justificativa"
+                label="Justificativa"
+                rows="3"
+                auto-grow
+                required
+              />
+
               <v-btn type="submit" color="primary" class="mt-4">Lançar</v-btn>
             </v-form>
           </v-card-text>
@@ -67,6 +75,7 @@ export default {
       elementoSelecionado: null,
       tipoGastoSelecionado: null,
       tipoGastosDisponiveis: [],
+      justificativa: '',
     }
   },
   computed: {
@@ -113,6 +122,7 @@ export default {
         elemento_id: this.elementoSelecionado,
         tipo_gasto_id: this.tipoGastoSelecionado,
         departamento_id: this.departamento.id,
+        justificativa: this.justificativa,
       }
 
       console.log("Lançamento de gasto:", payload)
@@ -124,6 +134,7 @@ export default {
       this.elementoSelecionado = null
       this.tipoGastosDisponiveis = []
       this.tipoGastoSelecionado = null
+      this.justificativa = ''
     },
   },
 }
