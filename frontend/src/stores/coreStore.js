@@ -42,5 +42,14 @@ export const useCoreStore = defineStore("coreStore", {
       this.tipoGastos = response.tipoGastos
       this.tipoGastosLoading = false
     },
+    async getTipoGastosPorElemento(elementoId) {
+      try {
+        const response = await coreApi.getTipoGastosPorElemento(elementoId)
+        return response.tipo_gastos
+      } catch (e) {
+        console.error("Erro ao buscar tipos de gasto por elemento:", e)
+        return []
+      }
+    },
   },
 })

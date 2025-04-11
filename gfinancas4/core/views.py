@@ -218,3 +218,10 @@ def list_tipo_gastos(request):
     
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+def list_tipo_gastos_por_elemento(request, elemento_id):
+    try:
+        response_data = service.list_tipo_gastos_por_elemento(elemento_id)
+        return JsonResponse({"tipo_gastos": response_data}, safe=False, status=200)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

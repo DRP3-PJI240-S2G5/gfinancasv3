@@ -20,4 +20,5 @@ urlpatterns = [
     path("elementos/list", views.list_elementos, name="list_elementos"),
     # Tipo de Gastos
     path("tipo-gastos/list", views.list_tipo_gastos, name="list_tipo_gastos"),
+    path("tipo-gastos/por-elemento/<int:elemento_id>", views.list_tipo_gastos_por_elemento),
 ]

@@ -2,7 +2,7 @@ import logging
 from decimal import Decimal
 from typing import List, Dict
 from .models import (
-    Departamento, Responsabilidade, Verba, Elemento, TipoGasto, Despesa, Subordinacao
+    Departamento, Responsabilidade, Verba, Elemento, TipoGasto, Despesa, Subordinacao, ElementoTipoGasto
 )
 from ..accounts.models import User
 from gfinancas4.base.exceptions import BusinessError
@@ -208,3 +208,16 @@ def update_tipo_gasto(tipo_gasto: TipoGasto, descricao: str = None) -> dict:
 def list_tipo_gastos() -> List[dict]:
     logger.info("SERVICE list tipos_gasto")
     return [tg.to_dict_json() for tg in TipoGasto.objects.all()]
+
+def list_tipo_gastos_por_elemento(elemento_id: int) -> List[dict]:
+    logger.info(f"SERVICE list tipos_gasto por elemento {elemento_id}")
+    
+    relacoes = ElementoTipoGasto.objects.filter(elemento_id=elemento_id).select_related("tipo_gasto")
+    return [
+        {
+            "id": r.tipo_gasto.id,
+            "tipoGasto": r.tipo_gasto.tipoGasto,
+            "descricao": r.tipo_gasto.descricao,
+        }
+        for r in relacoes
+    ]

@@ -27,4 +27,8 @@ export default {
     const response = await api.get("/api/core/tipo-gastos/list")
     return response.data
   },
+  getTipoGastosPorElemento: async (elementoId) => {
+    const response = await api.get(`/api/core/tipo-gastos/por-elemento/${elementoId}`);
+    return response.data;
+  },
 }
