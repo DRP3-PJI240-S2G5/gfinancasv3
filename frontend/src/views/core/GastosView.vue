@@ -10,7 +10,8 @@
         md="4">
         <card-option
           :cardOptionTitle="item.nome"
-          cardOptionDescription="#"
+          cardOptionDescription="$"
+          cardOptionIcon="mdi-plus"
           :cardOptionLink="`/gastos/${item.id}`"
         />
       </v-col>
