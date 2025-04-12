@@ -1,5 +1,6 @@
 import logging
 from decimal import Decimal
+from django.core.paginator import Paginator
 from typing import List, Dict
 from .models import (
     Departamento, Responsabilidade, Verba, Elemento, TipoGasto, Despesa, Subordinacao, ElementoTipoGasto
@@ -183,10 +184,60 @@ def update_despesa(nova_despesa: Despesa) -> dict:
     # Retornando o dicionário com os dados atualizados da despesa
     return nova_despesa.to_dict_json()
 
-def list_despesas() -> List[dict]:
-    logger.info("SERVICE list despesas")
-    return [desp.to_dict_json() for desp in Despesa.objects.all()]
+def list_despesas(page=1, per_page=10) -> List[dict]:
+    """Retorna todas as despesas paginadas, independentemente do departamento."""
+    despesas = Despesa.objects.select_related(
+        'user', 'elemento', 'tipoGasto', 'departamento'
+    ).order_by("-created_at")
 
+    paginator = Paginator(despesas, per_page)
+    page_obj = paginator.get_page(page)
+
+    despesas_serializadas = [d.to_dict_json() for d in page_obj.object_list]
+
+    return {
+        "despesas": despesas_serializadas,
+        "paginacao": {
+            "pagina_atual": page_obj.number,
+            "total_paginas": paginator.num_pages,
+            "total_despesas": paginator.count,
+            "tem_proxima": page_obj.has_next(),
+            "tem_anterior": page_obj.has_previous(),
+        }
+    }
+
+def list_despesas_departamento(departamento_id, page=1, per_page=10) -> List[dict]:
+    """Retorna todas as despesas de um departamento específico com paginação."""
+    try:
+        departamento = Departamento.objects.get(id=departamento_id)
+        
+        # Filtra as despesas do departamento
+        despesas = Despesa.objects.filter(departamento=departamento).select_related(
+            'user', 'elemento', 'tipoGasto'
+        ).order_by("-created_at")
+
+        # Pagina as despesas
+        paginator = Paginator(despesas, per_page)
+        page_obj = paginator.get_page(page)
+
+        # Serializa as despesas da página atual
+        despesas_serializadas = [despesa.to_dict_json() for despesa in page_obj.object_list]
+
+        # Retorna o resultado com a paginação
+        return {
+            "despesas": despesas_serializadas,
+            "paginacao": {
+                "pagina_atual": page_obj.number,
+                "total_paginas": paginator.num_pages,
+                "total_despesas": paginator.count,
+                "tem_proxima": page_obj.has_next(),
+                "tem_anterior": page_obj.has_previous(),
+            }
+        }
+
+    except Departamento.DoesNotExist:
+        raise ValueError("Departamento não encontrado")
+    
 # SERVIÇOS PARA ELEMENTOS (implementados conforme práticas)
 def add_elemento(novo_elemento: str, descricao: str) -> dict:
     logger.info(f"SERVICE add elemento: {novo_elemento}")

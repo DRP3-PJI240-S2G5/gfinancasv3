@@ -24,5 +24,7 @@ urlpatterns = [
      # Endpoints para Despesa
     path("despesas/add", views.add_despesa, name="add_despesa"),
     path("despesas/update", views.update_despesa, name="update_despesa"),
+    path("despesas/list", views.list_despesas, name="list_despesas"),
+     path('despesas/list/<int:departamento_id>', views.list_despesas_departamento, name="list_despesas_departamento"),
 ]
 

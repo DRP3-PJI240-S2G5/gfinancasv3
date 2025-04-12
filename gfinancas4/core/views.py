@@ -332,3 +332,41 @@ def update_despesa(request):
         return JsonResponse({"error": str(e)}, status=400)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["GET"])
+def list_despesas(request):
+    """View que retorna despesas paginadas."""
+    try:
+        page = int(request.GET.get("page", 1))
+        per_page = int(request.GET.get("per_page", 10))
+
+        resultado = service.list_despesas(page, per_page)
+        return JsonResponse(resultado, status=200)
+
+    except Exception as e:
+        logger.error(f"Erro ao paginar despesas: {e}")
+        return JsonResponse({"error": "Erro ao listar despesas."}, status=500)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["GET"])
+def list_despesas_departamento(request, departamento_id):
+    """Lista as despesas de um departamento específico com paginação."""
+    try:
+        # Obtendo os parâmetros de paginação da requisição (padrão: página 1, 10 itens por página)
+        page = int(request.GET.get("page", 1))
+        per_page = int(request.GET.get("per_page", 10))
+
+        # Chamando o serviço para obter as despesas paginadas
+        despesas = service.list_despesas_departamento(departamento_id, page, per_page)
+
+        # Retornando o resultado com as despesas e informações de paginação
+        return JsonResponse(despesas, status=200)
+    
+    except ValueError as e:
+        return JsonResponse({"error": str(e)}, status=404)
+    except Exception as e:
+        logger.error(f"Erro ao listar despesas do departamento {departamento_id}: {e}")
+        return JsonResponse({"error": "Erro ao listar despesas do departamento."}, status=500)

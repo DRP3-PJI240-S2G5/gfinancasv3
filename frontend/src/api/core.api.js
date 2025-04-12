@@ -43,5 +43,15 @@ export default {
   updateDespesa: async (updatedDespesa) => {
     const response = await api.put("/api/core/despesas/update", updatedDespesa);
     return response.data;
-  }
+  },
+  // Função para buscar despesas paginadas de um departamento
+  getDespesasPorDepartamento: async (departamentoId, page = 1, perPage = 10) => {
+    const response = await api.get(
+      `/api/core/despesas/list/${departamentoId}?page=${page}&per_page=${perPage}`
+    )
+    return {
+      despesas: response.data.despesas,                    // lista principal
+      totalPaginas: response.data.paginacao.total_paginas  // total de páginas
+    }
+  },
 }

@@ -10,6 +10,7 @@ export const useCoreStore = defineStore("coreStore", {
     departamentosLoading: false,
     elementosLoading: false,
     tipoGastosLoading: false,
+    despesasLoading: false,
   }),
   actions: {
     async getDepartamentos() {
@@ -75,6 +76,20 @@ export const useCoreStore = defineStore("coreStore", {
         return despesa
       } catch (e) {
         console.error("Erro ao atualizar despesa:", e)
+        throw e
+      }
+    },
+    // Função para carregar despesas de um departamento
+    async getDespesasPorDepartamento(departamentoId, page = 1, perPage = 10) {
+      this.despesasLoading = true
+      try {
+        const response = await coreApi.getDespesasPorDepartamento(departamentoId, page, perPage)
+        this.despesas = response.despesas  // Armazena as despesas no estado
+        this.despesasLoading = false
+        return response
+      } catch (e) {
+        console.error("Erro ao carregar despesas por departamento:", e)
+        this.despesasLoading = false
         throw e
       }
     },
