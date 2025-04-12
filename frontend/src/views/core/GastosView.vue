@@ -10,8 +10,8 @@
         md="4">
         <card-option
           :cardOptionTitle="item.nome"
-          cardOptionDescription="$"
-          cardOptionIcon="mdi-plus"
+          cardOptionDescription="Lançar gastos/despesas"
+          cardOptionIcon="mdi-plus-circle"
           :cardOptionLink="`/gastos/${item.id}`"
         />
       </v-col>
