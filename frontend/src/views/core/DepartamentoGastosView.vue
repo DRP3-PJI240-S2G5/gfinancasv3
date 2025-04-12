@@ -66,7 +66,7 @@
               class="flex-column align-start"
             >
               <span class="text-body-1 font-weight-medium">
-                {{ despesa.valor }} - {{ despesa.justificativa }}
+                R$ {{ despesa.valor }} - {{ despesa.justificativa }}
               </span>
               <span class="text-caption text-grey-darken-1">
                 {{ despesa.created_at }}

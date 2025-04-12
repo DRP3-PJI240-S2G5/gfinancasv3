@@ -8,6 +8,7 @@ from .models import (
 from ..accounts.models import User
 from gfinancas4.base.exceptions import BusinessError
 from django.core.exceptions import ValidationError
+from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
@@ -138,11 +139,14 @@ def add_despesa(nova_despesa: Despesa) -> dict:
     if nova_despesa.valor <= 0:
         raise BusinessError("O valor da despesa deve ser maior que zero.")
     
+    nova_despesa.valor = round(Decimal(nova_despesa.valor), 2)
+    logger.debug(f"valor: {nova_despesa.valor}")
+
     # Tentando salvar a despesa
     try:
         nova_despesa.save()
     except ValidationError as e:
-        raise BusinessError(f"Erro de validação: {e.messages}")
+        raise BusinessError(f"Error de validação: {e.messages}")
     
     # Retornando o dicionário com os dados da despesa
     return nova_despesa.to_dict_json()

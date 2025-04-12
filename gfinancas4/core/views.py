@@ -275,9 +275,9 @@ def add_despesa(request):
         response_data = service.add_despesa(nova_despesa)
         return JsonResponse(response_data, status=201)
     except BusinessError as e:
-        return JsonResponse({"error": str(e)}, status=400)
+        return JsonResponse({"errorr": str(e)}, status=400)
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse({"errorr": str(e)}, status=500)
     
 @csrf_exempt
 @ajax_login_required
