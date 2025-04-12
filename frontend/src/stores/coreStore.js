@@ -6,6 +6,7 @@ export const useCoreStore = defineStore("coreStore", {
     departamentos: [],
     elementos: [],
     tipoGastos: [],
+    despesas: [],
     departamentosLoading: false,
     elementosLoading: false,
     tipoGastosLoading: false,
@@ -49,6 +50,32 @@ export const useCoreStore = defineStore("coreStore", {
       } catch (e) {
         console.error("Erro ao buscar tipos de gasto por elemento:", e)
         return []
+      }
+    },
+    // Função para adicionar uma nova despesa
+    async addDespesa(novaDespesa) {
+      try {
+        const despesa = await coreApi.addDespesa(novaDespesa)
+        this.despesas.push(despesa) // Adiciona a despesa à lista de despesas
+        return despesa
+      } catch (e) {
+        console.error("Erro ao adicionar despesa:", e)
+        throw e
+      }
+    },
+
+    // Função para atualizar uma despesa existente
+    async updateDespesa(updatedDespesa) {
+      try {
+        const despesa = await coreApi.updateDespesa(updatedDespesa)
+        const index = this.despesas.findIndex(d => d.id === despesa.id)
+        if (index !== -1) {
+          this.despesas[index] = despesa // Atualiza a despesa na lista
+        }
+        return despesa
+      } catch (e) {
+        console.error("Erro ao atualizar despesa:", e)
+        throw e
       }
     },
   },

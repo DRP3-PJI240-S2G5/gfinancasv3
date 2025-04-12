@@ -59,6 +59,7 @@
 <script>
 import { useCoreStore } from "@/stores/coreStore"
 import { useBaseStore } from "@/stores/baseStore"
+import { useAccountsStore } from "@/stores/accountsStore"
 import { mapState } from "pinia"
 
 export default {
@@ -66,7 +67,8 @@ export default {
   setup() {
     const coreStore = useCoreStore()
     const baseStore = useBaseStore()
-    return { coreStore, baseStore }
+    const accountsStore = useAccountsStore()
+    return { coreStore, baseStore, accountsStore }
   },
   data() {
     return {
@@ -123,18 +125,27 @@ export default {
         tipo_gasto_id: this.tipoGastoSelecionado,
         departamento_id: this.departamento.id,
         justificativa: this.justificativa,
+        user_id: this.accountsStore.loggedUser?.id,
       }
 
-      console.log("Lançamento de gasto:", payload)
-      this.baseStore.showSnackbar("Gasto lançado com sucesso!")
+      try {
+        // Chama a ação addDespesa do store para adicionar a despesa
+        const despesa = await this.coreStore.addDespesa(payload)
+        console.log("Despesa lançada com sucesso:", despesa)
 
-      // Resetar formulário
-      this.valor = null
-      this.valorFormatado = ''
-      this.elementoSelecionado = null
-      this.tipoGastosDisponiveis = []
-      this.tipoGastoSelecionado = null
-      this.justificativa = ''
+        this.baseStore.showSnackbar("Gasto lançado com sucesso!")
+
+        // Resetar formulário
+        this.valor = null
+        this.valorFormatado = ''
+        this.elementoSelecionado = null
+        this.tipoGastosDisponiveis = []
+        this.tipoGastoSelecionado = null
+        this.justificativa = ''
+      } catch (error) {
+        console.error("Erro ao lançar gasto:", error)
+        this.baseStore.showSnackbar("Erro ao lançar o gasto. Tente novamente.")
+      }
     },
   },
 }

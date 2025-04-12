@@ -21,4 +21,8 @@ urlpatterns = [
     # Tipo de Gastos
     path("tipo-gastos/list", views.list_tipo_gastos, name="list_tipo_gastos"),
     path("tipo-gastos/por-elemento/<int:elemento_id>", views.list_tipo_gastos_por_elemento),
+     # Endpoints para Despesa
+    path("despesas/add", views.add_despesa, name="add_despesa"),
+    path("despesas/update", views.update_despesa, name="update_despesa"),
 ]
+

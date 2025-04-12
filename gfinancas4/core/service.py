@@ -6,6 +6,7 @@ from .models import (
 )
 from ..accounts.models import User
 from gfinancas4.base.exceptions import BusinessError
+from django.core.exceptions import ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -125,37 +126,62 @@ def list_verbas() -> List[dict]:
     return [verba.to_dict_json() for verba in Verba.objects.all()]
 
 # SERVIÇOS PARA DESPESAS (existentes e já adequados)
-def add_despesa(user: User, departamento: Departamento, valor: Decimal, elemento: Elemento, tipo_gasto: TipoGasto, justificativa: str) -> dict:
-    logger.info(f"SERVICE add despesa: {valor} para o departamento {departamento.id}")
-    if valor <= 0:
-        raise BusinessError("O valor da despesa deve ser maior que zero.")
-    despesa = Despesa(
-        user=user,
-        departamento=departamento,
-        valor=valor,
-        elemento=elemento,
-        tipoGasto=tipo_gasto,
-        justificativa=justificativa
-    )
-    despesa.save()
-    return despesa.to_dict_json()
-
-def update_despesa(despesa: Despesa, valor: float = None, justificativa: str = None) -> dict:
-    """Atualiza os valores ou justificativa de uma despesa."""
-    logger.info(f"SERVICE update despesa: {despesa.id}")
+def add_despesa(nova_despesa: Despesa) -> dict:
+    """
+    Adiciona uma nova despesa.
+    Espera uma instância de Despesa.
+    """
+    logger.info(f"SERVICE add despesa: {nova_despesa.valor} para o departamento {nova_despesa.departamento.id}")
     
-    if not despesa.pk:
+    # Verificando se o valor da despesa é válido
+    if nova_despesa.valor <= 0:
+        raise BusinessError("O valor da despesa deve ser maior que zero.")
+    
+    # Tentando salvar a despesa
+    try:
+        nova_despesa.save()
+    except ValidationError as e:
+        raise BusinessError(f"Erro de validação: {e.messages}")
+    
+    # Retornando o dicionário com os dados da despesa
+    return nova_despesa.to_dict_json()
+
+def update_despesa(nova_despesa: Despesa) -> dict:
+    """
+    Atualiza os valores, justificativa, elemento e tipoGasto de uma despesa existente.
+    Espera uma instância de Despesa.
+    """
+    logger.info(f"SERVICE update despesa: {nova_despesa.id}")
+    
+    if not nova_despesa.pk:
         raise BusinessError("Despesa não encontrada para atualização.")
     
-    if valor is not None:
-        if valor <= 0:
+    # Verificando e atualizando o valor, se fornecido
+    if nova_despesa.valor is not None:
+        if nova_despesa.valor <= 0:
             raise BusinessError("O valor da despesa deve ser maior que zero.")
-        despesa.valor = valor
-    if justificativa:
-        despesa.justificativa = justificativa
+        nova_despesa.valor = nova_despesa.valor
     
-    despesa.save()
-    return despesa.to_dict_json()
+    # Atualizando a justificativa, se fornecida
+    if nova_despesa.justificativa:
+        nova_despesa.justificativa = nova_despesa.justificativa
+    
+    # Atualizando o elemento, se fornecido
+    if nova_despesa.elemento:
+        nova_despesa.elemento = nova_despesa.elemento
+    
+    # Atualizando o tipoGasto, se fornecido
+    if nova_despesa.tipoGasto:
+        nova_despesa.tipoGasto = nova_despesa.tipoGasto
+    
+    # Tentando salvar as alterações
+    try:
+        nova_despesa.save()
+    except ValidationError as e:
+        raise BusinessError(f"Erro de validação: {e.messages}")
+    
+    # Retornando o dicionário com os dados atualizados da despesa
+    return nova_despesa.to_dict_json()
 
 def list_despesas() -> List[dict]:
     logger.info("SERVICE list despesas")

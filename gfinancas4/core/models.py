@@ -1,5 +1,6 @@
 from django.db import models
 from ..accounts.models import User
+from django.core.exceptions import ValidationError
 
 class Departamento(models.Model):
     nome = models.CharField(max_length=256)
@@ -183,7 +184,15 @@ class Despesa(models.Model):
 
     def __str__(self):
         return f"Despesa de {self.valor} - {self.departamento.nome}"
+    
+    def clean(self):
+        if not ElementoTipoGasto.objects.filter(elemento=self.elemento, tipo_gasto=self.tipoGasto).exists():
+            raise ValidationError("O tipo de gasto selecionado não está vinculado ao elemento informado.")
 
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Garante que a validação seja executada antes de salvar
+        super().save(*args, **kwargs)
+    
     def to_dict_json(self):
         return {
             "id": self.id,

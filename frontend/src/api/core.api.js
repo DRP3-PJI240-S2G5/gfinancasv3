@@ -31,4 +31,17 @@ export default {
     const response = await api.get(`/api/core/tipo-gastos/por-elemento/${elementoId}`);
     return response.data;
   },
+  // Função para adicionar despesa
+  addDespesa: async (novaDespesa) => {
+    const response = await api.post(
+      "/api/core/despesas/add",
+      novaDespesa);
+    return response.data;
+  },
+
+  // Função para atualizar despesa
+  updateDespesa: async (updatedDespesa) => {
+    const response = await api.put("/api/core/despesas/update", updatedDespesa);
+    return response.data;
+  }
 }
