@@ -24,4 +24,5 @@ urlpatterns = [
     path("api/accounts/", include("gfinancas4.accounts.urls")),
     path("api/core/", include("gfinancas4.core.urls")),
     path("", TemplateView.as_view(template_name="base/apihome.html")),
+    path('explorer/', include('explorer.urls')),
 ]

@@ -3,8 +3,6 @@ services:
     image: "postgres:15-alpine"
     ports:
       - 15432:5432
-    expose:
-      - "15432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     env_file:
@@ -21,8 +19,6 @@ services:
     image: dpage/pgadmin4
     ports:
       - 5050:5050
-    expose:
-      - 5050
     volumes:
       - pg-data:/var/lib/pgadmin
     environment:
@@ -44,8 +40,6 @@ services:
     command: bash -c "python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
     ports:
       - 8000:8000
-    expose:
-      - "8000"
     develop:
       watch:
         - action: rebuild
@@ -63,8 +57,6 @@ services:
     command: npm run dev -- --host
     ports:
       - 3000:3000
-    expose:
-      - "3000"
     env_file:
       - .env
     volumes:

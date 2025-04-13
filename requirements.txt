@@ -5,7 +5,7 @@ sqlparse==0.5.1
 tzdata==2024.2
 
 # 3rd
-# django-sql-explorer==2.4.2
+django-sql-explorer==2.4.2
 django-extensions==3.2.3
 djangorestframework==3.15.2
 

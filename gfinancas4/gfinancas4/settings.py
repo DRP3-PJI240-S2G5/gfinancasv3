@@ -62,7 +62,8 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     "django_extensions",
-     'rest_framework',
+    'rest_framework',
+    'explorer',
 ]
 
 # CORS
@@ -128,6 +129,10 @@ DATABASES = {
     )
 }
 
+EXPLORER_DEFAULT_CONNECTION = config("EXPLORER_DEFAULT_CONNECTION", default="default")
+EXPLORER_CONNECTIONS = {
+    "default": "default",
+}
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 
@@ -210,6 +215,7 @@ LOGGING = {
         },
     },
 }
+
 
 # LOGGING = {
 #     'version': 1,

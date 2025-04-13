@@ -1,0 +1,57 @@
+[
+    {
+        "model": "core.departamento",
+        "pk": 1,
+        "fields": {
+            "nome": "Gabinete Secretário",
+            "description": "Gabinete do Secretário Municipal",
+            "tipoEntidade": "Órgão Central",
+            "done": false,
+            "responsavelId": 1
+        }
+    },
+    {
+        "model": "core.departamento",
+        "pk": 2,
+        "fields": {
+            "nome": "Departamento de Esportes",
+            "description": "Responsável pelas atividades esportivas",
+            "tipoEntidade": "Departamento",
+            "done": false,
+            "responsavelId": 1
+        }
+    },
+    {
+        "model": "core.departamento",
+        "pk": 3,
+        "fields": {
+            "nome": "Departamento de Lazer",
+            "description": "Coordena ações de lazer e recreação",
+            "tipoEntidade": "Departamento",
+            "done": false,
+            "responsavelId": 1
+        }
+    },
+    {
+        "model": "core.departamento",
+        "pk": 4,
+        "fields": {
+            "nome": "F.A.E.P.",
+            "description": "Fundo de Apoio ao Esporte e Promoção",
+            "tipoEntidade": "Fundo Especial",
+            "done": false,
+            "responsavelId": 1
+        }
+    },
+    {
+        "model": "core.departamento",
+        "pk": 5,
+        "fields": {
+            "nome": "Departamento Administrativo",
+            "description": "Setor responsável pelo apoio administrativo",
+            "tipoEntidade": "Departamento",
+            "done": false,
+            "responsavelId": 1
+        }
+    }
+]

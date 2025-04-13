@@ -17,6 +17,7 @@
             type="text"
             prefix="R$"
             required
+            @input="validarEntradaValor"
             @blur="formatarValor"
           />
           <v-select
@@ -66,10 +67,10 @@
               class="flex-column align-start"
             >
               <span class="text-body-1 font-weight-medium">
-                R$ {{ despesa.valor }} - {{ despesa.justificativa }}
+                R$ {{ formatarValorExibicao(despesa.valor) }} - {{ despesa.justificativa }}
               </span>
               <span class="text-caption text-grey-darken-1">
-                {{ despesa.created_at }}
+                {{ " " }} {{ despesa.created_at }}
               </span>
             </v-list-item>
           </template>
@@ -145,6 +146,25 @@ export default {
     if (!this.elementos.length) this.coreStore.getElementos()
   },
   methods: {
+    validarEntradaValor(event) {
+      const valor = event.target.value;
+      // Remove todos os caracteres que não são números, ponto ou vírgula
+      const valorLimpo = valor.replace(/[^\d.,]/g, '');
+      
+      // Se houver alteração, atualiza após 300ms
+      if (valorLimpo !== valor) {
+        setTimeout(() => {
+          this.valorFormatado = valorLimpo;
+        }, 300);
+      }
+    },
+    formatarValorExibicao(valor) {
+      // Converte para número caso seja string
+      const numero = typeof valor === 'string' ? parseFloat(valor) : valor;
+      // Verifica se é um número válido
+      if (isNaN(numero)) return '0,00';
+      return numero.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    },
     async carregarDespesas(page = 1) {
       try {
         const resultado = await this.coreStore.getDespesasPorDepartamento(this.departamento.id, page, this.perPage)
