@@ -1,0 +1,156 @@
+[
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 1,
+            "tipo_gasto": 1
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 1,
+            "tipo_gasto": 2
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 1,
+            "tipo_gasto": 3
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 1,
+            "tipo_gasto": 4
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 1,
+            "tipo_gasto": 5
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 1,
+            "tipo_gasto": 6
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 1,
+            "tipo_gasto": 7
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 1,
+            "tipo_gasto": 8
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 1,
+            "tipo_gasto": 9
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 2,
+            "tipo_gasto": 19
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 3,
+            "tipo_gasto": 10
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 3,
+            "tipo_gasto": 11
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 3,
+            "tipo_gasto": 12
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 3,
+            "tipo_gasto": 13
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 3,
+            "tipo_gasto": 14
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 3,
+            "tipo_gasto": 15
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 4,
+            "tipo_gasto": 16
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 5,
+            "tipo_gasto": 17
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 6,
+            "tipo_gasto": 18
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 7,
+            "tipo_gasto": 20
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 8,
+            "tipo_gasto": 21
+        }
+    },
+    {
+        "model": "core.elementotipoGasto",
+        "fields": {
+            "elemento": 9,
+            "tipo_gasto": 22
+        }
+    }
+]
