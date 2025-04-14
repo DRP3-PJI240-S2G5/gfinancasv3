@@ -165,7 +165,7 @@ def update_despesa(nova_despesa: Despesa) -> dict:
     if nova_despesa.valor is not None:
         if nova_despesa.valor <= 0:
             raise BusinessError("O valor da despesa deve ser maior que zero.")
-        nova_despesa.valor = nova_despesa.valor
+        nova_despesa.valor = round(Decimal(nova_despesa.valor), 2)
     
     # Atualizando a justificativa, se fornecida
     if nova_despesa.justificativa:
