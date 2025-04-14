@@ -54,4 +54,9 @@ export default {
       totalPaginas: response.data.paginacao.total_paginas  // total de páginas
     }
   },
+  // Função para deletar uma despesa
+  deleteDespesa: async (despesaId) => {
+    const response = await api.delete(`/api/core/despesas/delete/${despesaId}`);
+    return response.data;
+  },
 }

@@ -46,7 +46,8 @@
             auto-grow
             required
           />
-          <v-btn type="submit" color="primary" class="mt-4">Lançar</v-btn>
+          <v-btn type="submit" color="primary" class="mt-4">{{ modoEdicao ? 'Atualizar' : 'Lançar' }}</v-btn>
+          <v-btn v-if="modoEdicao" color="secondary" class="mt-4 ml-2" @click="cancelarEdicao">Cancelar</v-btn>
         </v-form>
       </v-card-text>
     </v-card>
@@ -66,17 +67,40 @@
               :key="despesa.id"
               class="flex-column align-start"
             >
-              <span class="text-body-1 font-weight-medium">
-                R$ {{ formatarValorExibicao(despesa.valor) }} - {{ despesa.justificativa }}
-              </span>
+              <div class="d-flex justify-space-between align-center w-100">
+                <span class="text-body-1 font-weight-medium">
+                  R$ {{ formatarValorExibicao(despesa.valor) }} - {{ despesa.justificativa }}
+                </span>
+                <div class="d-flex">
+                  <v-btn
+                    v-if="podeEditarDespesa(despesa)"
+                    color="primary"
+                    size="small"
+                    icon
+                    class="mr-2"
+                    @click="editarDespesa(despesa)"
+                  >
+                    <v-icon>mdi-pencil</v-icon>
+                  </v-btn>
+                  <v-btn
+                    v-if="podeDeletarDespesa(despesa)"
+                    color="error"
+                    size="small"
+                    icon
+                    @click="deletarDespesa(despesa.id)"
+                  >
+                    <v-icon>mdi-delete</v-icon>
+                  </v-btn>
+                </div>
+              </div>
               <span class="text-caption text-grey-darken-1">
-                {{ " " }} {{ despesa.created_at }}
+                {{ " " }} {{ formatarData(despesa.created_at) }}
               </span>
             </v-list-item>
           </template>
 
           <v-alert v-else type="info" class="mt-2">
-            Nenhuma despesa registrada.
+            Nenhuma despesa registrada. 
           </v-alert>
         </v-list>
         <!-- Paginação -->
@@ -121,6 +145,8 @@ export default {
       despesasPage: 1,  // Controla a página atual das despesas
       perPage: 10,  // Número de despesas por página
       totalPaginas: 1,
+      modoEdicao: false,
+      despesaEmEdicao: null,
     }
   },
   computed: {
@@ -213,26 +239,109 @@ export default {
       }
 
       try {
-        // Chama a ação addDespesa do store para adicionar a despesa
-        const despesa = await this.coreStore.addDespesa(payload)
-        console.log("Despesa lançada com sucesso:", despesa)
-
-        this.baseStore.showSnackbar("Gasto lançado com sucesso!")
+        let resultado;
+        
+        if (this.modoEdicao && this.despesaEmEdicao) {
+          // Modo de edição
+          payload.id = this.despesaEmEdicao.id;
+          resultado = await this.coreStore.updateDespesa(payload);
+          this.baseStore.showSnackbar("Despesa atualizada com sucesso!");
+        } else {
+          // Modo de adição
+          resultado = await this.coreStore.addDespesa(payload);
+          this.baseStore.showSnackbar("Gasto lançado com sucesso!");
+        }
 
         // Resetar formulário
-        this.valor = null
-        this.valorFormatado = ''
-        this.elementoSelecionado = null
-        this.tipoGastosDisponiveis = []
-        this.tipoGastoSelecionado = null
-        this.justificativa = ''
+        this.resetarFormulario();
 
         // Recarregar lista de despesas
-        this.carregarDespesas(1)
+        this.carregarDespesas(this.despesasPage);
       } catch (error) {
-        console.error("Erro ao lançar gasto:", error)
-        this.baseStore.showSnackbar("Erro ao lançar o gasto. Tente novamente.")
+        console.error("Erro ao lançar/atualizar gasto:", error);
+        this.baseStore.showSnackbar("Erro ao lançar/atualizar o gasto. Tente novamente.");
       }
+    },
+    resetarFormulario() {
+      this.valor = null;
+      this.valorFormatado = '';
+      this.elementoSelecionado = null;
+      this.tipoGastosDisponiveis = [];
+      this.tipoGastoSelecionado = null;
+      this.justificativa = '';
+      this.modoEdicao = false;
+      this.despesaEmEdicao = null;
+    },
+    cancelarEdicao() {
+      this.resetarFormulario();
+    },
+    podeDeletarDespesa(despesa) {
+      // Verifica se a despesa é do usuário logado
+      if (despesa.usuario.id !== this.accountsStore.loggedUser?.id) {
+        return false;
+      }
+
+      // Converte a data de criação para objeto Date
+      const dataCriacao = new Date(despesa.created_at);
+      const agora = new Date();
+      
+      // Calcula a diferença em minutos
+      const diferencaMinutos = (agora - dataCriacao) / (1000 * 60);
+      
+      // Retorna true se a despesa tiver menos de 5 minutos
+      return diferencaMinutos < 5;
+    },
+    podeEditarDespesa(despesa) {
+      // Verifica se a despesa é do usuário logado
+      return despesa.usuario.id === this.accountsStore.loggedUser?.id;
+    },
+    formatarData(dataString) {
+      // Converte a string de data para objeto Date
+      const data = new Date(dataString);
+      
+      // Formata a data para o formato brasileiro
+      return data.toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+    },
+    async deletarDespesa(despesaId) {
+      try {
+        await this.coreStore.deleteDespesa(despesaId);
+        this.baseStore.showSnackbar("Despesa deletada com sucesso!");
+        // Recarrega a lista de despesas
+        this.carregarDespesas(this.despesasPage);
+      } catch (error) {
+        console.error("Erro ao deletar despesa:", error);
+        this.baseStore.showSnackbar("Erro ao deletar a despesa. Tente novamente.");
+      }
+    },
+    editarDespesa(despesa) {
+      // Preenche o formulário com os dados da despesa
+      this.valorFormatado = this.formatarValorExibicao(despesa.valor);
+      this.elementoSelecionado = despesa.elemento.id;
+      this.justificativa = despesa.justificativa;
+      
+      // Carrega os tipos de gasto para o elemento selecionado
+      this.carregarTiposGasto().then(() => {
+        this.tipoGastoSelecionado = despesa.tipoGasto.id;
+      });
+      
+      // Marca o modo de edição
+      this.modoEdicao = true;
+      this.despesaEmEdicao = despesa;
+      
+      // Rola a página para o formulário
+      this.$nextTick(() => {
+        const formElement = document.querySelector('.v-form');
+        if (formElement) {
+          formElement.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
     },
   },
 }

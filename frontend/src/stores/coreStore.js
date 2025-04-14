@@ -93,5 +93,16 @@ export const useCoreStore = defineStore("coreStore", {
         throw e
       }
     },
+    // Função para deletar uma despesa
+    async deleteDespesa(despesaId) {
+      try {
+        await coreApi.deleteDespesa(despesaId);
+        // Remove a despesa da lista
+        this.despesas = this.despesas.filter(d => d.id !== despesaId);
+      } catch (e) {
+        console.error("Erro ao deletar despesa:", e);
+        throw e;
+      }
+    },
   },
 })

@@ -214,6 +214,6 @@ class Despesa(models.Model):
                 "tipoGasto": self.tipoGasto.tipoGasto,
             },
             "justificativa": self.justificativa,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
         }
