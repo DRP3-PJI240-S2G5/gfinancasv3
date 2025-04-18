@@ -68,6 +68,10 @@ export default [
         component: () => import("@/views/core/DepartamentoGastosView.vue"),
         meta: { requiresAuth: true },
       },
+      {
+        path: '/leis-normas',
+        component: () => import('@/views/LeisNormasView.vue')
+      }
     ],
   },
 ]

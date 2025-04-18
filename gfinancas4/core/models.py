@@ -217,3 +217,12 @@ class Despesa(models.Model):
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
+class LeiNorma(models.Model):
+    titulo = models.CharField(max_length=255)
+    descricao = models.TextField()
+    numero = models.CharField(max_length=50)
+    data_publicacao = models.DateField()
+    arquivo = models.FileField(upload_to='leis_normas/', null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.numero} - {self.titulo}"

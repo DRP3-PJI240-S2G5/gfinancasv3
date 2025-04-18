@@ -26,5 +26,7 @@ urlpatterns = [
     path("despesas/update", views.update_despesa, name="update_despesa"),
     path("despesas/list", views.list_despesas, name="list_despesas"),
     path('despesas/list/<int:departamento_id>', views.list_despesas_departamento, name="list_despesas_departamento"),
+    #Leis e normas
+    path('leis-normas/', views.list_leis_normas, name='list_leis_normas'),
 ]
 

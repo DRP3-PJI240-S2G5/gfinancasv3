@@ -9,7 +9,7 @@ from django.views.decorators.http import require_http_methods
 from django.shortcuts import get_object_or_404
 from ..commons.django_views_utils import ajax_login_required
 from . import service
-from .models import Departamento, Responsabilidade, Elemento, TipoGasto, Despesa
+from .models import Departamento, Responsabilidade, Elemento, TipoGasto, Despesa, LeiNorma
 from ..accounts.models import User
 
 logger = logging.getLogger(__name__)
@@ -370,3 +370,23 @@ def list_despesas_departamento(request, departamento_id):
     except Exception as e:
         logger.error(f"Erro ao listar despesas do departamento {departamento_id}: {e}")
         return JsonResponse({"error": "Erro ao listar despesas do departamento."}, status=500)
+
+@require_http_methods(["GET"])
+@ajax_login_required
+def list_leis_normas(request):
+    """Lista todas as leis e normas"""
+    logger.info("API list leis e normas")
+    
+    try:
+        # Obtém todas as leis e normas
+        leis_normas = LeiNorma.objects.all()
+        
+        # Converte os objetos em dicionários
+        dados = list(leis_normas.values('id', 'nome', 'descricao', 'numero', 'data_publicacao'))
+        
+        # Retorna os dados como resposta JSON
+        return JsonResponse({"leis_normas": dados}, safe=False, status=200)
+
+    except Exception as e:
+        logger.error(f"Erro ao listar leis e normas: {e}")
+        return JsonResponse({"error": str(e)}, status=500)
