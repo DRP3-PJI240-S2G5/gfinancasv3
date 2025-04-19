@@ -2,6 +2,7 @@ import logging
 from decimal import Decimal
 from django.core.paginator import Paginator
 from typing import List, Dict
+from django.db.models import Sum
 from .models import (
     Departamento, Responsabilidade, Verba, Elemento, TipoGasto, Despesa, Subordinacao, ElementoTipoGasto
 )
@@ -302,3 +303,33 @@ def list_tipo_gastos_por_elemento(elemento_id: int) -> List[dict]:
         }
         for r in relacoes
     ]
+
+def get_total_despesas_departamento(departamento_id: int) -> dict:
+    """
+    Calcula o total de despesas de um departamento específico.
+    Retorna um dicionário com o total de despesas e outras informações relevantes.
+    """
+    logger.info(f"SERVICE get total despesas departamento: {departamento_id}")
+    
+    try:
+        departamento = Departamento.objects.get(id=departamento_id)
+        
+        # Calcula o total de despesas
+        resultado = Despesa.objects.filter(departamento=departamento).aggregate(
+            total_despesas=Sum('valor')
+        )
+        
+        total_despesas = resultado['total_despesas'] or Decimal('0.00')
+        
+        return {
+            "departamento_id": departamento_id,
+            "departamento_nome": departamento.nome,
+            "total_despesas": float(total_despesas),
+            "total_despesas_formatado": f"R$ {total_despesas:,.2f}".replace(',', '_').replace('.', ',').replace('_', '.')
+        }
+        
+    except Departamento.DoesNotExist:
+        raise ValueError("Departamento não encontrado")
+    except Exception as e:
+        logger.error(f"Erro ao calcular total de despesas: {str(e)}")
+        raise BusinessError(f"Erro ao calcular total de despesas: {str(e)}")

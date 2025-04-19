@@ -370,3 +370,22 @@ def list_despesas_departamento(request, departamento_id):
     except Exception as e:
         logger.error(f"Erro ao listar despesas do departamento {departamento_id}: {e}")
         return JsonResponse({"error": "Erro ao listar despesas do departamento."}, status=500)
+
+@ajax_login_required
+@require_http_methods(["GET"])
+def total_despesas_departamento(request, departamento_id):
+    """
+    Retorna o total de despesas de um departamento específico.
+    """
+    logger.info(f"API get total despesas departamento: {departamento_id}")
+    
+    try:
+        resultado = service.get_total_despesas_departamento(departamento_id)
+        return JsonResponse(resultado, status=200)
+    except ValueError as e:
+        return JsonResponse({"error": str(e)}, status=404)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao obter total de despesas: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
