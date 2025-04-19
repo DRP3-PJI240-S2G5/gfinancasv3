@@ -9,28 +9,88 @@ from .models import (
 from ..accounts.models import User
 from gfinancas4.base.exceptions import BusinessError
 from django.core.exceptions import ValidationError
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 logger = logging.getLogger(__name__)
 
 
-def add_departamento(new_departamento: Departamento) -> dict:
+def add_departamento(nome: str, description: str, tipoEntidade: str, responsavelId: int, done: bool = False) -> dict:
+    """
+    Adiciona um novo departamento.
+    
+    Args:
+        nome: Nome do departamento
+        description: Descrição do departamento
+        tipoEntidade: Tipo de entidade
+        responsavelId: ID do responsável
+        done: Status de conclusão
+        
+    Returns:
+        dict: Dados do departamento criado
+        
+    Raises:
+        BusinessError: Se o responsável não for encontrado
+    """
     logger.info("SERVICE add new departamento")
     
-    if not isinstance(new_departamento, Departamento):
-        raise BusinessError(f"Expected instance of Departamento, but got {type(new_departamento)}")
+    try:
+        responsavel = User.objects.get(id=responsavelId)
+    except User.DoesNotExist:
+        raise BusinessError(f"Responsável com ID {responsavelId} não encontrado.")
     
-    new_departamento.save()
+    departamento = Departamento(
+        nome=nome, 
+        description=description, 
+        tipoEntidade=tipoEntidade, 
+        responsavelId=responsavel, 
+        done=done
+    )
+    
+    departamento.save()
     logger.info("SERVICE departamento created.")
 
-    return new_departamento.to_dict_json()
+    return departamento.to_dict_json()
 
-def update_departamento(departamento: Departamento) -> dict:
-    """Atualiza um departamento com os dados do objeto fornecido."""
-    logger.info("SERVICE upudate departamento")
+def update_departamento(departamento_id: int, nome: str = None, description: str = None, 
+                        tipoEntidade: str = None, responsavelId: int = None, done: bool = None) -> dict:
+    """
+    Atualiza um departamento com os dados fornecidos.
     
-    if not departamento.pk:  # Verifica se o departamento tem um ID válido (caso seja um objeto novo, ele não teria um ID ainda)
-        raise BusinessError("UPDATE_VIEW: Departamento não encontrado para atualização")
+    Args:
+        departamento_id: ID do departamento a ser atualizado
+        nome: Novo nome do departamento (opcional)
+        description: Nova descrição do departamento (opcional)
+        tipoEntidade: Novo tipo de entidade (opcional)
+        responsavelId: Novo ID do responsável (opcional)
+        done: Novo status de conclusão (opcional)
+        
+    Returns:
+        dict: Dados do departamento atualizado
+        
+    Raises:
+        BusinessError: Se o departamento ou o responsável não for encontrado
+    """
+    logger.info(f"SERVICE update departamento: {departamento_id}")
+    
+    try:
+        departamento = Departamento.objects.get(id=departamento_id)
+    except Departamento.DoesNotExist:
+        raise BusinessError(f"Departamento com ID {departamento_id} não encontrado.")
+    
+    if nome is not None:
+        departamento.nome = nome
+    if description is not None:
+        departamento.description = description
+    if tipoEntidade is not None:
+        departamento.tipoEntidade = tipoEntidade
+    if responsavelId is not None:
+        try:
+            responsavel = User.objects.get(id=responsavelId)
+            departamento.responsavelId = responsavel
+        except User.DoesNotExist:
+            raise BusinessError(f"Responsável com ID {responsavelId} não encontrado.")
+    if done is not None:
+        departamento.done = done
     
     departamento.save()
     logger.info(f"Departamento {departamento.id} atualizado com sucesso.")
@@ -40,8 +100,28 @@ def list_departamentos() -> List[dict]:
     logger.info("SERVICE list departamentos")
     return [item.to_dict_json() for item in Departamento.objects.all()]
 
-def add_subordinacao(superior: Departamento, subordinado: Departamento, observacao: str = "") -> dict:
-    logger.info(f"SERVICE add subordinacao: {subordinado.id} subordinado a {superior.id}")
+def add_subordinacao(superior_id: int, subordinado_id: int, observacao: str = "") -> dict:
+    """
+    Adiciona uma relação de subordinação entre departamentos.
+    
+    Args:
+        superior_id: ID do departamento superior
+        subordinado_id: ID do departamento subordinado
+        observacao: Observação sobre a subordinação
+        
+    Returns:
+        dict: Dados da subordinação criada
+        
+    Raises:
+        BusinessError: Se a subordinação já existir ou se os departamentos não forem encontrados
+    """
+    logger.info(f"SERVICE add subordinacao: {subordinado_id} subordinado a {superior_id}")
+    
+    try:
+        superior = Departamento.objects.get(id=superior_id)
+        subordinado = Departamento.objects.get(id=subordinado_id)
+    except Departamento.DoesNotExist:
+        raise BusinessError("Departamento não encontrado.")
     
     if Subordinacao.objects.filter(superior=superior, subordinado=subordinado).exists():
         raise BusinessError("Essa relação de subordinação já existe.")
@@ -54,11 +134,25 @@ def add_subordinacao(superior: Departamento, subordinado: Departamento, observac
     subordinacao.save()
     return subordinacao.to_dict_json()
 
-def update_subordinacao(subordinacao: Subordinacao, observacao: str) -> dict:
-    """Atualiza a observação de uma subordinação existente."""
-    logger.info(f"SERVICE update subordinacao: {subordinacao.id}")
+def update_subordinacao(subordinacao_id: int, observacao: str) -> dict:
+    """
+    Atualiza a observação de uma subordinação existente.
     
-    if not subordinacao.pk:
+    Args:
+        subordinacao_id: ID da subordinação a ser atualizada
+        observacao: Nova observação
+        
+    Returns:
+        dict: Dados da subordinação atualizada
+        
+    Raises:
+        BusinessError: Se a subordinação não for encontrada
+    """
+    logger.info(f"SERVICE update subordinacao: {subordinacao_id}")
+    
+    try:
+        subordinacao = Subordinacao.objects.get(id=subordinacao_id)
+    except Subordinacao.DoesNotExist:
         raise BusinessError("Subordinação não encontrada para atualização.")
     
     subordinacao.observacao = observacao
@@ -71,19 +165,62 @@ def list_subordinacoes() -> list[dict]:
     return [sub.to_dict_json() for sub in Subordinacao.objects.all()]
 
 # SERVIÇOS PARA RESPONSABILIDADES (implementados conforme modelo e práticas)
-def add_responsabilidade(usuario: User, departamento: Departamento, observacao: str = "") -> dict:
-    logger.info(f"SERVICE add responsabilidade: {usuario.id} responsável pelo {departamento.id}")
+def add_responsabilidade(usuario_id: int, departamento_id: int, observacao: str = "") -> dict:
+    """
+    Adiciona uma responsabilidade a um usuário em um departamento.
+    
+    Args:
+        usuario_id: ID do usuário
+        departamento_id: ID do departamento
+        observacao: Observação sobre a responsabilidade
+        
+    Returns:
+        dict: Dados da responsabilidade criada
+        
+    Raises:
+        BusinessError: Se o usuário já for responsável pelo departamento ou se o usuário/departamento não for encontrado
+    """
+    logger.info(f"SERVICE add responsabilidade: {usuario_id} responsável pelo {departamento_id}")
+    
+    try:
+        usuario = User.objects.get(id=usuario_id)
+        departamento = Departamento.objects.get(id=departamento_id)
+    except User.DoesNotExist:
+        raise BusinessError("Usuário não encontrado.")
+    except Departamento.DoesNotExist:
+        raise BusinessError("Departamento não encontrado.")
+    
     if Responsabilidade.objects.filter(usuario=usuario, departamento=departamento).exists():
         raise BusinessError("O usuário já é responsável por este departamento.")
-    responsabilidade = Responsabilidade(usuario=usuario, departamento=departamento, observacao=observacao)
+    
+    responsabilidade = Responsabilidade(
+        usuario=usuario, 
+        departamento=departamento, 
+        observacao=observacao
+    )
+    
     responsabilidade.save()
     return responsabilidade.to_dict_json()
 
-def update_responsabilidade(responsabilidade: Responsabilidade, observacao: str = None) -> dict:
-    """Atualiza a responsabilidade, alterando a observação."""
-    logger.info(f"SERVICE update responsabilidade: {responsabilidade.id}")
+def update_responsabilidade(responsabilidade_id: int, observacao: str = None) -> dict:
+    """
+    Atualiza a responsabilidade, alterando a observação.
     
-    if not responsabilidade.pk:
+    Args:
+        responsabilidade_id: ID da responsabilidade a ser atualizada
+        observacao: Nova observação
+        
+    Returns:
+        dict: Dados da responsabilidade atualizada
+        
+    Raises:
+        BusinessError: Se a responsabilidade não for encontrada
+    """
+    logger.info(f"SERVICE update responsabilidade: {responsabilidade_id}")
+    
+    try:
+        responsabilidade = Responsabilidade.objects.get(id=responsabilidade_id)
+    except Responsabilidade.DoesNotExist:
         raise BusinessError("Responsabilidade não encontrada para atualização.")
     
     if observacao:
@@ -97,23 +234,70 @@ def list_responsabilidades() -> List[dict]:
     return [resp.to_dict_json() for resp in Responsabilidade.objects.all()]
 
 # SERVIÇOS PARA VERBAS (ajustes e implementação faltante)
-def add_verba(valor, departamento: Departamento, user: User, ano: int, descricao: str) -> dict:
-    logger.info(f"SERVICE add verba: {valor} para {departamento.id} no ano {ano}")
+def add_verba(valor, departamento_id: int, user_id: int, ano: int, descricao: str) -> dict:
+    """
+    Adiciona uma nova verba para um departamento.
+    
+    Args:
+        valor: Valor da verba
+        departamento_id: ID do departamento
+        user_id: ID do usuário
+        ano: Ano da verba
+        descricao: Descrição da verba
+        
+    Returns:
+        dict: Dados da verba criada
+        
+    Raises:
+        BusinessError: Se já existir uma verba para o departamento no ano ou se o departamento/usuário não for encontrado
+    """
+    logger.info(f"SERVICE add verba: {valor} para {departamento_id} no ano {ano}")
+    
+    try:
+        departamento = Departamento.objects.get(id=departamento_id)
+        user = User.objects.get(id=user_id)
+    except Departamento.DoesNotExist:
+        raise BusinessError("Departamento não encontrado.")
+    except User.DoesNotExist:
+        raise BusinessError("Usuário não encontrado.")
+    
     if Verba.objects.filter(departamento=departamento, ano=ano).exists():
         raise BusinessError("Já existe uma verba estipulada para este departamento neste ano.")
     
     if valor is not None:
         valor = Decimal(valor)
 
-    verba = Verba(valor=valor, departamento=departamento, user=user, ano=ano, descricao=descricao)
+    verba = Verba(
+        valor=valor, 
+        departamento=departamento, 
+        user=user, 
+        ano=ano, 
+        descricao=descricao
+    )
+    
     verba.save()
     return verba.to_dict_json()
 
-def update_verba(verba: Verba, valor: Decimal = None, descricao: str = None) -> dict:
-    """Atualiza os valores ou descrição de uma verba."""
-    logger.info(f"SERVICE update verba: {verba.id}")
+def update_verba(verba_id: int, valor: Decimal = None, descricao: str = None) -> dict:
+    """
+    Atualiza os valores ou descrição de uma verba.
     
-    if not verba.pk:
+    Args:
+        verba_id: ID da verba a ser atualizada
+        valor: Novo valor da verba (opcional)
+        descricao: Nova descrição da verba (opcional)
+        
+    Returns:
+        dict: Dados da verba atualizada
+        
+    Raises:
+        BusinessError: Se a verba não for encontrada
+    """
+    logger.info(f"SERVICE update verba: {verba_id}")
+    
+    try:
+        verba = Verba.objects.get(id=verba_id)
+    except Verba.DoesNotExist:
         raise BusinessError("Verba não encontrada para atualização.")
     
     if valor is not None:
@@ -129,19 +313,57 @@ def list_verbas() -> List[dict]:
     return [verba.to_dict_json() for verba in Verba.objects.all()]
 
 # SERVIÇOS PARA DESPESAS (existentes e já adequados)
-def add_despesa(nova_despesa: Despesa) -> dict:
+def add_despesa(user_id: int, departamento_id: int, valor: float, elemento_id: int, 
+                tipo_gasto_id: int, justificativa: str = "") -> dict:
     """
     Adiciona uma nova despesa.
-    Espera uma instância de Despesa.
+    
+    Args:
+        user_id: ID do usuário
+        departamento_id: ID do departamento
+        valor: Valor da despesa
+        elemento_id: ID do elemento
+        tipo_gasto_id: ID do tipo de gasto
+        justificativa: Justificativa da despesa
+        
+    Returns:
+        dict: Dados da despesa criada
+        
+    Raises:
+        BusinessError: Se o valor da despesa for inválido ou se algum dos objetos relacionados não for encontrado
     """
-    logger.info(f"SERVICE add despesa: {nova_despesa.valor} para o departamento {nova_despesa.departamento.id}")
+    logger.info(f"SERVICE add despesa: {valor} para o departamento {departamento_id}")
+    
+    try:
+        user = User.objects.get(id=user_id)
+        departamento = Departamento.objects.get(id=departamento_id)
+        elemento = Elemento.objects.get(id=elemento_id)
+        tipo_gasto = TipoGasto.objects.get(id=tipo_gasto_id)
+    except User.DoesNotExist:
+        raise BusinessError("Usuário não encontrado.")
+    except Departamento.DoesNotExist:
+        raise BusinessError("Departamento não encontrado.")
+    except Elemento.DoesNotExist:
+        raise BusinessError("Elemento não encontrado.")
+    except TipoGasto.DoesNotExist:
+        raise BusinessError("Tipo de gasto não encontrado.")
     
     # Verificando se o valor da despesa é válido
-    if nova_despesa.valor <= 0:
+    if valor <= 0:
         raise BusinessError("O valor da despesa deve ser maior que zero.")
     
-    nova_despesa.valor = round(Decimal(nova_despesa.valor), 2)
-    logger.debug(f"valor: {nova_despesa.valor}")
+    valor = round(Decimal(valor), 2)
+    logger.debug(f"valor: {valor}")
+
+    # Criando uma nova instância de Despesa
+    nova_despesa = Despesa(
+        user=user,
+        departamento=departamento,
+        valor=valor,
+        elemento=elemento,
+        tipoGasto=tipo_gasto,
+        justificativa=justificativa
+    )
 
     # Tentando salvar a despesa
     try:
@@ -151,6 +373,26 @@ def add_despesa(nova_despesa: Despesa) -> dict:
     
     # Retornando o dicionário com os dados da despesa
     return nova_despesa.to_dict_json()
+
+def _converter_valor_br_para_decimal(valor_str: str) -> Decimal:
+    """
+    Converte um valor no formato brasileiro (ex: 1.234,56) para Decimal.
+    
+    Args:
+        valor_str: String contendo o valor no formato brasileiro
+        
+    Returns:
+        Decimal: Valor convertido
+        
+    Raises:
+        BusinessError: Se o valor não puder ser convertido
+    """
+    try:
+        # Remove pontos de milhar e substitui vírgula por ponto
+        valor_limpo = valor_str.replace('.', '').replace(',', '.')
+        return Decimal(valor_limpo)
+    except (ValueError, TypeError, InvalidOperation):
+        raise BusinessError("Valor inválido. Use o formato brasileiro (ex: 1.234,56)")
 
 def update_despesa(nova_despesa: Despesa) -> dict:
     """
@@ -164,9 +406,14 @@ def update_despesa(nova_despesa: Despesa) -> dict:
     
     # Verificando e atualizando o valor, se fornecido
     if nova_despesa.valor is not None:
+        # Se o valor for uma string, tenta converter do formato brasileiro
+        if isinstance(nova_despesa.valor, str):
+            nova_despesa.valor = _converter_valor_br_para_decimal(nova_despesa.valor)
+        else:
+            nova_despesa.valor = round(Decimal(str(nova_despesa.valor)), 2)
+            
         if nova_despesa.valor <= 0:
             raise BusinessError("O valor da despesa deve ser maior que zero.")
-        nova_despesa.valor = round(Decimal(nova_despesa.valor), 2)
     
     # Atualizando a justificativa, se fornecida
     if nova_despesa.justificativa:

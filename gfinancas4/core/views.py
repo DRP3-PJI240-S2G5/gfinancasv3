@@ -30,56 +30,55 @@ def add_departamento(request):
     done = body.get("done", False)
 
     try:
-        responsavel = User.objects.filter(id=responsavelId).first()
-        if not responsavel:
-            return JsonResponse({"update_error": f"Responsável com ID {responsavelId} não encontrado."}, status=404)
-    except ValueError as e:
-        return JsonResponse({"get_responsavel_error": str(e)}, status=500)
-    
-    
-    departamento = Departamento(
-        nome=nome, 
-        description=description, 
-        tipoEntidade=tipoEntidade, 
-        responsavelId=responsavel, 
-        done=done
-    )
-
-    new_departamento = service.add_departamento(departamento)
-
-    return JsonResponse(new_departamento, status=201)
+        new_departamento = service.add_departamento(
+            nome=nome,
+            description=description,
+            tipoEntidade=tipoEntidade,
+            responsavelId=responsavelId,
+            done=done
+        )
+        return JsonResponse(new_departamento, status=201)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao adicionar departamento: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
 
 
 @csrf_exempt
 @ajax_login_required
-@require_http_methods(["PUT"])   #  VERIFIQUE iSSO DEPOIS QUE FUNCIONAR
+@require_http_methods(["PUT"])
 def update_departamento(request):
     """Update Departamento"""
-    logger.info("API update new departamento.")
+    logger.info("API update departamento.")
     
     body = json.loads(request.body)
-    departamentoId = body.get("id")
-
-    departamento = get_object_or_404(Departamento, id=departamentoId)
+    departamento_id = body.get("id")
+    
+    if not departamento_id:
+        return JsonResponse({"error": "ID do departamento não fornecido."}, status=400)
+    
+    nome = body.get("nome")
+    description = body.get("description")
+    tipoEntidade = body.get("tipoEntidade")
+    responsavelId = body.get("responsavelId")
+    done = body.get("done")
     
     try:
-        responsavel = User.objects.filter(id=body.get("responsavelId", departamento.responsavelId)).first()
-        if not responsavel:
-            return JsonResponse({"update_error": f"Responsável com ID {departamento.responsavelId} não encontrado."}, status=404)
-    except ValueError as e:
-        return JsonResponse({"get_responsavel_error", str(e)}, status=500)
-    
-    departamento.nome = body.get("nome", departamento.nome)
-    departamento.description = body.get("description", departamento.description)
-    departamento.tipoEntidade = body.get("tipoEntidade", departamento.tipoEntidade)
-    departamento.responsavelId = responsavel if responsavel else departamento.responsavelId
-    departamento.done = body.get("done", departamento.done)
-
-    try:
-        updated_departamento = service.update_departamento(departamento)
+        updated_departamento = service.update_departamento(
+            departamento_id=departamento_id,
+            nome=nome,
+            description=description,
+            tipoEntidade=tipoEntidade,
+            responsavelId=responsavelId,
+            done=done
+        )
         return JsonResponse(updated_departamento, status=200)
-    except ValueError as e:
-        return JsonResponse({"error": str(e)}, status=500)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao atualizar departamento: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
 
 @require_http_methods(["GET"])
 @ajax_login_required
@@ -102,10 +101,6 @@ def add_subordinacao(request):
     id_departamento_b = body.get("IdDepartamentoB")
     observacao = body.get("Observacao", "")
     
-    # Valida os departamentos
-    departamento_a = get_object_or_404(Departamento, id=id_departamento_a)
-    departamento_b = get_object_or_404(Departamento, id=id_departamento_b)
-    
     # Previne laços de subordinação direta
     if id_departamento_a == id_departamento_b:
         return JsonResponse(
@@ -114,10 +109,17 @@ def add_subordinacao(request):
         )
     
     try:
-        subordinacao = service.add_subordinacao(departamento_a, departamento_b, observacao)
+        subordinacao = service.add_subordinacao(
+            superior_id=id_departamento_a,
+            subordinado_id=id_departamento_b,
+            observacao=observacao
+        )
         return JsonResponse(subordinacao, status=201)
-    except ValueError as e:
-        return JsonResponse({"error in add_subordinacao": str(e)}, status=500)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao adicionar subordinação: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
 
 @require_http_methods(["GET"])
 @ajax_login_required
@@ -140,20 +142,19 @@ def add_responsabilidade(request):
     observacao = body.get("observacao", "")
     
     try:
-        # Obtém os objetos de usuário e departamento
-        usuario = User.objects.get(id=usuario_id)
-        departamento = Departamento.objects.get(id=departamento_id)
-        
         # Chama o serviço para adicionar a responsabilidade
-        response_data = service.add_responsabilidade(usuario, departamento, observacao)
+        response_data = service.add_responsabilidade(
+            usuario_id=usuario_id,
+            departamento_id=departamento_id,
+            observacao=observacao
+        )
         return JsonResponse(response_data, status=201)
     
-    except User.DoesNotExist:
-        return JsonResponse({"error": "Usuário não encontrado"}, status=400)
-    except Departamento.DoesNotExist:
-        return JsonResponse({"error": "Departamento não encontrado"}, status=400)
     except BusinessError as e:
         return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao adicionar responsabilidade: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
 
 @csrf_exempt
 @ajax_login_required
@@ -166,17 +167,18 @@ def update_responsabilidade_view(request, id):
     observacao = body.get("observacao", "")
     
     try:
-        # Obtém a responsabilidade pela ID
-        responsabilidade = Responsabilidade.objects.get(id=id)
-        
         # Chama o serviço para atualizar a responsabilidade
-        response_data = service.update_responsabilidade(responsabilidade, observacao)
+        response_data = service.update_responsabilidade(
+            responsabilidade_id=id,
+            observacao=observacao
+        )
         return JsonResponse(response_data, status=200)
     
-    except Responsabilidade.DoesNotExist:
-        return JsonResponse({"error": "Responsabilidade não encontrada"}, status=400)
     except BusinessError as e:
         return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao atualizar responsabilidade: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
 
 @ajax_login_required
 @require_http_methods(["GET"])
@@ -296,7 +298,7 @@ def update_despesa(request):
     # Obtendo os dados que podem ser atualizados
     user_id = body.get("user_id", despesa.user.id)
     departamento_id = body.get("departamento_id", despesa.departamento.id)
-    valor = body.get("valor", despesa.valor)
+    valor = body.get("valor")
     elemento_id = body.get("elemento_id", despesa.elemento.id)
     tipo_gasto_id = body.get("tipo_gasto_id", despesa.tipoGasto.id)
     justificativa = body.get("justificativa", despesa.justificativa)
@@ -311,7 +313,8 @@ def update_despesa(request):
         # Atualizando os campos da despesa
         despesa.user = user
         despesa.departamento = departamento
-        despesa.valor = valor
+        if valor is not None:
+            despesa.valor = valor
         despesa.elemento = elemento
         despesa.tipoGasto = tipo_gasto
         despesa.justificativa = justificativa
@@ -331,7 +334,8 @@ def update_despesa(request):
     except BusinessError as e:
         return JsonResponse({"error": str(e)}, status=400)
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        logger.error(f"Erro ao atualizar despesa: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
     
 @csrf_exempt
 @ajax_login_required
@@ -389,3 +393,35 @@ def total_despesas_departamento(request, departamento_id):
     except Exception as e:
         logger.error(f"Erro ao obter total de despesas: {str(e)}")
         return JsonResponse({"error": "Erro interno do servidor"}, status=500)
+
+@ajax_login_required
+@require_http_methods(["POST"])
+def add_despesa_view(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user_id = request.user.id
+            departamento_id = data.get('departamento_id')
+            valor = data.get('valor')
+            elemento_id = data.get('elemento_id')
+            tipo_gasto_id = data.get('tipo_gasto_id')
+            justificativa = data.get('justificativa', '')
+
+            if not all([departamento_id, valor, elemento_id, tipo_gasto_id]):
+                return JsonResponse({'error': 'Dados incompletos'}, status=400)
+
+            despesa = service.add_despesa(
+                user_id=user_id,
+                departamento_id=departamento_id,
+                valor=valor,
+                elemento_id=elemento_id,
+                tipo_gasto_id=tipo_gasto_id,
+                justificativa=justificativa
+            )
+            return JsonResponse(despesa)
+        except service.BusinessError as e:
+            return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            logger.error(f"Erro ao adicionar despesa: {str(e)}")
+            return JsonResponse({'error': 'Erro interno do servidor'}, status=500)
+    return JsonResponse({'error': 'Método não permitido'}, status=405)

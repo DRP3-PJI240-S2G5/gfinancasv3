@@ -183,6 +183,13 @@ export default {
           this.valorFormatado = valorLimpo;
         }, 300);
       }
+
+      // Remove os pontos após 300ms
+      setTimeout(() => {
+        if (this.valorFormatado.includes('.')) {
+          this.valorFormatado = this.valorFormatado.replace(/\./g, '');
+        }
+      }, 300);
     },
     formatarValorExibicao(valor) {
       // Converte para número caso seja string
@@ -322,7 +329,8 @@ export default {
     },
     editarDespesa(despesa) {
       // Preenche o formulário com os dados da despesa
-      this.valorFormatado = this.formatarValorExibicao(despesa.valor);
+      const valorFormatado = this.formatarValorExibicao(despesa.valor);
+      this.valorFormatado = valorFormatado.replace(/\./g, ''); // Remove todos os pontos
       this.elementoSelecionado = despesa.elemento.id;
       this.justificativa = despesa.justificativa;
       

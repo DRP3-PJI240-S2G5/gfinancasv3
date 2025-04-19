@@ -22,7 +22,7 @@ urlpatterns = [
     path("tipo-gastos/list", views.list_tipo_gastos, name="list_tipo_gastos"),
     path("tipo-gastos/por-elemento/<int:elemento_id>", views.list_tipo_gastos_por_elemento),
      # Endpoints para Despesa
-    path("despesas/add", views.add_despesa, name="add_despesa"),
+    path("despesas/add", views.add_despesa_view, name="add_despesa"),
     path("despesas/update", views.update_despesa, name="update_despesa"),
     path("despesas/list", views.list_despesas, name="list_despesas"),
     path('despesas/list/<int:departamento_id>', views.list_despesas_departamento, name="list_despesas_departamento"),
