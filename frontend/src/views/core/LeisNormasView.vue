@@ -10,11 +10,11 @@
         ></v-progress-linear>
         <v-list v-else>
           <v-list-item v-for="lei in leisNormas" :key="lei.id">
-            <v-list-item-content>
-              <v-list-item-title>{{ lei.numero }} - {{ lei.titulo }}</v-list-item-title>
-              <v-list-item-subtitle>{{ formatarData(lei.data_publicacao) }} - {{ lei.descricao }}</v-list-item-subtitle>
+            <v-list-item-title>{{ lei.numero }} - {{ lei.titulo }}</v-list-item-title>
+            <v-list-item-subtitle>{{ formatarData(lei.data_publicacao) }} - {{ lei.descricao }}</v-list-item-subtitle>
+            <template v-slot:append>
               <v-btn v-if="lei.arquivo" :href="lei.arquivo" target="_blank" text color="primary">Ver Arquivo</v-btn>
-            </v-list-item-content>
+            </template>
           </v-list-item>
         </v-list>
         <v-alert v-if="!leisNormasLoading && leisNormas.length === 0" type="info" class="mt-2">
