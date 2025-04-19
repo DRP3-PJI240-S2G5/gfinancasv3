@@ -153,7 +153,6 @@ export default {
     ...mapState(useCoreStore, ["departamentos", "elementos", "elementosLoading"]),
     departamento() {
       const id = this.$route.params.departamento
-      console.log('ID do departamento na URL:', id);
       return this.departamentos.find(dep => dep.id === id || dep.id.toString() === id)
     },
   },
@@ -201,7 +200,6 @@ export default {
     async carregarDespesas(page = 1) {
       try {
         const resultado = await this.coreStore.getDespesasPorDepartamento(this.departamento.id, page, this.perPage)
-        console.log("Despesas carregadas:", resultado.despesas)
         this.despesas = resultado.despesas
         this.totalPaginas = resultado.totalPaginas
       } catch (error) {
@@ -212,7 +210,6 @@ export default {
     async carregarTiposGasto() {
       try {
         const tipos = await this.coreStore.getTipoGastosPorElemento(this.elementoSelecionado)
-        console.log("Tipos de gasto recebidos:", tipos)
         this.tipoGastosDisponiveis = tipos
         this.tipoGastoSelecionado = null
       } catch (error) {

@@ -85,7 +85,6 @@ export default {
   mounted() {
     this.getTipoGastos()
     this.getElementos()
-    console.log("TGs no mounted:", this.tipoGastos)
   },
   methods: {
     getTipoGastos() {
