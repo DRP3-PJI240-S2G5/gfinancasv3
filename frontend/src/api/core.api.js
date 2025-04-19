@@ -59,4 +59,8 @@ export default {
     const response = await api.delete(`/api/core/despesas/delete/${despesaId}`);
     return response.data;
   },
+  getLeisNormas: async () => {
+    const response = await api.get("/api/core/leis-normas/list")
+    return response.data
+  },
 }

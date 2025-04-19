@@ -69,8 +69,10 @@ export default [
         meta: { requiresAuth: true },
       },
       {
-        path: '/leis-normas',
-        component: () => import('@/views/LeisNormasView.vue')
+        path: 'consultas',
+        name: 'consultas',
+        component: () => import('@/views/core/LeisNormasView.vue'),
+        meta: { requiresAuth: true },
       }
     ],
   },

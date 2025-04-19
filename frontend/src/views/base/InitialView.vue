@@ -24,7 +24,7 @@
     </v-row>
     <v-row justify="center">
       <v-col cols="4">
-        <card-option cardOptionTitle="Consultas" cardOptionDescription="Normas e Leis correlatas" cardOptionLink="/inicial" cardOptionIcon="mdi-text-box-search-outline">
+        <card-option cardOptionTitle="Consultas" cardOptionDescription="Normas e Leis correlatas" cardOptionLink="/consultas" cardOptionIcon="mdi-text-box-search-outline">
         </card-option>
       </v-col>
 

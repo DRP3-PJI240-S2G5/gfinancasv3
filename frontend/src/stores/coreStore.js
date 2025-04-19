@@ -7,10 +7,12 @@ export const useCoreStore = defineStore("coreStore", {
     elementos: [],
     tipoGastos: [],
     despesas: [],
+    leisNormas: [],
     departamentosLoading: false,
     elementosLoading: false,
     tipoGastosLoading: false,
     despesasLoading: false,
+    leisNormasLoading: false,
   }),
   actions: {
     async getDepartamentos() {
@@ -101,6 +103,20 @@ export const useCoreStore = defineStore("coreStore", {
         this.despesas = this.despesas.filter(d => d.id !== despesaId);
       } catch (e) {
         console.error("Erro ao deletar despesa:", e);
+        throw e;
+      }
+    },
+    // Função para buscar leis e normas
+    async getLeisNormas() {
+      this.leisNormasLoading = true;
+      try {
+        const response = await coreApi.getLeisNormas();
+        this.leisNormas = response.leis_normas;
+        this.leisNormasLoading = false;
+        return response.leis_normas;
+      } catch (e) {
+        console.error("Erro ao carregar leis e normas:", e);
+        this.leisNormasLoading = false;
         throw e;
       }
     },
