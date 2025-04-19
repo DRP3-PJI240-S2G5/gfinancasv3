@@ -378,11 +378,8 @@ def list_leis_normas(request):
     logger.info("API list leis e normas")
     
     try:
-        # Obtém todas as leis e normas
-        leis_normas = LeiNorma.objects.all()
-        
-        # Converte os objetos em dicionários
-        dados = list(leis_normas.values('id', 'nome', 'descricao', 'numero', 'data_publicacao'))
+        # Chama o serviço para listar as leis e normas
+        dados = service.list_leis_normas()
         
         # Retorna os dados como resposta JSON
         return JsonResponse({"leis_normas": dados}, safe=False, status=200)

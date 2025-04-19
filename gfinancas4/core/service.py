@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.core.paginator import Paginator
 from typing import List, Dict
 from .models import (
-    Departamento, Responsabilidade, Verba, Elemento, TipoGasto, Despesa, Subordinacao, ElementoTipoGasto
+    Departamento, Responsabilidade, Verba, Elemento, TipoGasto, Despesa, Subordinacao, ElementoTipoGasto, LeiNorma
 )
 from ..accounts.models import User
 from gfinancas4.base.exceptions import BusinessError
@@ -302,3 +302,9 @@ def list_tipo_gastos_por_elemento(elemento_id: int) -> List[dict]:
         }
         for r in relacoes
     ]
+
+# SERVIÇOS PARA LEIS E NORMAS
+def list_leis_normas() -> List[dict]:
+    """Retorna todas as leis e normas cadastradas."""
+    logger.info("SERVICE list leis e normas")
+    return [lei.to_dict_json() for lei in LeiNorma.objects.all()]

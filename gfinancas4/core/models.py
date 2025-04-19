@@ -217,6 +217,7 @@ class Despesa(models.Model):
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
+
 class LeiNorma(models.Model):
     titulo = models.CharField(max_length=255)
     descricao = models.TextField()
@@ -226,3 +227,13 @@ class LeiNorma(models.Model):
 
     def __str__(self):
         return f"{self.numero} - {self.titulo}"
+        
+    def to_dict_json(self):
+        return {
+            "id": self.id,
+            "titulo": self.titulo,
+            "descricao": self.descricao,
+            "numero": self.numero,
+            "data_publicacao": self.data_publicacao.isoformat(),
+            "arquivo": self.arquivo.url if self.arquivo else None
+        }
