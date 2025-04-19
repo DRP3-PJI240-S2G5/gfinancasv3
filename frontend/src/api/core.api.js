@@ -59,4 +59,9 @@ export default {
     const response = await api.delete(`/api/core/despesas/delete/${despesaId}`);
     return response.data;
   },
+  // Função para buscar o total de despesas de um departamento
+  getTotalDespesasDepartamento: async (departamentoId) => {
+    const response = await api.get(`/api/core/departamentos/total-despesas/${departamentoId}`);
+    return response.data;
+  },
 }

@@ -60,12 +60,7 @@ export default {
      // Simula uma chamada à API e insere detalhes fake
       this.coreStore.getDepartamentos().then(() => {
         this.coreStore.departamentos = this.coreStore.departamentos.map(departamento => ({
-          ...departamento,
-          gastos: [
-            { id: 1, descricao: "Compra de materiais", valor: 10542.00 },
-            { id: 2, descricao: "Manutenção de equipamentos", valor: 8540.00 },
-            { id: 3, descricao: "Treinamento", valor: 8360.00 },
-          ],
+          ...departamento
         }));
       });
     },

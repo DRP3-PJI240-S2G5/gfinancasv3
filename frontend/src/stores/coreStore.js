@@ -104,5 +104,15 @@ export const useCoreStore = defineStore("coreStore", {
         throw e;
       }
     },
+    // Função para buscar o total de despesas de um departamento
+    async getTotalDespesasDepartamento(departamentoId) {
+      try {
+        const response = await coreApi.getTotalDespesasDepartamento(departamentoId);
+        return response;
+      } catch (e) {
+        console.error("Erro ao buscar total de despesas do departamento:", e);
+        throw e;
+      }
+    },
   },
 })
