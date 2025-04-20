@@ -2,6 +2,40 @@ from django.db import models
 from ..accounts.models import User
 from django.core.exceptions import ValidationError
 
+def verificar_ciclo_subordinacao(superior, subordinado, visitados=None):
+    """
+    Verifica se existe um ciclo de subordinação entre dois departamentos.
+    
+    Args:
+        superior: Departamento superior
+        subordinado: Departamento subordinado
+        visitados: Conjunto de IDs de departamentos já visitados na busca
+        
+    Returns:
+        bool: True se existe um ciclo, False caso contrário
+    """
+    if visitados is None:
+        visitados = set()
+        
+    # Se o departamento atual já foi visitado, temos um ciclo
+    if subordinado.id in visitados:
+        return True
+        
+    # Adiciona o departamento atual aos visitados
+    visitados.add(subordinado.id)
+    
+    # Verifica subordinações diretas
+    subordinacoes = Subordinacao.objects.filter(superior=subordinado)
+    for sub in subordinacoes:
+        # Se encontramos o superior em alguma subordinação, temos um ciclo
+        if sub.subordinado.id == superior.id:
+            return True
+        # Verifica recursivamente as subordinações indiretas
+        if verificar_ciclo_subordinacao(superior, sub.subordinado, visitados):
+            return True
+            
+    return False 
+
 class Departamento(models.Model):
     nome = models.CharField(max_length=256)
     description = models.CharField(max_length=512)
@@ -40,6 +74,25 @@ class Subordinacao(models.Model):
     )
     data_subordinacao = models.DateTimeField(auto_now_add=True) 
     observacao = models.TextField(blank=True, null=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['superior', 'subordinado'],
+                name='unique_subordinacao'
+            )
+        ]
+
+    def clean(self):
+        if self.superior_id == self.subordinado_id:
+            raise ValidationError("Um departamento não pode ser subordinado a si mesmo.")
+            
+        if verificar_ciclo_subordinacao(self.superior, self.subordinado):
+            raise ValidationError("Não é possível criar esta subordinação pois ela criaria um ciclo na hierarquia.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.subordinado} subordinado a {self.superior} desde {self.data_subordinacao}"
@@ -217,3 +270,4 @@ class Despesa(models.Model):
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
+    

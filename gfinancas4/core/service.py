@@ -4,12 +4,13 @@ from django.core.paginator import Paginator
 from typing import List, Dict
 from django.db.models import Sum
 from .models import (
-    Departamento, Responsabilidade, Verba, Elemento, TipoGasto, Despesa, Subordinacao, ElementoTipoGasto
+    Departamento, Responsabilidade, Verba, Elemento, TipoGasto, Despesa, Subordinacao, ElementoTipoGasto, verificar_ciclo_subordinacao
 )
 from ..accounts.models import User
 from gfinancas4.base.exceptions import BusinessError
 from django.core.exceptions import ValidationError
 from decimal import Decimal, InvalidOperation
+
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +101,40 @@ def list_departamentos() -> List[dict]:
     logger.info("SERVICE list departamentos")
     return [item.to_dict_json() for item in Departamento.objects.all()]
 
+def _verificar_ciclo_subordinacao(superior: Departamento, subordinado: Departamento, visitados=None) -> bool:
+    """
+    Verifica se existe um ciclo de subordinação entre dois departamentos.
+    
+    Args:
+        superior: Departamento superior
+        subordinado: Departamento subordinado
+        visitados: Conjunto de IDs de departamentos já visitados na busca
+        
+    Returns:
+        bool: True se existe um ciclo, False caso contrário
+    """
+    if visitados is None:
+        visitados = set()
+        
+    # Se o departamento atual já foi visitado, temos um ciclo
+    if subordinado.id in visitados:
+        return True
+        
+    # Adiciona o departamento atual aos visitados
+    visitados.add(subordinado.id)
+    
+    # Verifica subordinações diretas
+    subordinacoes = Subordinacao.objects.filter(superior=subordinado)
+    for sub in subordinacoes:
+        # Se encontramos o superior em alguma subordinação, temos um ciclo
+        if sub.subordinado.id == superior.id:
+            return True
+        # Verifica recursivamente as subordinações indiretas
+        if _verificar_ciclo_subordinacao(superior, sub.subordinado, visitados):
+            return True
+            
+    return False
+
 def add_subordinacao(superior_id: int, subordinado_id: int, observacao: str = "") -> dict:
     """
     Adiciona uma relação de subordinação entre departamentos.
@@ -113,7 +148,8 @@ def add_subordinacao(superior_id: int, subordinado_id: int, observacao: str = ""
         dict: Dados da subordinação criada
         
     Raises:
-        BusinessError: Se a subordinação já existir ou se os departamentos não forem encontrados
+        BusinessError: Se a subordinação já existir, se os departamentos não forem encontrados
+                      ou se a subordinação criaria um ciclo
     """
     logger.info(f"SERVICE add subordinacao: {subordinado_id} subordinado a {superior_id}")
     
@@ -125,6 +161,9 @@ def add_subordinacao(superior_id: int, subordinado_id: int, observacao: str = ""
     
     if Subordinacao.objects.filter(superior=superior, subordinado=subordinado).exists():
         raise BusinessError("Essa relação de subordinação já existe.")
+        
+    if verificar_ciclo_subordinacao(superior, subordinado):
+        raise BusinessError("Não é possível criar esta subordinação pois ela criaria um ciclo na hierarquia.")
     
     subordinacao = Subordinacao(
         superior=superior, 
