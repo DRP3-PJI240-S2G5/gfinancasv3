@@ -166,7 +166,8 @@ export default {
     totalDespesas: "R$ 0,00",
     totalDespesasSubordinados: "R$ 0,00",
     verbaTotal: 30000.00,
-    intervaloAtualizacao: null
+    intervaloAtualizacao: null,
+    carregandoSubordinados: false
   }),
   props: {
     departamento: {
@@ -251,15 +252,17 @@ export default {
           this.carregarDespesas()
         }
       }
+    },
+    // Observa mudanças nas subordinações para recarregar os totais
+    'coreStore.subordinacoes': {
+      handler() {
+        this.carregarTotalDespesas()
+      },
+      deep: true
     }
   },
   mounted() {
-    this.carregarTotalDespesas()
-    this.carregarSubordinacoes()
-    // Inicia o polling a cada 30 segundos
-    this.intervaloAtualizacao = setInterval(() => {
-      this.carregarTotalDespesas()
-    }, 30000) // 30 segundos
+    this.inicializarDados()
   },
   beforeUnmount() {
     // Limpa o intervalo quando o componente for desmontado
@@ -287,17 +290,56 @@ export default {
         console.error("Erro ao carregar despesas:", error)
       }
     },
+    async inicializarDados() {
+      try {
+        // Primeiro carrega as subordinações
+        await this.carregarSubordinacoes()
+        // Depois carrega os totais
+        await this.carregarTotalDespesas()
+        // Inicia o polling
+        this.iniciarPolling()
+      } catch (error) {
+        console.error("Erro ao inicializar dados:", error)
+      }
+    },
+    iniciarPolling() {
+      // Limpa o intervalo anterior se existir
+      if (this.intervaloAtualizacao) {
+        clearInterval(this.intervaloAtualizacao)
+      }
+      // Inicia o polling a cada 30 segundos
+      this.intervaloAtualizacao = setInterval(() => {
+        this.carregarTotalDespesas()
+      }, 30000)
+    },
+    async carregarSubordinacoes() {
+      if (this.carregandoSubordinados) return
+      
+      this.carregandoSubordinados = true
+      try {
+        await this.coreStore.getSubordinacoes()
+      } catch (error) {
+        console.error("Erro ao carregar subordinações:", error)
+      } finally {
+        this.carregandoSubordinados = false
+      }
+    },
     async carregarTotalDespesas() {
       try {
+        // Carrega despesas do departamento principal
         const response = await this.coreStore.getTotalDespesasDepartamento(this.departamento.id)
         this.totalDespesas = response.total_despesas_formatado
 
-        // Carrega as despesas de todos os departamentos subordinados (diretos e indiretos)
+        // Carrega as despesas dos subordinados
         let totalSubordinados = 0
-        for (const dept of this.todosDepartamentosSubordinados) {
-          const responseSub = await this.coreStore.getTotalDespesasDepartamento(dept.id)
-          const valorSub = this.formatarValorMonetario(responseSub.total_despesas_formatado)
-          totalSubordinados += valorSub
+        const subordinados = this.todosDepartamentosSubordinados
+        
+        if (subordinados.length > 0) {
+          for (const dept of subordinados) {
+            const responseSub = await this.coreStore.getTotalDespesasDepartamento(dept.id)
+            const valorSub = this.formatarValorMonetario(responseSub.total_despesas_formatado)
+            totalSubordinados += valorSub
+          }
         }
         
         this.totalDespesasSubordinados = totalSubordinados.toLocaleString('pt-BR', {
@@ -306,13 +348,6 @@ export default {
         })
       } catch (error) {
         console.error("Erro ao carregar total de despesas:", error)
-      }
-    },
-    async carregarSubordinacoes() {
-      try {
-        await this.coreStore.getSubordinacoes()
-      } catch (error) {
-        console.error("Erro ao carregar subordinações:", error)
       }
     },
     async mudarPagina(novaPagina) {
