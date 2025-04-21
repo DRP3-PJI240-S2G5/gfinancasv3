@@ -11,6 +11,8 @@ urlpatterns = [
     # subordinacao
     path("subordinacao/add", views.add_subordinacao, name="add_subordinacao"),
     path("subordinacao/list", views.list_subordinacoes, name="list_subordinacoes"),
+    path("subordinacao/update/<int:id>", views.update_subordinacao, name="update_subordinacao"),
+    path("subordinacao/delete/<int:id>", views.delete_subordinacao, name="delete_subordinacao"),
     # Endpoints para Responsabilidade
     path("responsabilidades/add", views.add_responsabilidade, name="add_responsabilidade"),
     path("responsabilidades/list", views.list_responsabilidades, name="list_responsabilidades"),

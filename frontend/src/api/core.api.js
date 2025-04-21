@@ -64,4 +64,27 @@ export default {
     const response = await api.get(`/api/core/departamentos/total-despesas/${departamentoId}`);
     return response.data;
   },
+  // Funções para gerenciar subordinações
+  getSubordinacoes: async () => {
+    const response = await api.get("/api/core/subordinacao/list")
+    return response.data
+  },
+
+  createSubordinacao: async (subordinacao) => {
+    const response = await api.post("/api/core/subordinacao/add", subordinacao)
+    return response.data
+  },
+
+  updateSubordinacao: async (subordinacao) => {
+    const response = await api.put(`/api/core/subordinacao/update/${subordinacao.id}`, subordinacao)
+    return response.data
+  },
+
+  deleteSubordinacao: async (id) => {
+    if (!id) {
+      throw new Error('ID da subordinação é obrigatório')
+    }
+    const response = await api.delete(`/api/core/subordinacao/delete/${id}`)
+    return response.data
+  }
 }

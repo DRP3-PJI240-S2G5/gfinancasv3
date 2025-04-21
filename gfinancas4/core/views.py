@@ -425,3 +425,52 @@ def add_despesa_view(request):
             logger.error(f"Erro ao adicionar despesa: {str(e)}")
             return JsonResponse({'error': 'Erro interno do servidor'}, status=500)
     return JsonResponse({'error': 'Método não permitido'}, status=405)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["PUT"])
+def update_subordinacao(request, id):
+    """Atualiza uma relação de subordinação existente."""
+    logger.info("API update subordinacao.")
+    body = json.loads(request.body)
+    
+    id_departamento_a = body.get("IdDepartamentoA")
+    id_departamento_b = body.get("IdDepartamentoB")
+    observacao = body.get("Observacao", "")
+    
+    # Previne laços de subordinação direta
+    if id_departamento_a == id_departamento_b:
+        return JsonResponse(
+            {"error": "Um departamento não pode ser subordinado a si mesmo."}, 
+            status=400
+        )
+    
+    try:
+        subordinacao = service.update_subordinacao(
+            subordinacao_id=id,
+            superior_id=id_departamento_a,
+            subordinado_id=id_departamento_b,
+            observacao=observacao
+        )
+        return JsonResponse(subordinacao, status=200)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao atualizar subordinação: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["DELETE"])
+def delete_subordinacao(request, id):
+    """Remove uma relação de subordinação existente."""
+    logger.info(f"API delete subordinacao: {id}")
+    
+    try:
+        service.delete_subordinacao(id)
+        return JsonResponse({"message": "Subordinação removida com sucesso."}, status=200)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao remover subordinação: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)

@@ -48,6 +48,15 @@ export default [
             component: CategoriasView,
             meta: { requiresAuth: true },
           },
+          {
+            path: 'subordinacoes',
+            name: 'SubordinacoesView',
+            component: () => import('@/views/core/SubordinacoesView.vue'),
+            meta: {
+              requiresAuth: true,
+              title: 'Subordinações'
+            }
+          }
         ],
       },
       {

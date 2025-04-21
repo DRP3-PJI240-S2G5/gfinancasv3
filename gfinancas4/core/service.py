@@ -161,6 +161,10 @@ def add_subordinacao(superior_id: int, subordinado_id: int, observacao: str = ""
     
     if Subordinacao.objects.filter(superior=superior, subordinado=subordinado).exists():
         raise BusinessError("Essa relação de subordinação já existe.")
+    
+    # Verifica se o departamento subordinado já possui uma subordinação direta
+    if Subordinacao.objects.filter(subordinado=subordinado).exists():
+        raise BusinessError("Este departamento já possui uma subordinação direta com outro departamento.")
         
     if verificar_ciclo_subordinacao(superior, subordinado):
         raise BusinessError("Não é possível criar esta subordinação pois ela criaria um ciclo na hierarquia.")
@@ -173,30 +177,61 @@ def add_subordinacao(superior_id: int, subordinado_id: int, observacao: str = ""
     subordinacao.save()
     return subordinacao.to_dict_json()
 
-def update_subordinacao(subordinacao_id: int, observacao: str) -> dict:
+def update_subordinacao(subordinacao_id: int, superior_id: int, subordinado_id: int, observacao: str = "") -> dict:
     """
-    Atualiza a observação de uma subordinação existente.
+    Atualiza uma subordinação existente.
     
     Args:
         subordinacao_id: ID da subordinação a ser atualizada
+        superior_id: ID do novo departamento superior
+        subordinado_id: ID do novo departamento subordinado
         observacao: Nova observação
         
     Returns:
         dict: Dados da subordinação atualizada
         
     Raises:
-        BusinessError: Se a subordinação não for encontrada
+        BusinessError: Se a subordinação não for encontrada ou se a atualização criaria um ciclo
     """
     logger.info(f"SERVICE update subordinacao: {subordinacao_id}")
     
     try:
         subordinacao = Subordinacao.objects.get(id=subordinacao_id)
-    except Subordinacao.DoesNotExist:
-        raise BusinessError("Subordinação não encontrada para atualização.")
+        superior = Departamento.objects.get(id=superior_id)
+        subordinado = Departamento.objects.get(id=subordinado_id)
+    except (Subordinacao.DoesNotExist, Departamento.DoesNotExist):
+        raise BusinessError("Subordinação ou departamento não encontrado para atualização.")
     
+    # Verifica se já existe uma subordinação com os mesmos departamentos
+    if Subordinacao.objects.filter(superior=superior, subordinado=subordinado).exclude(id=subordinacao_id).exists():
+        raise BusinessError("Essa relação de subordinação já existe.")
+    
+    # Verifica se o departamento subordinado já possui uma subordinação direta com outro departamento
+    if Subordinacao.objects.filter(subordinado=subordinado).exclude(id=subordinacao_id).exists():
+        raise BusinessError("Este departamento já possui uma subordinação direta com outro departamento.")
+    
+    # Verifica se a atualização criaria um ciclo
+    if verificar_ciclo_subordinacao(superior, subordinado):
+        raise BusinessError("Não é possível criar esta subordinação pois ela criaria um ciclo na hierarquia.")
+    
+    subordinacao.superior = superior
+    subordinacao.subordinado = subordinado
     subordinacao.observacao = observacao
     subordinacao.save()
+    
     return subordinacao.to_dict_json()
+
+def delete_subordinacao(id):
+    """Remove uma relação de subordinação existente."""
+    try:
+        subordinacao = Subordinacao.objects.get(id=id)
+        subordinacao.delete()
+        return True
+    except Subordinacao.DoesNotExist:
+        raise BusinessError("Subordinação não encontrada.")
+    except Exception as e:
+        logger.error(f"Erro ao remover subordinação: {str(e)}")
+        raise BusinessError("Erro ao remover subordinação.")
 
 def list_subordinacoes() -> list[dict]:
     """Busca e retorna todas as relações de subordinação no formato JSON."""

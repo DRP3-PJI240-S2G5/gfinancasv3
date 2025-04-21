@@ -27,6 +27,10 @@
         <card-option cardOptionTitle="Elementos/Tipos de Gastos" cardOptionDescription="Listagem de categorias" cardOptionLink="/gestao/categorias" cardOptionIcon="mdi-currency-usd">
         </card-option>
       </v-col>
+      <v-col cols="4">
+        <card-option cardOptionTitle="Subordinações" cardOptionDescription="adicionar ou remover relações de subordinação/supervisão" cardOptionLink="/gestao/subordinacoes" cardOptionIcon="mdi-graph">
+        </card-option>
+      </v-col>
     </v-row>
   </v-container>
 </template>

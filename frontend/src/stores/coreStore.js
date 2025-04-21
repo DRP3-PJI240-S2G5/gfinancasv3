@@ -7,10 +7,12 @@ export const useCoreStore = defineStore("coreStore", {
     elementos: [],
     tipoGastos: [],
     despesas: [],
+    subordinacoes: [],
     departamentosLoading: false,
     elementosLoading: false,
     tipoGastosLoading: false,
     despesasLoading: false,
+    subordinacoesLoading: false,
   }),
   actions: {
     async getDepartamentos() {
@@ -112,6 +114,55 @@ export const useCoreStore = defineStore("coreStore", {
       } catch (e) {
         console.error("Erro ao buscar total de despesas do departamento:", e);
         throw e;
+      }
+    },
+    // Ações para gerenciar subordinações
+    async getSubordinacoes() {
+      this.subordinacoesLoading = true
+      try {
+        const response = await coreApi.getSubordinacoes()
+        this.subordinacoes = response.subordinacoes
+        this.subordinacoesLoading = false
+        return response
+      } catch (e) {
+        console.error("Erro ao carregar subordinações:", e)
+        this.subordinacoesLoading = false
+        throw e
+      }
+    },
+
+    async createSubordinacao(novaSubordinacao) {
+      try {
+        const subordinacao = await coreApi.createSubordinacao(novaSubordinacao)
+        this.subordinacoes.push(subordinacao)
+        return subordinacao
+      } catch (e) {
+        console.error("Erro ao adicionar subordinação:", e)
+        throw e
+      }
+    },
+
+    async updateSubordinacao(subordinacaoAtualizada) {
+      try {
+        const subordinacao = await coreApi.updateSubordinacao(subordinacaoAtualizada)
+        const index = this.subordinacoes.findIndex(s => s.id === subordinacao.id)
+        if (index !== -1) {
+          this.subordinacoes[index] = subordinacao
+        }
+        return subordinacao
+      } catch (e) {
+        console.error("Erro ao atualizar subordinação:", e)
+        throw e
+      }
+    },
+
+    async deleteSubordinacao(id) {
+      try {
+        await coreApi.deleteSubordinacao(id)
+        this.subordinacoes = this.subordinacoes.filter(s => s.id !== id)
+      } catch (e) {
+        console.error("Erro ao deletar subordinação:", e)
+        throw e
       }
     },
   },

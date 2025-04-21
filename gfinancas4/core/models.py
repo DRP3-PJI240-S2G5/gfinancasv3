@@ -99,6 +99,7 @@ class Subordinacao(models.Model):
 
     def to_dict_json(self):
         return {
+            "id": self.id,
             "superior": {
                 "id": self.superior.id,
                 "nome": self.superior.nome,
