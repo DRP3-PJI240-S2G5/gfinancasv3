@@ -10,8 +10,8 @@
           {{ valorRestante }} {{ ultrapassouLimite ? 'excedido' : 'restante' }}
         </div>
       </v-card-title>
-      <br>
       <v-card-text>
+        <!-- essa parte coloca um indicador de meta
         <div
           :style="`right: calc(${Math.min(porcentagemGastos, 100)}% - 0px)`"
           class="position-absolute mt-n8 text-caption"
@@ -19,31 +19,49 @@
         >
           Meta
         </div>
-        <v-progress-linear
-          :color="corBarraProgresso"
-          height="22"
-          :model-value="Math.min(porcentagemGastos, 100)"
-          rounded="lg"
-        >
+        -->
+        <div class="position-relative" style="height: 22px;">
+          <!-- Barra do departamento principal -->
+          <v-progress-linear
+            :color="corBarraProgresso"
+            height="22"
+            :model-value="Math.min(porcentagemGastosDepartamento, 100)"
+            rounded="lg"
+            class="position-absolute w-100"
+            style="z-index: 2;"
+          ></v-progress-linear>
+          
+          <!-- Barra dos subordinados -->
+          <v-progress-linear
+            :color="corBarraProgressoSubordinados"
+            height="22"
+            :model-value="Math.min(porcentagemGastosSubordinados + porcentagemGastosDepartamento, 100)"
+            rounded="lg"
+            class="position-absolute w-100"
+            style="z-index: 1;"
+          ></v-progress-linear>
+
+          <!-- Indicador de Meta 
           <v-badge
             :style="`right: ${Math.min(porcentagemGastos, 100)}%`"
             class="position-absolute"
-            color="white"
+            color="yellow"
             dot
             inline
-          ></v-badge>
-        </v-progress-linear>
+            style="z-index: 3;"
+          ></v-badge>-->
+        </div>
 
         <div class="d-flex justify-space-between py-3">
           <span class="text-green-darken-3 font-weight-medium">
             {{ totalDespesas }}<br>
-            <span class="text-caption">+ {{ totalDespesasSubordinados }} (subordinados)</span><br>
+            <span class="text-caption" style="color: #d6ae02;">+ {{ totalDespesasSubordinados }} (subordinados)</span><br>
             <span v-if="totalDespesas && totalDespesasSubordinados" class="text-body-2">Total: {{ 
               (formatarValorMonetario(totalDespesas) + formatarValorMonetario(totalDespesasSubordinados)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) 
             }}</span>
           </span>
 
-          <span class="text-medium-emphasis"> R$ 29.380,00<br>verba total </span>
+          <span class="text-medium-emphasis"> R$ {{ verbaTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}<br>verba total </span>
         </div>
 
         <!-- Informações de Subordinação -->
@@ -58,7 +76,7 @@
               v-for="dept in departamentosSubordinados"
               :key="dept.id"
               class="ma-1"
-              color="#2E7D32"
+              color="#d6ae02"
               variant="outlined"
             >
               {{ dept.nome }}
@@ -68,7 +86,7 @@
             <div class="text-body-2 font-weight-medium">Subordinado a:</div>
             <v-chip
               class="ma-1"
-              color="#d6ae02"
+              color="#2E7D32"
               variant="outlined"
             >
               {{ departamentoSuperior.nome }}
@@ -147,7 +165,7 @@ export default {
     itensPorPagina: 10,
     totalDespesas: "R$ 0,00",
     totalDespesasSubordinados: "R$ 0,00",
-    verbaTotal: 29380.00,
+    verbaTotal: 30000.00,
     intervaloAtualizacao: null
   }),
   props: {
@@ -162,12 +180,16 @@ export default {
   },
   computed: {
     ...mapState(useCoreStore, ["despesasLoading"]),
-    porcentagemGastos() {
-      // Extrai o valor numérico do totalDespesas usando a função utilitária
+    porcentagemGastosDepartamento() {
       const valorTotal = this.formatarValorMonetario(this.totalDespesas)
+      return (valorTotal / this.verbaTotal) * 100
+    },
+    porcentagemGastosSubordinados() {
       const valorSubordinados = this.formatarValorMonetario(this.totalDespesasSubordinados)
-      // Calcula a porcentagem considerando o total + subordinados
-      return ((valorTotal + valorSubordinados) / this.verbaTotal) * 100
+      return (valorSubordinados / this.verbaTotal) * 100
+    },
+    porcentagemGastos() {
+      return this.porcentagemGastosDepartamento + this.porcentagemGastosSubordinados
     },
     valorRestante() {
       // Extrai o valor numérico do totalDespesas usando a função utilitária
@@ -187,6 +209,9 @@ export default {
     corBarraProgresso() {
       return this.ultrapassouLimite ? 'red-darken-3' : 'green-darken-3'
     },
+    corBarraProgressoSubordinados() {
+      return this.ultrapassouLimite ? 'red-darken-1' : '#d6ae02'
+    },
     // Computed properties para subordinação
     departamentosSubordinados() {
       return this.coreStore.subordinacoes
@@ -198,6 +223,24 @@ export default {
         s => s.subordinado.id === this.departamento.id
       )
       return subordinacao ? subordinacao.superior : null
+    },
+    // Retorna todos os departamentos subordinados (diretos e indiretos)
+    todosDepartamentosSubordinados() {
+      const subordinados = new Set()
+      
+      const buscarSubordinados = (deptId) => {
+        const subordinadosDiretos = this.coreStore.subordinacoes
+          .filter(s => s.superior.id === deptId)
+          .map(s => s.subordinado)
+        
+        for (const sub of subordinadosDiretos) {
+          subordinados.add(sub)
+          buscarSubordinados(sub.id)
+        }
+      }
+      
+      buscarSubordinados(this.departamento.id)
+      return Array.from(subordinados)
     }
   },
   watch: {
@@ -249,9 +292,9 @@ export default {
         const response = await this.coreStore.getTotalDespesasDepartamento(this.departamento.id)
         this.totalDespesas = response.total_despesas_formatado
 
-        // Carrega as despesas dos departamentos subordinados
+        // Carrega as despesas de todos os departamentos subordinados (diretos e indiretos)
         let totalSubordinados = 0
-        for (const dept of this.departamentosSubordinados) {
+        for (const dept of this.todosDepartamentosSubordinados) {
           const responseSub = await this.coreStore.getTotalDespesasDepartamento(dept.id)
           const valorSub = this.formatarValorMonetario(responseSub.total_despesas_formatado)
           totalSubordinados += valorSub
