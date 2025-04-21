@@ -99,7 +99,7 @@ def update_departamento(departamento_id: int, nome: str = None, description: str
 
 def list_departamentos() -> List[dict]:
     logger.info("SERVICE list departamentos")
-    return [item.to_dict_json() for item in Departamento.objects.all()]
+    return [item.to_dict_json() for item in Departamento.objects.all().order_by('id')]
 
 def _verificar_ciclo_subordinacao(superior: Departamento, subordinado: Departamento, visitados=None) -> bool:
     """

@@ -36,10 +36,47 @@
 
         <div class="d-flex justify-space-between py-3">
           <span class="text-green-darken-3 font-weight-medium">
-            {{ totalDespesas }}<br>gastos e despesas
+            {{ totalDespesas }}<br>
+            <span class="text-caption">+ {{ totalDespesasSubordinados }} (subordinados)</span><br>
+            <span v-if="totalDespesas && totalDespesasSubordinados" class="text-body-2">Total: {{ 
+              (formatarValorMonetario(totalDespesas) + formatarValorMonetario(totalDespesasSubordinados)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) 
+            }}</span>
           </span>
 
           <span class="text-medium-emphasis"> R$ 29.380,00<br>verba total </span>
+        </div>
+
+        <!-- Informações de Subordinação -->
+        <v-divider class="my-3"></v-divider>
+        <div class="d-flex flex-column">
+          <div class="text-subtitle-1 font-weight-medium mb-2">
+            Relações de Subordinação:
+          </div>
+          <div v-if="departamentosSubordinados.length > 0" class="mb-2">
+            <div class="text-body-2 font-weight-medium">Supervisor de:</div>
+            <v-chip
+              v-for="dept in departamentosSubordinados"
+              :key="dept.id"
+              class="ma-1"
+              color="#2E7D32"
+              variant="outlined"
+            >
+              {{ dept.nome }}
+            </v-chip>
+          </div>
+          <div v-if="departamentoSuperior" class="mb-2">
+            <div class="text-body-2 font-weight-medium">Subordinado a:</div>
+            <v-chip
+              class="ma-1"
+              color="#d6ae02"
+              variant="outlined"
+            >
+              {{ departamentoSuperior.nome }}
+            </v-chip>
+          </div>
+          <div v-if="!departamentosSubordinados.length && !departamentoSuperior" class="text-body-2">
+            Nenhuma relação de subordinação definida
+          </div>
         </div>
       </v-card-text>
 
@@ -99,6 +136,7 @@
 <script>
 import { useCoreStore } from "@/stores/coreStore"
 import { mapState } from "pinia"
+import { storeToRefs } from "pinia"
 
 export default {
   data: () => ({ 
@@ -108,6 +146,7 @@ export default {
     totalPaginas: 1,
     itensPorPagina: 10,
     totalDespesas: "R$ 0,00",
+    totalDespesasSubordinados: "R$ 0,00",
     verbaTotal: 29380.00,
     intervaloAtualizacao: null
   }),
@@ -124,16 +163,18 @@ export default {
   computed: {
     ...mapState(useCoreStore, ["despesasLoading"]),
     porcentagemGastos() {
-      // Extrai o valor numérico do totalDespesas (remove "R$ " e converte vírgula para ponto)
-      const valorTotal = parseFloat(this.totalDespesas.replace('R$ ', '').replace('.', '').replace(',', '.'))
-      // Calcula a porcentagem
-      return (valorTotal / this.verbaTotal) * 100
+      // Extrai o valor numérico do totalDespesas usando a função utilitária
+      const valorTotal = this.formatarValorMonetario(this.totalDespesas)
+      const valorSubordinados = this.formatarValorMonetario(this.totalDespesasSubordinados)
+      // Calcula a porcentagem considerando o total + subordinados
+      return ((valorTotal + valorSubordinados) / this.verbaTotal) * 100
     },
     valorRestante() {
-      // Extrai o valor numérico do totalDespesas
-      const valorTotal = parseFloat(this.totalDespesas.replace('R$ ', '').replace('.', '').replace(',', '.'))
-      // Calcula o valor restante
-      const restante = this.verbaTotal - valorTotal
+      // Extrai o valor numérico do totalDespesas usando a função utilitária
+      const valorTotal = this.formatarValorMonetario(this.totalDespesas)
+      const valorSubordinados = this.formatarValorMonetario(this.totalDespesasSubordinados)
+      // Calcula o valor restante considerando o total + subordinados
+      const restante = this.verbaTotal - (valorTotal + valorSubordinados)
       // Formata o valor restante
       return restante.toLocaleString('pt-BR', {
         style: 'currency',
@@ -145,6 +186,18 @@ export default {
     },
     corBarraProgresso() {
       return this.ultrapassouLimite ? 'red-darken-3' : 'green-darken-3'
+    },
+    // Computed properties para subordinação
+    departamentosSubordinados() {
+      return this.coreStore.subordinacoes
+        .filter(s => s.superior.id === this.departamento.id)
+        .map(s => s.subordinado)
+    },
+    departamentoSuperior() {
+      const subordinacao = this.coreStore.subordinacoes.find(
+        s => s.subordinado.id === this.departamento.id
+      )
+      return subordinacao ? subordinacao.superior : null
     }
   },
   watch: {
@@ -159,6 +212,7 @@ export default {
   },
   mounted() {
     this.carregarTotalDespesas()
+    this.carregarSubordinacoes()
     // Inicia o polling a cada 30 segundos
     this.intervaloAtualizacao = setInterval(() => {
       this.carregarTotalDespesas()
@@ -173,6 +227,9 @@ export default {
   methods: {
     toggleDetails() {
       this.$emit("toggle-department", this.departamento.id);
+    },
+    formatarValorMonetario(valor) {
+      return parseFloat(valor.replace(/\s/g, '').replace('R$', '').replace(/\./g, '').replace(',', '.'))
     },
     async carregarDespesas() {
       try {
@@ -191,8 +248,28 @@ export default {
       try {
         const response = await this.coreStore.getTotalDespesasDepartamento(this.departamento.id)
         this.totalDespesas = response.total_despesas_formatado
+
+        // Carrega as despesas dos departamentos subordinados
+        let totalSubordinados = 0
+        for (const dept of this.departamentosSubordinados) {
+          const responseSub = await this.coreStore.getTotalDespesasDepartamento(dept.id)
+          const valorSub = this.formatarValorMonetario(responseSub.total_despesas_formatado)
+          totalSubordinados += valorSub
+        }
+        
+        this.totalDespesasSubordinados = totalSubordinados.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        })
       } catch (error) {
         console.error("Erro ao carregar total de despesas:", error)
+      }
+    },
+    async carregarSubordinacoes() {
+      try {
+        await this.coreStore.getSubordinacoes()
+      } catch (error) {
+        console.error("Erro ao carregar subordinações:", error)
       }
     },
     async mudarPagina(novaPagina) {

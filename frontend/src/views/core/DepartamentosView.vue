@@ -47,27 +47,65 @@ export default {
   data() {
     return {
       activeDepartmentId: null, // Armazena o departamento expandido
+      departamentoAtivo: null,
+      dialog: false,
+      editedItem: {
+        id: null,
+        nome: "",
+        descricao: "",
+        verba_total: 0
+      },
+      defaultItem: {
+        id: null,
+        nome: "",
+        descricao: "",
+        verba_total: 0
+      }
     }
   },
   computed: {
     ...mapState(useCoreStore, ["departamentos", "departamentosLoading"]),
   },
-  mounted() {
-    this.getDepartamentos()
+  async mounted() {
+    await this.carregarDados()
   },
   methods: {
-    getDepartamentos() {
-     // Simula uma chamada à API e insere detalhes fake
-      this.coreStore.getDepartamentos().then(() => {
-        this.coreStore.departamentos = this.coreStore.departamentos.map(departamento => ({
-          ...departamento
-        }));
-      });
+    async carregarDados() {
+      try {
+        await this.coreStore.getDepartamentos()
+        await this.coreStore.getSubordinacoes()
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error)
+      }
     },
     toggleDepartment(departmentId) {
       this.activeDepartmentId =
         this.activeDepartmentId === departmentId ? null : departmentId;
     },
+    async salvar() {
+      try {
+        if (this.editedItem.id) {
+          await this.coreStore.updateDepartamento(this.editedItem)
+        } else {
+          await this.coreStore.createDepartamento(this.editedItem)
+        }
+        this.dialog = false
+        this.editedItem = Object.assign({}, this.defaultItem)
+        await this.carregarDados()
+      } catch (error) {
+        console.error("Erro ao salvar departamento:", error)
+      }
+    },
+    editarItem(item) {
+      this.editedItem = Object.assign({}, item)
+      this.dialog = true
+    },
+    fecharDialog() {
+      this.dialog = false
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem)
+      })
+    }
   },
 }
 </script>
