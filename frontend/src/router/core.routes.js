@@ -56,6 +56,15 @@ export default [
               requiresAuth: true,
               title: 'Subordinações'
             }
+          },
+          {
+            path: 'verbas',
+            name: 'verbas',
+            component: () => import('@/views/core/VerbasView.vue'),
+            meta: {
+              requiresAuth: true,
+              title: 'Verbas'
+            }
           }
         ],
       },

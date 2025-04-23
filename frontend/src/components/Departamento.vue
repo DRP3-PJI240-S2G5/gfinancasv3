@@ -1,86 +1,130 @@
 <template>
-  <v-card>
+  <v-card class="mb-4" elevation="2">
     <v-card-text>
-      <div v-if="!hideFields">#{{ departamento.id }}</div>
+      <div v-if="!hideFields" class="text-subtitle-1 font-weight-bold mb-2">#{{ departamento.id }}</div>
 
       <!-- Exibição de Nome -->
-      <span class="ma-0 pa-0 text-h6" v-if="!isEditing">
-        Nome: {{ departamento.nome }}
-      </span>
-      <v-text-field v-if="isEditing" v-model="editNome" label="Nome" outlined></v-text-field>
-      <p></p>
+      <div class="field-container mb-3">
+        <div class="field-row">
+          <div class="field-label font-weight-bold text-subtitle-1">Nome:</div>
+          <div v-if="!isEditing" class="field-value">{{ departamento.nome }}</div>
+          <v-text-field v-if="isEditing" v-model="editNome" label="Nome" outlined dense class="field-input"></v-text-field>
+        </div>
+      </div>
 
       <!-- Exibição de Descrição (condicional com hideFields) -->
-      <span class="ma-0 pa-0 text-h6" v-if="!isEditing && !hideFields">
-        Descrição: {{ departamento.description }}
-      </span>
-      <v-text-field v-if="isEditing && !hideFields" v-model="editDescription" label="Descrição do Departamento" outlined></v-text-field>
-      <p></p>
+      <div v-if="!hideFields" class="field-container mb-3">
+        <div class="field-row">
+          <div class="field-label font-weight-bold text-subtitle-1">Descrição:</div>
+          <div v-if="!isEditing" class="field-value">{{ departamento.description }}</div>
+          <v-text-field v-if="isEditing" v-model="editDescription" label="Descrição do Departamento" outlined dense class="field-input"></v-text-field>
+        </div>
+      </div>
 
       <!-- Exibição de Tipo Entidade (condicional com hideFields) -->
-      <span class="ma-0 pa-0 text-h6" v-if="!isEditing && !hideFields">
-        Tipo de Entidade: {{ departamento.tipoEntidade }}
-      </span>
-      <v-select
-        v-if="isEditing && !hideFields"
-        v-model="editTipoEntidade"
-        :items="tipoEntidadeOptions"
-        item-value="id"
-        item-text="title"
-        label="Tipo de Entidade"
-        outlined>
-      </v-select>
-      <p></p>
+      <div v-if="!hideFields" class="field-container mb-3">
+        <div class="field-row">
+          <div class="field-label font-weight-bold text-subtitle-1">Tipo de Entidade:</div>
+          <div v-if="!isEditing" class="field-value">{{ departamento.tipoEntidade }}</div>
+          <v-select
+            v-if="isEditing"
+            v-model="editTipoEntidade"
+            :items="tipoEntidadeOptions"
+            item-value="id"
+            item-text="title"
+            label="Tipo de Entidade"
+            outlined
+            dense
+            class="field-input">
+          </v-select>
+        </div>
+      </div>
 
       <!-- Exibição do Responsável (IdUserResp) -->
-      <span class="ma-0 pa-0 text-h6" v-if="!isEditing">
-        Responsável: {{ departamento.responsavelId ? responsavelNome : 'Não atribuído' }}
-      </span>
-      <v-select
-        v-if="isEditing"
-        v-model="editResponsavelId"
-        :items="mappedUsers"
-        label="Responsável"
-        item-text="title"
-        item-value="id"
-        outlined></v-select>
-      <p></p>
+      <div class="field-container mb-3">
+        <div class="field-row">
+          <div class="field-label font-weight-bold text-subtitle-1">Responsável:</div>
+          <div v-if="!isEditing" class="field-value">{{ departamento.responsavelId ? responsavelNome : 'Não atribuído' }}</div>
+          <v-select
+            v-if="isEditing"
+            v-model="editResponsavelId"
+            :items="mappedUsers"
+            label="Responsável"
+            item-text="title"
+            item-value="id"
+            outlined
+            dense
+            class="field-input"></v-select>
+        </div>
+      </div>
 
       <!-- Exibição de Supervisor de (Departamentos subordinados) -->
-      <span class="ma-0 pa-0 text-h6" v-if="!isEditing && !hideFields">
-        Supervisor de: {{ departamentosSubordinados.length > 0 ? departamentosSubordinados.map(d => d.nome).join(', ') : 'Nenhum departamento' }}
-      </span>
-      <v-select
-        v-if="isEditing && !hideFields"
-        v-model="editDepartamentosSubordinados"
-        :items="departamentosDisponiveis"
-        label="Supervisor de"
-        item-title="title"
-        item-value="value"
-        multiple
-        chips
-        outlined></v-select>
-      <p></p>
+      <div v-if="!hideFields" class="field-container mb-3">
+        <div class="field-row">
+          <div class="field-label font-weight-bold text-subtitle-1">Supervisor de:</div>
+          <div v-if="!isEditing" class="field-value">{{ departamentosSubordinados.length > 0 ? departamentosSubordinados.map(d => d.nome).join(', ') : 'Nenhum departamento' }}</div>
+          <v-select
+            v-if="isEditing"
+            v-model="editDepartamentosSubordinados"
+            :items="departamentosDisponiveis"
+            label="Supervisor de"
+            item-title="title"
+            item-value="value"
+            multiple
+            chips
+            outlined
+            dense
+            class="field-input"></v-select>
+        </div>
+      </div>
 
       <!-- Exibição de Subordinado a (Departamento superior) -->
-      <span class="ma-0 pa-0 text-h6" v-if="!isEditing && !hideFields">
-        Subordinado a: {{ departamentoSuperior ? departamentoSuperior.nome : 'Nenhum departamento' }}
-      </span>
-      <v-select
-        v-if="isEditing && !hideFields"
-        v-model="editDepartamentoSuperior"
-        :items="departamentosDisponiveis"
-        label="Subordinado a"
-        item-title="title"
-        item-value="value"
-        outlined></v-select>
+      <div v-if="!hideFields" class="field-container mb-3">
+        <div class="field-row">
+          <div class="field-label font-weight-bold text-subtitle-1">Subordinado a:</div>
+          <div v-if="!isEditing" class="field-value">{{ departamentoSuperior ? departamentoSuperior.nome : 'Nenhum departamento' }}</div>
+          <v-select
+            v-if="isEditing"
+            v-model="editDepartamentoSuperior"
+            :items="departamentosDisponiveis"
+            label="Subordinado a"
+            item-title="title"
+            item-value="value"
+            outlined
+            dense
+            class="field-input"></v-select>
+        </div>
+      </div>
     </v-card-text>
 
     <!-- Botões de Ação -->
-    <v-card-actions>
-      <v-btn v-if="!isEditing && !hideFields" @click="startEditing" color="primary">Editar</v-btn>
-      <v-btn v-if="isEditing" @click="saveChanges" color="success">Salvar</v-btn>
-      <v-btn v-if="isEditing" @click="cancelEditing" color="error">Cancelar</v-btn>
+    <v-card-actions class="pa-4">
+      <v-btn 
+        v-if="!isEditing && !hideFields" 
+        @click="startEditing" 
+        color="primary" 
+        class="mr-2"
+        elevation="2">
+        <v-icon left>mdi-pencil</v-icon>
+        Editar
+      </v-btn>
+      <v-btn 
+        v-if="isEditing" 
+        @click="saveChanges" 
+        color="success" 
+        class="mr-2"
+        elevation="2">
+        <v-icon left>mdi-check</v-icon>
+        Salvar
+      </v-btn>
+      <v-btn 
+        v-if="isEditing" 
+        @click="cancelEditing" 
+        color="error"
+        elevation="2">
+        <v-icon left>mdi-close</v-icon>
+        Cancelar
+      </v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -287,3 +331,45 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.field-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.field-label {
+  color: #1976d2;
+  margin-right: 16px;
+  min-width: 120px;
+}
+
+.field-value {
+  font-size: 1.1rem;
+  flex: 1;
+}
+
+.field-input {
+  flex: 1;
+}
+
+.v-card {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.v-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.v-btn {
+  text-transform: none;
+  font-weight: 500;
+}
+</style>

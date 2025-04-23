@@ -11,6 +11,11 @@ from ..commons.django_views_utils import ajax_login_required
 from . import service
 from .models import Departamento, Responsabilidade, Elemento, TipoGasto, Despesa
 from ..accounts.models import User
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from rest_framework.response import Response
+from decimal import Decimal, InvalidOperation
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +48,6 @@ def add_departamento(request):
     except Exception as e:
         logger.error(f"Erro ao adicionar departamento: {str(e)}")
         return JsonResponse({"error": "Erro interno do servidor"}, status=500)
-
 
 @csrf_exempt
 @ajax_login_required
@@ -87,7 +91,6 @@ def list_departamentos(request):
     logger.info("API list departamentos")
     departamentos = service.list_departamentos()
     return JsonResponse({"departamentos": departamentos})
-
 
 @csrf_exempt
 @ajax_login_required
@@ -221,7 +224,9 @@ def list_tipo_gastos(request):
     
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-    
+
+@ajax_login_required
+@require_http_methods(["GET"])    
 def list_tipo_gastos_por_elemento(request, elemento_id):
     try:
         response_data = service.list_tipo_gastos_por_elemento(elemento_id)
@@ -229,7 +234,6 @@ def list_tipo_gastos_por_elemento(request, elemento_id):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
     
-
 @csrf_exempt
 @ajax_login_required
 @require_http_methods(["POST"])
@@ -375,6 +379,7 @@ def list_despesas_departamento(request, departamento_id):
         logger.error(f"Erro ao listar despesas do departamento {departamento_id}: {e}")
         return JsonResponse({"error": "Erro ao listar despesas do departamento."}, status=500)
 
+@csrf_exempt
 @ajax_login_required
 @require_http_methods(["GET"])
 def total_despesas_departamento(request, departamento_id):
@@ -394,6 +399,7 @@ def total_despesas_departamento(request, departamento_id):
         logger.error(f"Erro ao obter total de despesas: {str(e)}")
         return JsonResponse({"error": "Erro interno do servidor"}, status=500)
 
+@csrf_exempt
 @ajax_login_required
 @require_http_methods(["POST"])
 def add_despesa_view(request):
@@ -474,3 +480,342 @@ def delete_subordinacao(request, id):
     except Exception as e:
         logger.error(f"Erro ao remover subordinação: {str(e)}")
         return JsonResponse({"error": "Erro interno do servidor"}, status=500)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["POST"])
+def add_verba(request):
+    """
+    Adiciona uma nova verba.
+    
+    Args:
+        request: Requisição HTTP contendo os dados da verba
+        
+    Returns:
+        JsonResponse: Resposta HTTP com os dados da verba criada
+        
+    Raises:
+        HTTP_400_BAD_REQUEST: Se os dados forem inválidos
+        HTTP_500_INTERNAL_SERVER_ERROR: Se ocorrer um erro interno
+    """
+    logger.info("API add verba")
+    
+    try:
+        # Obtém os dados do corpo da requisição
+        data = json.loads(request.body)
+        
+        # Validação dos campos obrigatórios
+        required_fields = ['valor', 'departamento_id', 'ano']
+        for field in required_fields:
+            if field not in data:
+                return JsonResponse(
+                    {"error": f"Campo obrigatório não fornecido: {field}"},
+                    status=400
+                )
+        
+        # Converte o valor para Decimal
+        try:
+            valor = Decimal(str(data['valor']))
+        except (ValueError, InvalidOperation):
+            return JsonResponse(
+                {"error": "Valor inválido. Forneça um número válido."},
+                status=400
+            )
+        
+        # Converte o ano para inteiro
+        try:
+            ano = int(data['ano'])
+        except (ValueError, TypeError):
+            return JsonResponse(
+                {"error": "Ano inválido. Forneça um número inteiro."},
+                status=400
+            )
+        
+        # Adiciona a verba
+        verba = service.add_verba(
+            valor=valor,
+            departamento_id=data['departamento_id'],
+            user_id=request.user.id,
+            ano=ano,
+            descricao=data.get('descricao', '')
+        )
+        
+        return JsonResponse(verba, status=201)
+        
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao adicionar verba: {str(e)}", exc_info=True)
+        return JsonResponse(
+            {"error": "Erro interno do servidor"},
+            status=500
+        )
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["PUT"])
+def update_verba(request, id):
+    """
+    Atualiza uma verba existente.
+    
+    Args:
+        request: Requisição HTTP contendo os dados da verba
+        id: ID da verba a ser atualizada
+        
+    Returns:
+        JsonResponse: Resposta HTTP com os dados da verba atualizada
+        
+    Raises:
+        HTTP_400_BAD_REQUEST: Se os dados forem inválidos
+        HTTP_404_NOT_FOUND: Se a verba não for encontrada
+        HTTP_500_INTERNAL_SERVER_ERROR: Se ocorrer um erro interno
+    """
+    logger.info(f"API update verba: id={id}")
+    
+    try:
+        # Obtém os dados do corpo da requisição
+        data = json.loads(request.body)
+        
+        # Validação dos campos obrigatórios
+        required_fields = ['valor', 'departamento_id', 'ano']
+        for field in required_fields:
+            if field not in data:
+                return JsonResponse(
+                    {"error": f"Campo obrigatório não fornecido: {field}"},
+                    status=400
+                )
+        
+        # Converte o valor para Decimal
+        try:
+            valor = Decimal(str(data['valor']))
+        except (ValueError, InvalidOperation):
+            return JsonResponse(
+                {"error": "Valor inválido. Forneça um número válido."},
+                status=400
+            )
+        
+        # Converte o ano para inteiro
+        try:
+            ano = int(data['ano'])
+        except (ValueError, TypeError):
+            return JsonResponse(
+                {"error": "Ano inválido. Forneça um número inteiro."},
+                status=400
+            )
+        
+        # Atualiza a verba
+        verba = service.update_verba(
+            verba_id=id,
+            valor=valor,
+            departamento_id=data['departamento_id'],
+            ano=ano,
+            descricao=data.get('descricao', '')
+        )
+        
+        return JsonResponse(verba, status=200)
+        
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao atualizar verba: {str(e)}", exc_info=True)
+        return JsonResponse(
+            {"error": "Erro interno do servidor"},
+            status=500
+        )
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["DELETE"])
+def delete_verba(request, id):
+    """
+    Remove uma verba.
+    
+    Args:
+        request: Requisição HTTP
+        id: ID da verba a ser removida
+        
+    Returns:
+        JsonResponse: Resposta HTTP indicando sucesso
+        
+    Raises:
+        HTTP_404_NOT_FOUND: Se a verba não for encontrada
+        HTTP_500_INTERNAL_SERVER_ERROR: Se ocorrer um erro interno
+    """
+    logger.info(f"API delete verba: id={id}")
+    
+    try:
+        service.delete_verba(id)
+        return JsonResponse({"message": "Verba excluída com sucesso"}, status=200)
+        
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=404)
+    except Exception as e:
+        logger.error(f"Erro ao remover verba: {str(e)}", exc_info=True)
+        return JsonResponse(
+            {"error": "Erro interno do servidor"},
+            status=500
+        )
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["GET"])
+def get_verba(request, id):
+    """
+    Retorna os dados de uma verba específica.
+    
+    Args:
+        request: Requisição HTTP
+        id: ID da verba
+        
+    Returns:
+        JsonResponse: Resposta HTTP com os dados da verba
+        
+    Raises:
+        HTTP_404_NOT_FOUND: Se a verba não for encontrada
+        HTTP_500_INTERNAL_SERVER_ERROR: Se ocorrer um erro interno
+    """
+    logger.info(f"API get verba: id={id}")
+    
+    try:
+        verba = service.get_verba(id)
+        return JsonResponse(verba, status=200)
+        
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=404)
+    except Exception as e:
+        logger.error(f"Erro ao buscar verba: {str(e)}", exc_info=True)
+        return JsonResponse(
+            {"error": "Erro interno do servidor"},
+            status=500
+        )
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["GET"])
+def list_verbas(request):
+    """
+    Lista todas as verbas com paginação.
+    
+    Args:
+        request: Requisição HTTP com parâmetros de paginação opcionais
+        
+    Returns:
+        JsonResponse: Lista de verbas serializadas com informações de paginação
+    """
+    try:
+        logger.info(f"Iniciando listagem de verbas. Usuário: {request.user.username}")
+        
+        # Verifica se o usuário está autenticado
+        if not request.user.is_authenticated:
+            logger.error(f"Usuário não autenticado tentou acessar listagem de verbas")
+            return JsonResponse({'error': 'Usuário não autenticado'}, status=401)
+        
+        # Obter parâmetros de paginação
+        page = int(request.GET.get('page', 1))
+        per_page = int(request.GET.get('per_page', 10))
+        
+        # Lista as verbas com paginação
+        result = service.list_verbas(page=page, per_page=per_page)
+        
+        # Verifica se há verbas
+        if not result['verbas']:
+            logger.info("Nenhuma verba encontrada")
+            return JsonResponse({
+                'verbas': [], 
+                'paginacao': result['paginacao'],
+                'message': 'Nenhuma verba encontrada'
+            })
+            
+        logger.info(f"Listagem de verbas concluída com sucesso. Página {page} de {result['paginacao']['total_paginas']}")
+        return JsonResponse(result)
+        
+    except BusinessError as e:
+        logger.error(f"Erro de negócio ao listar verbas: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao listar verbas: {str(e)}", exc_info=True)
+        return JsonResponse({'error': 'Erro interno ao listar verbas'}, status=500)
+
+@csrf_exempt
+@require_http_methods(["GET"])
+@ajax_login_required
+def list_verbas_departamento(request, departamento_id):
+    """
+    Lista todas as verbas de um departamento específico.
+    
+    Args:
+        request: Request HTTP
+        departamento_id: ID do departamento
+        
+    Returns:
+        JsonResponse: Lista de verbas do departamento serializadas
+    """
+    try:
+        logger.info(f"Iniciando listagem de verbas do departamento {departamento_id}. Usuário: {request.user.username}")
+        
+        # Verifica se o usuário está autenticado
+        if not request.user.is_authenticated:
+            logger.error(f"Usuário não autenticado tentou acessar listagem de verbas do departamento {departamento_id}")
+            return JsonResponse({'error': 'Usuário não autenticado'}, status=401)
+            
+        # Lista as verbas do departamento
+        verbas = service.list_verbas_departamento(departamento_id)
+        
+        # Verifica se há verbas
+        if not verbas:
+            logger.info(f"Nenhuma verba encontrada para o departamento {departamento_id}")
+            return JsonResponse({'verbas': [], 'message': f'Nenhuma verba encontrada para o departamento {departamento_id}'})
+            
+        logger.info(f"Listagem de verbas do departamento {departamento_id} concluída com sucesso. Total: {len(verbas)}")
+        return JsonResponse({'verbas': verbas})
+        
+    except BusinessError as e:
+        logger.error(f"Erro de negócio ao listar verbas do departamento {departamento_id}: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao listar verbas do departamento {departamento_id}: {str(e)}", exc_info=True)
+        return JsonResponse({'error': 'Erro interno ao listar verbas do departamento'}, status=500)
+
+@csrf_exempt
+@require_http_methods(["GET"])
+@ajax_login_required
+def get_verba_departamento_ano(request, departamento_id, ano):
+    """
+    Retorna a verba de um departamento para um ano específico.
+    
+    Args:
+        request: Requisição HTTP
+        departamento_id: ID do departamento
+        ano: Ano da verba
+        
+    Returns:
+        JsonResponse: Resposta HTTP com os dados da verba
+        
+    Raises:
+        HTTP_400_BAD_REQUEST: Se o ano for inválido
+        HTTP_404_NOT_FOUND: Se o departamento não for encontrado ou não houver verba
+        HTTP_500_INTERNAL_SERVER_ERROR: Se ocorrer um erro interno
+    """
+    logger.info(f"API get verba departamento ano: departamento_id={departamento_id}, ano={ano}")
+    
+    try:
+        # Converte o ano para inteiro
+        try:
+            ano = int(ano)
+        except (ValueError, TypeError):
+            return JsonResponse(
+                {"error": "Ano inválido. Forneça um número inteiro."},
+                status=400
+            )
+        
+        verba = service.get_verba_departamento_ano(departamento_id, ano)
+        return JsonResponse(verba, status=200)
+        
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=404)
+    except Exception as e:
+        logger.error(f"Erro ao buscar verba do departamento: {str(e)}", exc_info=True)
+        return JsonResponse(
+            {"error": "Erro interno do servidor"},
+            status=500
+        )

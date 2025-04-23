@@ -10,6 +10,7 @@ from ..accounts.models import User
 from gfinancas4.base.exceptions import BusinessError
 from django.core.exceptions import ValidationError
 from decimal import Decimal, InvalidOperation
+from django.shortcuts import get_object_or_404
 
 
 logger = logging.getLogger(__name__)
@@ -308,9 +309,9 @@ def list_responsabilidades() -> List[dict]:
     return [resp.to_dict_json() for resp in Responsabilidade.objects.all()]
 
 # SERVIÇOS PARA VERBAS (ajustes e implementação faltante)
-def add_verba(valor, departamento_id: int, user_id: int, ano: int, descricao: str) -> dict:
+def add_verba(valor: Decimal, departamento_id: int, user_id: int, ano: int, descricao: str = "") -> dict:
     """
-    Adiciona uma nova verba para um departamento.
+    Adiciona uma nova verba.
     
     Args:
         valor: Valor da verba
@@ -323,68 +324,303 @@ def add_verba(valor, departamento_id: int, user_id: int, ano: int, descricao: st
         dict: Dados da verba criada
         
     Raises:
-        BusinessError: Se já existir uma verba para o departamento no ano ou se o departamento/usuário não for encontrado
+        BusinessError: Se o valor for inválido, o ano for inválido ou se algum dos objetos relacionados não for encontrado
     """
-    logger.info(f"SERVICE add verba: {valor} para {departamento_id} no ano {ano}")
+    logger.info(f"SERVICE add verba: valor={valor}, departamento_id={departamento_id}, ano={ano}")
     
     try:
-        departamento = Departamento.objects.get(id=departamento_id)
-        user = User.objects.get(id=user_id)
-    except Departamento.DoesNotExist:
-        raise BusinessError("Departamento não encontrado.")
-    except User.DoesNotExist:
-        raise BusinessError("Usuário não encontrado.")
-    
-    if Verba.objects.filter(departamento=departamento, ano=ano).exists():
-        raise BusinessError("Já existe uma verba estipulada para este departamento neste ano.")
-    
-    if valor is not None:
-        valor = Decimal(valor)
+        # Validação do ano
+        if ano < 1900 or ano > 2100:
+            raise BusinessError("O ano deve estar entre 1900 e 2100")
+            
+        # Validação do valor
+        if valor <= 0:
+            raise BusinessError("O valor da verba deve ser maior que zero")
+            
+        # Busca o departamento e usuário
+        try:
+            departamento = Departamento.objects.get(id=departamento_id)
+            user = User.objects.get(id=user_id)
+        except Departamento.DoesNotExist:
+            raise BusinessError("Departamento não encontrado")
+        except User.DoesNotExist:
+            raise BusinessError("Usuário não encontrado")
+            
+        # Verifica se já existe verba para o departamento no ano
+        if Verba.objects.filter(departamento=departamento, ano=ano).exists():
+            raise BusinessError(f"Já existe verba para o departamento {departamento.nome} no ano {ano}")
+            
+        # Cria a verba
+        verba = Verba.objects.create(
+            valor=valor,
+            departamento=departamento,
+            user=user,
+            ano=ano,
+            descricao=descricao
+        )
+        
+        logger.info(f"Verba {verba.id} criada com sucesso: valor={valor}, departamento={departamento.nome}, ano={ano}")
+        return verba.to_dict_json()
+        
+    except BusinessError:
+        raise
+    except Exception as e:
+        logger.error(f"Erro ao adicionar verba: {str(e)}", exc_info=True)
+        raise BusinessError(f"Erro ao adicionar verba: {str(e)}")
 
-    verba = Verba(
-        valor=valor, 
-        departamento=departamento, 
-        user=user, 
-        ano=ano, 
-        descricao=descricao
-    )
-    
-    verba.save()
-    return verba.to_dict_json()
-
-def update_verba(verba_id: int, valor: Decimal = None, descricao: str = None) -> dict:
+def update_verba(verba_id: int, valor: Decimal, ano: int, descricao: str, departamento_id: int) -> dict:
     """
-    Atualiza os valores ou descrição de uma verba.
+    Atualiza uma verba existente.
     
     Args:
-        verba_id: ID da verba a ser atualizada
-        valor: Novo valor da verba (opcional)
-        descricao: Nova descrição da verba (opcional)
+        verba_id: ID da verba
+        valor: Novo valor da verba
+        ano: Novo ano da verba
+        descricao: Nova descrição da verba
+        departamento_id: ID do novo departamento
         
     Returns:
         dict: Dados da verba atualizada
         
     Raises:
-        BusinessError: Se a verba não for encontrada
+        BusinessError: Se a verba não for encontrada, o valor for inválido, o ano for inválido 
+                      ou se o departamento não for encontrado
     """
-    logger.info(f"SERVICE update verba: {verba_id}")
+    logger.info(f"SERVICE update verba: id={verba_id}, valor={valor}, ano={ano}")
     
     try:
-        verba = Verba.objects.get(id=verba_id)
-    except Verba.DoesNotExist:
-        raise BusinessError("Verba não encontrada para atualização.")
-    
-    if valor is not None:
-        verba.valor = Decimal(valor)
-    if descricao:
+        # Validação do ano
+        if ano < 1900 or ano > 2100:
+            raise BusinessError("O ano deve estar entre 1900 e 2100")
+            
+        # Validação do valor
+        if valor <= 0:
+            raise BusinessError("O valor da verba deve ser maior que zero")
+            
+        # Busca a verba
+        try:
+            verba = Verba.objects.get(id=verba_id)
+        except Verba.DoesNotExist:
+            raise BusinessError("Verba não encontrada")
+            
+        # Busca o departamento
+        try:
+            departamento = Departamento.objects.get(id=departamento_id)
+        except Departamento.DoesNotExist:
+            raise BusinessError("Departamento não encontrado")
+            
+        # Verifica se já existe verba para o departamento no ano (exceto a atual)
+        if Verba.objects.filter(departamento=departamento, ano=ano).exclude(id=verba_id).exists():
+            raise BusinessError(f"Já existe verba para o departamento {departamento.nome} no ano {ano}")
+            
+        # Atualiza a verba
+        verba.valor = valor
+        verba.ano = ano
         verba.descricao = descricao
-    
-    verba.save()
-    return verba.to_dict_json()
+        verba.departamento = departamento
+        verba.save()
+        
+        logger.info(f"Verba {verba.id} atualizada com sucesso: valor={valor}, departamento={departamento.nome}, ano={ano}")
+        return verba.to_dict_json()
+        
+    except BusinessError:
+        raise
+    except Exception as e:
+        logger.error(f"Erro ao atualizar verba: {str(e)}", exc_info=True)
+        raise BusinessError(f"Erro ao atualizar verba: {str(e)}")
 
-def list_verbas() -> List[dict]:
-    logger.info("SERVICE list verbas")
-    return [verba.to_dict_json() for verba in Verba.objects.all()]
+def delete_verba(verba_id: int) -> bool:
+    """
+    Remove uma verba.
+    
+    Args:
+        verba_id: ID da verba
+        
+    Returns:
+        bool: True se a verba foi removida com sucesso
+        
+    Raises:
+        BusinessError: Se a verba não for encontrada
+    """
+    logger.info(f"SERVICE delete verba: id={verba_id}")
+    
+    try:
+        # Busca a verba
+        try:
+            verba = Verba.objects.get(id=verba_id)
+            departamento_nome = verba.departamento.nome
+            ano = verba.ano
+        except Verba.DoesNotExist:
+            raise BusinessError("Verba não encontrada")
+            
+        # Remove a verba
+        verba.delete()
+        logger.info(f"Verba {verba_id} removida com sucesso: departamento={departamento_nome}, ano={ano}")
+        return True
+        
+    except BusinessError:
+        raise
+    except Exception as e:
+        logger.error(f"Erro ao remover verba: {str(e)}", exc_info=True)
+        raise BusinessError(f"Erro ao remover verba: {str(e)}")
+
+def get_verba(verba_id: int) -> dict:
+    """
+    Retorna os dados de uma verba específica.
+    
+    Args:
+        verba_id: ID da verba
+        
+    Returns:
+        dict: Dados da verba
+        
+    Raises:
+        BusinessError: Se a verba não for encontrada
+    """
+    logger.info(f"SERVICE get verba: id={verba_id}")
+    
+    try:
+        # Busca a verba
+        try:
+            verba = Verba.objects.get(id=verba_id)
+        except Verba.DoesNotExist:
+            raise BusinessError("Verba não encontrada")
+            
+        logger.info(f"Verba {verba_id} recuperada com sucesso")
+        return verba.to_dict_json()
+        
+    except BusinessError:
+        raise
+    except Exception as e:
+        logger.error(f"Erro ao buscar verba: {str(e)}", exc_info=True)
+        raise BusinessError(f"Erro ao buscar verba: {str(e)}")
+
+def list_verbas(page=1, per_page=10) -> List[dict]:
+    """
+    Lista todas as verbas cadastradas com paginação.
+    
+    Args:
+        page (int): Número da página (começando em 1)
+        per_page (int): Quantidade de itens por página
+        
+    Returns:
+        dict: Dicionário com verbas paginadas e informações de paginação
+    """
+    try:
+        logger.info(f"Iniciando listagem de verbas - página {page}, {per_page} itens por página")
+        verbas = Verba.objects.select_related('departamento', 'user').all()
+        
+        # Aplicar paginação
+        paginator = Paginator(verbas, per_page)
+        page_obj = paginator.get_page(page)
+        
+        result = []
+        for verba in page_obj:
+            try:
+                verba_dict = verba.to_dict_json()
+                result.append(verba_dict)
+            except Exception as e:
+                logger.error(f"Erro ao serializar verba {verba.id}: {str(e)}", exc_info=True)
+                continue
+                
+        logger.info(f"Listagem de verbas concluída com sucesso. Página {page} de {paginator.num_pages}")
+        
+        return {
+            'verbas': result,
+            'paginacao': {
+                'total': paginator.count,
+                'total_paginas': paginator.num_pages,
+                'pagina_atual': page,
+                'itens_por_pagina': per_page
+            }
+        }
+    except Exception as e:
+        logger.error(f"Erro ao listar verbas: {str(e)}", exc_info=True)
+        raise BusinessError(f"Erro ao listar verbas: {str(e)}")
+
+def list_verbas_departamento(departamento_id: int) -> List[dict]:
+    """
+    Lista todas as verbas de um departamento específico.
+    
+    Args:
+        departamento_id (int): ID do departamento
+        
+    Returns:
+        list: Lista de verbas do departamento serializadas
+    """
+    try:
+        logger.info(f"Iniciando listagem de verbas do departamento {departamento_id}")
+        
+        # Verifica se o departamento existe
+        try:
+            departamento = Departamento.objects.get(id=departamento_id)
+            logger.info(f"Departamento encontrado: {departamento.nome}")
+        except Departamento.DoesNotExist:
+            logger.error(f"Departamento {departamento_id} não encontrado")
+            raise BusinessError(f"Departamento {departamento_id} não encontrado")
+            
+        verbas = Verba.objects.select_related('departamento', 'user').filter(departamento=departamento)
+        logger.info(f"Encontradas {len(verbas)} verbas para o departamento {departamento.nome}")
+        
+        result = []
+        for verba in verbas:
+            try:
+                verba_dict = verba.to_dict_json()
+                result.append(verba_dict)
+            except Exception as e:
+                logger.error(f"Erro ao serializar verba {verba.id}: {str(e)}", exc_info=True)
+                continue
+                
+        logger.info(f"Listagem de verbas do departamento {departamento.nome} concluída com sucesso. Total: {len(result)}")
+        return result
+    except BusinessError:
+        raise
+    except Exception as e:
+        logger.error(f"Erro ao listar verbas do departamento {departamento_id}: {str(e)}", exc_info=True)
+        raise BusinessError(f"Erro ao listar verbas do departamento: {str(e)}")
+
+def get_verba_departamento_ano(departamento_id: int, ano: int) -> dict:
+    """
+    Retorna a verba de um departamento para um ano específico.
+    
+    Args:
+        departamento_id: ID do departamento
+        ano: Ano da verba
+        
+    Returns:
+        dict: Dados da verba
+        
+    Raises:
+        BusinessError: Se o departamento não for encontrado, o ano for inválido 
+                      ou não houver verba para o ano especificado
+    """
+    logger.info(f"SERVICE get verba departamento ano: departamento_id={departamento_id}, ano={ano}")
+    
+    try:
+        # Validação do ano
+        if ano < 1900 or ano > 2100:
+            raise BusinessError("O ano deve estar entre 1900 e 2100")
+            
+        # Busca o departamento
+        try:
+            departamento = Departamento.objects.get(id=departamento_id)
+        except Departamento.DoesNotExist:
+            raise BusinessError("Departamento não encontrado")
+            
+        # Busca a verba
+        try:
+            verba = Verba.objects.get(departamento=departamento, ano=ano)
+        except Verba.DoesNotExist:
+            raise BusinessError(f"Não há verba para o departamento {departamento.nome} no ano {ano}")
+            
+        logger.info(f"Verba recuperada com sucesso: departamento={departamento.nome}, ano={ano}")
+        return verba.to_dict_json()
+        
+    except BusinessError:
+        raise
+    except Exception as e:
+        logger.error(f"Erro ao buscar verba do departamento: {str(e)}", exc_info=True)
+        raise BusinessError(f"Erro ao buscar verba do departamento: {str(e)}")
 
 # SERVIÇOS PARA DESPESAS (existentes e já adequados)
 def add_despesa(user_id: int, departamento_id: int, valor: float, elemento_id: int, 

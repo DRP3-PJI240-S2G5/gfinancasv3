@@ -1,6 +1,9 @@
 from django.db import models
 from ..accounts.models import User
 from django.core.exceptions import ValidationError
+import logging
+
+logger = logging.getLogger(__name__)
 
 def verificar_ciclo_subordinacao(superior, subordinado, visitados=None):
     """
@@ -144,8 +147,8 @@ class Responsabilidade(models.Model):
 class Verba(models.Model):
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="verbas_estipuladas", verbose_name="usuário que atribuiu")
-    departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE, related_name="verbas", verbose_name="verbas atribuidas")
-    ano = models.IntegerField(verbose_name="Ano")
+    departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE, related_name="verbas", verbose_name="verbas atribuidas", db_index=True)
+    ano = models.IntegerField(verbose_name="Ano", db_index=True)
     descricao = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -154,26 +157,53 @@ class Verba(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['departamento', 'ano'], name='unique_departamento_ano_verba')
         ]
+        indexes = [
+            models.Index(fields=['departamento', 'ano']),
+            models.Index(fields=['ano']),
+        ]
+
+    def clean(self):
+        if self.valor <= 0:
+            raise ValidationError("O valor da verba deve ser maior que zero")
+        if self.ano < 1900 or self.ano > 2100:
+            raise ValidationError("O ano deve estar entre 1900 e 2100")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Verba para {self.departamento} atribuída em {self.created_at}"
+        return f"Verba de {self.valor} para {self.departamento.nome} em {self.ano}"
 
     def to_dict_json(self):
-        return {
-            "id": self.id,
-            "departamento": {
-                "id": self.departamento.id,
-                "nome": self.departamento.nome,
-            },
-            "usuario":{
-                "id": self.user.id,
-                "username": self.user.username,
-            },
-            "ano": self.ano,
-            "descricao": self.descricao,
-            "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat(),
-        }
+        """
+        Converte o objeto Verba para um dicionário JSON.
+        
+        Returns:
+            dict: Dicionário com os dados da verba
+        """
+        try:
+            return {
+                "id": self.id,
+                "valor": str(self.valor),  # Mantém como string para preservar precisão
+                "departamento": {
+                    "id": self.departamento.id,
+                    "nome": self.departamento.nome,
+                    "tipoEntidade": self.departamento.tipoEntidade,
+                },
+                "usuario": {
+                    "id": self.user.id,
+                    "username": self.user.username,
+                    "email": self.user.email,
+                },
+                "ano": self.ano,
+                "descricao": self.descricao,
+                "created_at": self.created_at.isoformat() if self.created_at else None,
+                "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            }
+        except Exception as e:
+            logger.error(f"Erro ao serializar verba {self.id}: {str(e)}", exc_info=True)
+            raise
 
 class Elemento(models.Model):
     elemento = models.CharField(max_length=256)

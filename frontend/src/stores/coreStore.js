@@ -13,6 +13,12 @@ export const useCoreStore = defineStore("coreStore", {
     tipoGastosLoading: false,
     despesasLoading: false,
     subordinacoesLoading: false,
+    totalPaginas: 0,
+    verbas: [],
+    verbasLoading: false,
+    loading: false,
+    error: null,
+    verbasPaginacao: null
   }),
   actions: {
     async getDepartamentos() {
@@ -165,5 +171,119 @@ export const useCoreStore = defineStore("coreStore", {
         throw e
       }
     },
+
+    // Ações para gerenciar verbas
+    async getVerbas(page = 1, perPage = 10) {
+      this.verbasLoading = true
+      try {
+        const response = await coreApi.getVerbas(page, perPage)
+        this.verbas = response.verbas
+        this.verbasPaginacao = response.paginacao
+        this.error = null
+        return response
+      } catch (err) {
+        this.error = err.message
+        console.error('Erro ao buscar verbas:', err)
+        throw err
+      } finally {
+        this.verbasLoading = false
+      }
+    },
+
+    async addVerba(verba) {
+      this.verbasLoading = true
+      try {
+        const data = await coreApi.addVerba(verba)
+        this.verbas.push(data)
+        this.error = null
+        return data
+      } catch (err) {
+        this.error = err.message
+        console.error('Erro ao adicionar verba:', err)
+        throw err
+      } finally {
+        this.verbasLoading = false
+      }
+    },
+
+    async updateVerba(verba) {
+      this.verbasLoading = true
+      try {
+        const updatedVerba = await coreApi.updateVerba(verba)
+        const index = this.verbas.findIndex(v => v.id === verba.id)
+        if (index !== -1) {
+          this.verbas[index] = updatedVerba
+        }
+        this.error = null
+        return updatedVerba
+      } catch (err) {
+        this.error = err.message
+        console.error('Erro ao atualizar verba:', err)
+        throw err
+      } finally {
+        this.verbasLoading = false
+      }
+    },
+
+    async deleteVerba(id) {
+      this.verbasLoading = true
+      try {
+        await coreApi.deleteVerba(id)
+        this.verbas = this.verbas.filter(v => v.id !== id)
+        this.error = null
+      } catch (err) {
+        this.error = err.message
+        console.error('Erro ao deletar verba:', err)
+        throw err
+      } finally {
+        this.verbasLoading = false
+      }
+    },
+
+    async getVerba(id) {
+      this.verbasLoading = true
+      try {
+        const response = await coreApi.getVerba(id)
+        this.error = null
+        return response
+      } catch (err) {
+        this.error = err.message
+        console.error('Erro ao buscar verba:', err)
+        throw err
+      } finally {
+        this.verbasLoading = false
+      }
+    },
+
+    async getVerbasDepartamento(departamentoId) {
+      this.verbasLoading = true
+      try {
+        const response = await coreApi.getVerbasDepartamento(departamentoId)
+        this.verbas = response.verbas
+        this.error = null
+        return response
+      } catch (err) {
+        this.error = err.message
+        console.error('Erro ao buscar verbas do departamento:', err)
+        throw err
+      } finally {
+        this.verbasLoading = false
+      }
+    },
+
+    async getVerbaDepartamentoAno(departamentoId, ano) {
+      this.verbasLoading = true
+      try {
+        const response = await coreApi.getVerbaDepartamentoAno(departamentoId, ano)
+        this.error = null
+        return response
+      } catch (err) {
+        this.error = err.message
+        console.error('Erro ao buscar verba do departamento por ano:', err)
+        throw err
+      } finally {
+        this.verbasLoading = false
+      }
+    }
   },
 })

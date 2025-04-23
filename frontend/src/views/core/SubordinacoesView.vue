@@ -1,25 +1,26 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col cols="12">
-        <h1 class="text-h4 mb-4">Subordinações</h1>
-      </v-col>
-    </v-row>
-
-    <v-row>
+  <v-container class="fill-height">
+    <v-row justify="center" align="center">
       <v-col cols="12">
         <v-card>
-          <v-card-title class="d-flex justify-space-between align-center">
-            <span>Lista de Subordinações</span>
-            <v-btn
-              color="primary"
-              prepend-icon="mdi-plus"
-              @click="criarNovaSubordinacao"
-            >
-              Nova Subordinação
-            </v-btn>
-          </v-card-title>
+          <!-- Título e Botão na mesma linha -->
+          <v-row no-gutters align="center">
+            <v-col>
+              <v-card-title class="headline">
+                Subordinações
+              </v-card-title>
+            </v-col>
+            <v-col class="d-flex justify-end">
+              <v-btn @click="criarNovaSubordinacao" color="primary" fab small>
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-card>
+      </v-col>
 
+      <v-col cols="12">
+        <v-card>
           <v-card-text>
             <v-data-table
               :headers="headers"

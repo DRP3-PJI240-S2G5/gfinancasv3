@@ -28,7 +28,11 @@
         </card-option>
       </v-col>
       <v-col cols="4">
-        <card-option cardOptionTitle="Subordinações" cardOptionDescription="adicionar ou remover relações de subordinação/supervisão" cardOptionLink="/gestao/subordinacoes" cardOptionIcon="mdi-graph">
+        <card-option cardOptionTitle="Subordinações" cardOptionDescription="Relações de subordinação/supervisão" cardOptionLink="/gestao/subordinacoes" cardOptionIcon="mdi-graph">
+        </card-option>
+      </v-col>
+      <v-col cols="4">
+        <card-option cardOptionTitle="Verbas" cardOptionDescription="Gerenciamento de verbas" cardOptionLink="/gestao/verbas" cardOptionIcon="mdi-currency-usd">
         </card-option>
       </v-col>
     </v-row>

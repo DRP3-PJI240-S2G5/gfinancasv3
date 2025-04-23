@@ -61,7 +61,19 @@
             }}</span>
           </span>
 
-          <span class="text-medium-emphasis"> R$ {{ verbaTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}<br>verba total </span>
+          <span class="text-medium-emphasis">
+            <div v-if="carregandoVerba" class="d-flex align-center">
+              <v-progress-circular indeterminate size="20" width="2" class="mr-2"></v-progress-circular>
+              Carregando verba...
+            </div>
+            <div v-else-if="verbaAtual" class="text-h6 font-weight-bold">
+              {{ formatarValor(verbaAtual.valor) }}
+              <div class="text-caption">Verba atual</div>
+            </div>
+            <div v-else class="text-body-2">
+              Nenhuma verba definida para este ano
+            </div>
+          </span>
         </div>
 
         <!-- Informações de Subordinação -->
@@ -161,13 +173,15 @@ export default {
     review: "30%",
     despesas: [],
     paginaAtual: 1,
-    totalPaginas: 1,
+    totalPaginas: 0,
     itensPorPagina: 10,
     totalDespesas: "R$ 0,00",
     totalDespesasSubordinados: "R$ 0,00",
     verbaTotal: 30000.00,
     intervaloAtualizacao: null,
-    carregandoSubordinados: false
+    carregandoSubordinados: false,
+    verbaAtual: null,
+    carregandoVerba: false
   }),
   props: {
     departamento: {
@@ -259,6 +273,14 @@ export default {
         this.carregarTotalDespesas()
       },
       deep: true
+    },
+    'departamento.id': {
+      handler(newValue) {
+        if (newValue) {
+          this.carregarDespesas()
+          this.carregarVerbaAtual()
+        }
+      }
     }
   },
   mounted() {
@@ -296,6 +318,8 @@ export default {
         await this.carregarSubordinacoes()
         // Depois carrega os totais
         await this.carregarTotalDespesas()
+        // Carrega a verba atual
+        await this.carregarVerbaAtual()
         // Inicia o polling
         this.iniciarPolling()
       } catch (error) {
@@ -310,6 +334,7 @@ export default {
       // Inicia o polling a cada 30 segundos
       this.intervaloAtualizacao = setInterval(() => {
         this.carregarTotalDespesas()
+        this.carregarVerbaAtual()
       }, 30000)
     },
     async carregarSubordinacoes() {
@@ -350,14 +375,32 @@ export default {
         console.error("Erro ao carregar total de despesas:", error)
       }
     },
+    async carregarVerbaAtual() {
+      if (this.carregandoVerba) return
+      
+      this.carregandoVerba = true
+      try {
+        const anoAtual = new Date().getFullYear()
+        const response = await this.coreStore.getVerbaDepartamentoAno(this.departamento.id, anoAtual)
+        console.log('Resposta da verba:', response)
+        this.verbaAtual = response.verba || response
+        console.log('Verba atual:', this.verbaAtual)
+      } catch (error) {
+        console.error("Erro ao carregar verba:", error)
+        this.verbaAtual = null
+      } finally {
+        this.carregandoVerba = false
+      }
+    },
     async mudarPagina(novaPagina) {
       this.paginaAtual = novaPagina
       await this.carregarDespesas()
     },
     formatarValor(valor) {
+      if (!valor) return 'R$ 0,00'
       return parseFloat(valor).toLocaleString('pt-BR', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+        style: 'currency',
+        currency: 'BRL'
       })
     },
     formatarData(dataString) {
