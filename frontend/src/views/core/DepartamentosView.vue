@@ -3,12 +3,25 @@
     <v-row justify="center" align="center">
       <v-col cols="12">
         <v-card>
-          <!-- Título e Botão na mesma linha -->
+          <!-- Título e Filtro de Ano na mesma linha -->
           <v-row no-gutters align="center">
             <v-col>
               <v-card-title class="headline" align="center">
                 Departamentos
               </v-card-title>
+            </v-col>
+            <v-col cols="auto" class="pr-4">
+              <v-select
+                v-model="anoSelecionado"
+                :items="anosDisponiveis"
+                label="Ano"
+                density="compact"
+                variant="outlined"
+                hide-details
+                class="mt-2"
+                style="max-width: 120px;"
+                @update:model-value="atualizarAno"
+              ></v-select>
             </v-col>
           </v-row>
         </v-card>
@@ -23,6 +36,7 @@
         <f-departamento
           :departamento="item"
           :is-active="activeDepartmentId === item.id"
+          :ano-selecionado="anoSelecionado"
           @toggle-department="toggleDepartment"
         />
       </v-col>
@@ -49,6 +63,8 @@ export default {
       activeDepartmentId: null, // Armazena o departamento expandido
       departamentoAtivo: null,
       dialog: false,
+      anoSelecionado: new Date().getFullYear(),
+      anosDisponiveis: [],
       editedItem: {
         id: null,
         nome: "",
@@ -67,9 +83,22 @@ export default {
     ...mapState(useCoreStore, ["departamentos", "departamentosLoading"]),
   },
   async mounted() {
+    this.gerarAnosDisponiveis()
     await this.carregarDados()
   },
   methods: {
+    gerarAnosDisponiveis() {
+      const anoAtual = new Date().getFullYear()
+      this.anosDisponiveis = []
+      // Gera uma lista de anos de 5 anos atrás até 5 anos no futuro
+      for (let i = anoAtual - 5; i <= anoAtual + 5; i++) {
+        this.anosDisponiveis.push(i)
+      }
+    },
+    atualizarAno() {
+      // Este método será chamado quando o ano for alterado
+      console.log("Ano selecionado:", this.anoSelecionado)
+    },
     async carregarDados() {
       try {
         await this.coreStore.getDepartamentos()

@@ -192,16 +192,22 @@ export default {
       type: Boolean,
       required: true,
     },
+    anoSelecionado: {
+      type: Number,
+      default: () => new Date().getFullYear()
+    }
   },
   computed: {
     ...mapState(useCoreStore, ["despesasLoading"]),
     porcentagemGastosDepartamento() {
       const valorTotal = this.formatarValorMonetario(this.totalDespesas)
-      return (valorTotal / this.verbaTotal) * 100
+      const verbaAtual = this.verbaAtual ? parseFloat(this.verbaAtual.valor) : 0
+      return verbaAtual > 0 ? (valorTotal / verbaAtual) * 100 : 0
     },
     porcentagemGastosSubordinados() {
       const valorSubordinados = this.formatarValorMonetario(this.totalDespesasSubordinados)
-      return (valorSubordinados / this.verbaTotal) * 100
+      const verbaAtual = this.verbaAtual ? parseFloat(this.verbaAtual.valor) : 0
+      return verbaAtual > 0 ? (valorSubordinados / verbaAtual) * 100 : 0
     },
     porcentagemGastos() {
       return this.porcentagemGastosDepartamento + this.porcentagemGastosSubordinados
@@ -210,8 +216,9 @@ export default {
       // Extrai o valor numérico do totalDespesas usando a função utilitária
       const valorTotal = this.formatarValorMonetario(this.totalDespesas)
       const valorSubordinados = this.formatarValorMonetario(this.totalDespesasSubordinados)
+      const verbaAtual = this.verbaAtual ? parseFloat(this.verbaAtual.valor) : 0
       // Calcula o valor restante considerando o total + subordinados
-      const restante = this.verbaTotal - (valorTotal + valorSubordinados)
+      const restante = verbaAtual - (valorTotal + valorSubordinados)
       // Formata o valor restante
       return restante.toLocaleString('pt-BR', {
         style: 'currency',
@@ -281,6 +288,13 @@ export default {
           this.carregarVerbaAtual()
         }
       }
+    },
+    anoSelecionado: {
+      handler() {
+        this.carregarVerbaAtual()
+        this.carregarTotalDespesas()
+        this.carregarDespesas()
+      }
     }
   },
   mounted() {
@@ -301,10 +315,12 @@ export default {
     },
     async carregarDespesas() {
       try {
+        const ano = this.anoSelecionado || new Date().getFullYear()
         const response = await this.coreStore.getDespesasPorDepartamento(
           this.departamento.id, 
           this.paginaAtual, 
-          this.itensPorPagina
+          this.itensPorPagina,
+          ano
         )
         this.despesas = response.despesas
         this.totalPaginas = response.totalPaginas
@@ -335,6 +351,7 @@ export default {
       this.intervaloAtualizacao = setInterval(() => {
         this.carregarTotalDespesas()
         this.carregarVerbaAtual()
+        this.carregarDespesas()
       }, 30000)
     },
     async carregarSubordinacoes() {
@@ -351,8 +368,9 @@ export default {
     },
     async carregarTotalDespesas() {
       try {
+        const ano = this.anoSelecionado || new Date().getFullYear()
         // Carrega despesas do departamento principal
-        const response = await this.coreStore.getTotalDespesasDepartamento(this.departamento.id)
+        const response = await this.coreStore.getTotalDespesasDepartamento(this.departamento.id, ano)
         this.totalDespesas = response.total_despesas_formatado
 
         // Carrega as despesas dos subordinados
@@ -361,7 +379,7 @@ export default {
         
         if (subordinados.length > 0) {
           for (const dept of subordinados) {
-            const responseSub = await this.coreStore.getTotalDespesasDepartamento(dept.id)
+            const responseSub = await this.coreStore.getTotalDespesasDepartamento(dept.id, ano)
             const valorSub = this.formatarValorMonetario(responseSub.total_despesas_formatado)
             totalSubordinados += valorSub
           }
@@ -380,8 +398,8 @@ export default {
       
       this.carregandoVerba = true
       try {
-        const anoAtual = new Date().getFullYear()
-        const response = await this.coreStore.getVerbaDepartamentoAno(this.departamento.id, anoAtual)
+        const ano = this.anoSelecionado || new Date().getFullYear()
+        const response = await this.coreStore.getVerbaDepartamentoAno(this.departamento.id, ano)
         console.log('Resposta da verba:', response)
         this.verbaAtual = response.verba || response
         console.log('Verba atual:', this.verbaAtual)
