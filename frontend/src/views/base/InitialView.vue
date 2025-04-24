@@ -2,17 +2,20 @@
   <v-container class="mt-10">
     <v-row justify="center">
       <v-col cols="4">
-        <card-option cardOptionTitle="Administração" cardOptionDescription="Administração geral do sistema" cardOptionLink="/gestao" cardOptionIcon="mdi-cog">
+        <card-option cardOptionTitle="Administração" cardOptionDescription="Administração geral do sistema"
+          cardOptionLink="/gestao" cardOptionIcon="mdi-cog">
         </card-option>
       </v-col>
 
       <v-col cols="4">
-        <card-option cardOptionTitle="Gestão Departamentos" cardOptionDescription="Gestão dos Departamentos" cardOptionLink="/departamentos" cardOptionIcon="mdi-store-cog">
+        <card-option cardOptionTitle="Gestão Departamentos" cardOptionDescription="Gestão dos Departamentos"
+          cardOptionLink="/departamentos" cardOptionIcon="mdi-store-cog">
         </card-option>
       </v-col>
 
       <v-col cols="4">
-        <card-option cardOptionTitle="Gastos e despesas" cardOptionDescription="Lançamentos de gastos e/ou despesas" cardOptionLink="/gastos" cardOptionIcon="mdi-currency-usd">
+        <card-option cardOptionTitle="Gastos e despesas" cardOptionDescription="Lançamentos de gastos e/ou despesas"
+          cardOptionLink="/gastos" cardOptionIcon="mdi-currency-usd">
         </card-option>
       </v-col>
 
@@ -24,12 +27,14 @@
     </v-row>
     <v-row justify="center">
       <v-col cols="4">
-        <card-option cardOptionTitle="Consultas" cardOptionDescription="Normas e Leis correlatas" cardOptionLink="/inicial" cardOptionIcon="mdi-text-box-search-outline">
+        <card-option cardOptionTitle="Consultas" cardOptionDescription="Normas e Leis correlatas"
+          cardOptionLink="/inicial" cardOptionIcon="mdi-text-box-search-outline">
         </card-option>
       </v-col>
 
       <v-col cols="4">
-        <card-option cardOptionTitle="Relatórios" cardOptionDescription="Relatórios gerais do sistema" cardOptionLink="/inicial" cardOptionIcon="mdi-finance">
+        <card-option cardOptionTitle="Relatórios" cardOptionDescription="Relatórios gerais do sistema"
+          cardOptionLink="/relatorios/despesas" cardOptionIcon="mdi-finance">
         </card-option>
       </v-col>
 

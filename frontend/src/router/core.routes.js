@@ -86,6 +86,15 @@ export default [
         component: () => import("@/views/core/DepartamentoGastosView.vue"),
         meta: { requiresAuth: true },
       },
+      {
+        path: "relatorios/despesas",
+        name: "relatorio-despesas",
+        component: () => import("@/views/core/RelatorioDespesasView.vue"),
+        meta: { 
+          requiresAuth: true,
+          title: 'Relatório de Despesas'
+        },
+      },
     ],
   },
 ]
