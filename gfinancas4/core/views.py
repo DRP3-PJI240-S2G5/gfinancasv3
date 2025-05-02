@@ -16,6 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
 from decimal import Decimal, InvalidOperation
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +85,7 @@ def update_departamento(request):
         logger.error(f"Erro ao atualizar departamento: {str(e)}")
         return JsonResponse({"error": "Erro interno do servidor"}, status=500)
 
+@csrf_exempt
 @require_http_methods(["GET"])
 @ajax_login_required
 def list_departamentos(request):
@@ -183,6 +185,7 @@ def update_responsabilidade_view(request, id):
         logger.error(f"Erro ao atualizar responsabilidade: {str(e)}")
         return JsonResponse({"error": "Erro interno do servidor"}, status=500)
 
+@csrf_exempt
 @ajax_login_required
 @require_http_methods(["GET"])
 def list_responsabilidades(request):
@@ -196,7 +199,8 @@ def list_responsabilidades(request):
     
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-    
+
+@csrf_exempt    
 @ajax_login_required
 @require_http_methods(["GET"])
 def list_elementos(request):
@@ -210,7 +214,8 @@ def list_elementos(request):
     
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-    
+
+@csrf_exempt    
 @ajax_login_required
 @require_http_methods(["GET"])
 def list_tipo_gastos(request):
@@ -225,6 +230,7 @@ def list_tipo_gastos(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
+@csrf_exempt
 @ajax_login_required
 @require_http_methods(["GET"])    
 def list_tipo_gastos_por_elemento(request, elemento_id):
@@ -233,7 +239,7 @@ def list_tipo_gastos_por_elemento(request, elemento_id):
         return JsonResponse({"tipo_gastos": response_data}, safe=False, status=200)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-    
+
 @csrf_exempt
 @ajax_login_required
 @require_http_methods(["POST"])
@@ -398,6 +404,54 @@ def total_despesas_departamento(request, departamento_id):
     except Exception as e:
         logger.error(f"Erro ao obter total de despesas: {str(e)}")
         return JsonResponse({"error": "Erro interno do servidor"}, status=500)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["GET"])
+def total_despesas_departamento_apartir_data(request, departamento_id, data_inicio):
+    """
+    Retorna o total das despesas de um departamento a partir de uma data específica.
+    """
+    logger.info(f"API total despesas departamento {departamento_id} a partir de {data_inicio}")
+    try:
+        data_inicio_date = datetime.strptime(data_inicio, "%Y-%m-%d").date()
+        
+        resultado = service.get_total_despesas_departamento_apartir_data(departamento_id, data_inicio_date)
+        return JsonResponse(resultado, status=200)
+    
+    except ValueError as e:
+        logger.error(f"Erro de valor: {e}")
+        return JsonResponse({"error": "Data em formato inválido. Use AAAA-MM-DD."}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao calcular total de despesas do departamento {departamento_id} a partir da data {data_inicio}: {e}")
+        return JsonResponse({"error": "Erro interno do servidor."}, status=500)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["GET"])
+def list_despesas_departamento_apartir_data(request, departamento_id, data_inicio):
+    """
+    Lista paginada das despesas de um departamento a partir de uma data específica.
+    """
+    logger.info(f"API list despesas departamento {departamento_id} a partir de {data_inicio}")
+    try:
+        # Validação da data
+        data_inicio_date = datetime.strptime(data_inicio, "%Y-%m-%d").date()
+        
+        # Paginação
+        page = int(request.GET.get("page", 1))
+        per_page = int(request.GET.get("per_page", 10))
+        
+        # Chamada ao serviço
+        resultado = service.list_despesas_departamento_apartir_data(departamento_id, data_inicio_date, page, per_page)
+        return JsonResponse(resultado, status=200)
+    
+    except ValueError as e:
+        logger.error(f"Erro de valor: {e}")
+        return JsonResponse({"error": "Parâmetros inválidos. Verifique a data e paginação."}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao listar despesas do departamento {departamento_id} a partir da data {data_inicio}: {e}")
+        return JsonResponse({"error": "Erro interno do servidor."}, status=500)
 
 @csrf_exempt
 @ajax_login_required

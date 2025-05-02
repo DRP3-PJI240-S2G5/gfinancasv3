@@ -11,7 +11,7 @@ from gfinancas4.base.exceptions import BusinessError
 from django.core.exceptions import ValidationError
 from decimal import Decimal, InvalidOperation
 from django.shortcuts import get_object_or_404
-
+from datetime import datetime, date
 
 logger = logging.getLogger(__name__)
 
@@ -799,7 +799,52 @@ def list_despesas_departamento(departamento_id, page=1, per_page=10) -> List[dic
 
     except Departamento.DoesNotExist:
         raise ValueError("Departamento não encontrado")
+
+def list_despesas_departamento_apartir_data(departamento_id: int, data_inicio: date, page=1, per_page=10) -> dict:
+    """
+    Lista despesas de um departamento a partir de uma data específica, com paginação.
     
+    Args:
+        departamento_id: ID do departamento.
+        data_inicio: Data inicial (inclusive) para filtragem.
+        page: Número da página.
+        per_page: Quantidade de itens por página.
+    
+    Returns:
+        dict: Dicionário contendo despesas paginadas.
+    
+    Raises:
+        ValueError: Se o departamento não existir.
+    """
+    try:
+        departamento = Departamento.objects.get(id=departamento_id)
+
+        despesas = Despesa.objects.filter(
+            departamento=departamento,
+            created_at__date__gte=data_inicio
+        ).select_related(
+            'user', 'elemento', 'tipoGasto'
+        ).order_by("-created_at")
+
+        paginator = Paginator(despesas, per_page)
+        page_obj = paginator.get_page(page)
+
+        despesas_serializadas = [d.to_dict_json() for d in page_obj.object_list]
+
+        return {
+            "despesas": despesas_serializadas,
+            "paginacao": {
+                "pagina_atual": page_obj.number,
+                "total_paginas": paginator.num_pages,
+                "total_despesas": paginator.count,
+                "tem_proxima": page_obj.has_next(),
+                "tem_anterior": page_obj.has_previous(),
+            }
+        }
+
+    except Departamento.DoesNotExist:
+        raise ValueError("Departamento não encontrado.")
+
 # SERVIÇOS PARA ELEMENTOS (implementados conforme práticas)
 def add_elemento(novo_elemento: str, descricao: str) -> dict:
     logger.info(f"SERVICE add elemento: {novo_elemento}")
@@ -890,3 +935,32 @@ def get_total_despesas_departamento(departamento_id: int) -> dict:
     except Exception as e:
         logger.error(f"Erro ao calcular total de despesas: {str(e)}")
         raise BusinessError(f"Erro ao calcular total de despesas: {str(e)}")
+    
+def get_total_despesas_departamento_apartir_data(departamento_id: int, data_inicio: date) -> dict:
+    """
+    Retorna o total de despesas de um departamento a partir de uma data específica.
+    
+    Args:
+        departamento_id: ID do departamento.
+        data_inicio: Data inicial (inclusive) para filtragem.
+    
+    Returns:
+        dict: Total das despesas em formato decimal.
+    
+    Raises:
+        ValueError: Se o departamento não existir.
+    """
+    try:
+        departamento = Departamento.objects.get(id=departamento_id)
+
+        total = Despesa.objects.filter(
+            departamento=departamento,
+            created_at__date__gte=data_inicio
+        ).aggregate(
+            total=Sum("valor")
+        )["total"] or Decimal("0.00")
+
+        return {"total": round(total, 2)}
+
+    except Departamento.DoesNotExist:
+        raise ValueError("Departamento não encontrado.")
