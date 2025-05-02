@@ -136,12 +136,53 @@ export const useCoreStore = defineStore("coreStore", {
       }
     },
     async getTotalDespesasDepartamentoAPartirData(departamentoId, data_inicio) {
+      this.loading = true;
       try {
         const response = await coreApi.getTotalDespesasDepartamentoAPartirData(departamentoId, data_inicio);
         return response;
-      } catch (e) {
-        console.error("Erro ao buscar total de despesas do departamento:", e);
-        throw e;
+      } catch (error) {
+        this.error = error;
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+    // Busca despesas de um departamento em um período específico
+    async getDespesasPorDepartamentoPeriodo(departamentoId, data_inicio, data_termino, page = 1, perPage = 10) {
+      this.despesasLoading = true;
+      try {
+        const response = await coreApi.getDespesasPorDepartamentoPeriodo(
+          departamentoId,
+          data_inicio,
+          data_termino,
+          page,
+          perPage
+        );
+        this.despesas = response.despesas;
+        this.totalPaginas = response.totalPaginas;
+        return response;
+      } catch (error) {
+        this.error = error;
+        throw error;
+      } finally {
+        this.despesasLoading = false;
+      }
+    },
+    // Busca o total de despesas de um departamento em um período específico
+    async getTotalDespesasDepartamentoPeriodo(departamentoId, data_inicio, data_termino) {
+      this.loading = true;
+      try {
+        const response = await coreApi.getTotalDespesasDepartamentoPeriodo(
+          departamentoId,
+          data_inicio,
+          data_termino
+        );
+        return response;
+      } catch (error) {
+        this.error = error;
+        throw error;
+      } finally {
+        this.loading = false;
       }
     },
     // Ações para gerenciar subordinações

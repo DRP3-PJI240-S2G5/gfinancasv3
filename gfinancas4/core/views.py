@@ -911,3 +911,44 @@ def get_ultima_verba_departamento(request, departamento_id):
     except Exception as e:
         logger.error(f"Erro ao buscar última verba do departamento {departamento_id}: {str(e)}", exc_info=True)
         return JsonResponse({'error': 'Erro interno ao buscar última verba'}, status=500)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["GET"])
+def list_despesas_departamento_periodo(request, departamento_id, data_inicio, data_termino):
+    """Lista despesas de um departamento em um período específico"""
+    try:
+        page = int(request.GET.get('page', 1))
+        per_page = int(request.GET.get('per_page', 10))
+
+        despesas = service.list_despesas_departamento_periodo(
+            departamento_id=departamento_id,
+            data_inicio=data_inicio,
+            data_termino=data_termino,
+            page=page,
+            per_page=per_page
+        )
+        return JsonResponse(despesas, safe=False)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao listar despesas do departamento: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["GET"])
+def total_despesas_departamento_periodo(request, departamento_id, data_inicio, data_termino):
+    """Retorna o valor total das despesas de um departamento em um período específico"""
+    try:
+        total = service.total_despesas_departamento_periodo(
+            departamento_id=departamento_id,
+            data_inicio=data_inicio,
+            data_termino=data_termino
+        )
+        return JsonResponse({"total": str(total)}, safe=False)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao calcular total de despesas do departamento: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)

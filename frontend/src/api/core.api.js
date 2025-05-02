@@ -57,11 +57,25 @@ export default {
   getDespesasPorDepartamentoAPartirData: async (departamentoId, data_inicio, page = 1, perPage = 10) => {
     const response = await api.get(
       `/api/core/despesas/list/departamento/${departamentoId}/apartir-data/${data_inicio}?page=${page}&per_page=${perPage}`
-    )
+    );
+    return response.data;
+  },
+  // Função para buscar despesas de um departamento em um período específico
+  getDespesasPorDepartamentoPeriodo: async (departamentoId, data_inicio, data_termino, page = 1, perPage = 10) => {
+    const response = await api.get(
+      `/api/core/despesas/list/departamento/${departamentoId}/periodo/${data_inicio}/${data_termino}?page=${page}&per_page=${perPage}`
+    );
     return {
-      despesas: response.data.despesas,                    // lista principal
-      totalPaginas: response.data.paginacao.total_paginas  // total de páginas
-    }
+      despesas: response.data.despesas,
+      totalPaginas: response.data.paginacao.total_paginas
+    };
+  },
+  // Função para buscar o total de despesas de um departamento em um período específico
+  getTotalDespesasDepartamentoPeriodo: async (departamentoId, data_inicio, data_termino) => {
+    const response = await api.get(
+      `/api/core/departamentos/total-despesas-periodo/${departamentoId}/data/${data_inicio}/${data_termino}`
+    );
+    return response.data;
   },
   // Função para deletar uma despesa
   deleteDespesa: async (despesaId) => {

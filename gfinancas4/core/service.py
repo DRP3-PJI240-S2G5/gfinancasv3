@@ -12,6 +12,7 @@ from django.core.exceptions import ValidationError
 from decimal import Decimal, InvalidOperation
 from django.shortcuts import get_object_or_404
 from datetime import datetime, date
+from django.db import models
 
 logger = logging.getLogger(__name__)
 
@@ -881,6 +882,59 @@ def list_despesas_departamento_apartir_data(departamento_id: int, data_inicio: d
 
     except Departamento.DoesNotExist:
         raise ValueError("Departamento não encontrado.")
+
+def list_despesas_departamento_periodo(departamento_id, data_inicio, data_termino, page=1, page_size=10):
+    """Lista despesas de um departamento em um período específico com paginação"""
+    try:
+        data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d')
+        data_termino = datetime.strptime(data_termino, '%Y-%m-%d')
+        
+        # Calcula o offset para paginação
+        offset = (page - 1) * page_size
+        
+        # Busca as despesas do departamento no período
+        despesas = Despesa.objects.filter(
+            departamento_id=departamento_id,
+            created_at__range=[data_inicio, data_termino]
+        ).order_by('-created_at')
+        
+        # Aplica paginação
+        total = despesas.count()
+        despesas = despesas[offset:offset + page_size]
+        
+        # Converte para dicionário
+        despesas_list = [despesa.to_dict_json() for despesa in despesas]
+        
+        return {
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "results": despesas_list
+        }
+    except ValueError as e:
+        raise BusinessError("Formato de data inválido. Use o formato YYYY-MM-DD")
+    except Exception as e:
+        logger.error(f"Erro ao listar despesas do departamento: {str(e)}")
+        raise BusinessError("Erro ao listar despesas do departamento")
+
+def total_despesas_departamento_periodo(departamento_id, data_inicio, data_termino):
+    """Calcula o valor total das despesas de um departamento em um período específico"""
+    try:
+        data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d')
+        data_termino = datetime.strptime(data_termino, '%Y-%m-%d')
+        
+        # Soma o valor das despesas do departamento no período
+        total = Despesa.objects.filter(
+            departamento_id=departamento_id,
+            created_at__range=[data_inicio, data_termino]
+        ).aggregate(total=models.Sum('valor'))['total'] or Decimal('0.00')
+        
+        return total
+    except ValueError as e:
+        raise BusinessError("Formato de data inválido. Use o formato YYYY-MM-DD")
+    except Exception as e:
+        logger.error(f"Erro ao calcular total de despesas do departamento: {str(e)}")
+        raise BusinessError("Erro ao calcular total de despesas do departamento")
 
 # SERVIÇOS PARA ELEMENTOS (implementados conforme práticas)
 def add_elemento(novo_elemento: str, descricao: str) -> dict:

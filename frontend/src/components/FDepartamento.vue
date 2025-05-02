@@ -191,10 +191,6 @@ export default {
     isActive: {
       type: Boolean,
       required: true,
-    },
-    anoSelecionado: {
-      type: Number,
-      default: () => new Date().getFullYear()
     }
   },
   computed: {
@@ -288,23 +284,15 @@ export default {
           this.carregarVerbaAtual()
         }
       }
-    },
-    anoSelecionado: {
-      handler() {
-        this.carregarVerbaAtual()
-        this.carregarTotalDespesas()
-        this.carregarDespesas()
-      }
     }
   },
-  mounted() {
-    this.inicializarDados()
+  async mounted() {
+    await this.carregarVerbaAtual()
+    await this.carregarDespesas()
+    this.iniciarAtualizacaoPeriodica()
   },
   beforeUnmount() {
-    // Limpa o intervalo quando o componente for desmontado
-    if (this.intervaloAtualizacao) {
-      clearInterval(this.intervaloAtualizacao)
-    }
+    this.pararAtualizacaoPeriodica()
   },
   methods: {
     toggleDetails() {
@@ -315,10 +303,8 @@ export default {
     },
     async carregarDespesas() {
       try {
-        const ano = this.anoSelecionado || new Date().getFullYear()
         const response = await this.coreStore.getDespesasPorDepartamento(
           this.departamento.id,
-          ano, 
           this.paginaAtual, 
           this.itensPorPagina
         )
@@ -328,84 +314,12 @@ export default {
         console.error("Erro ao carregar despesas:", error)
       }
     },
-    async inicializarDados() {
-      try {
-        // Primeiro carrega as subordinações
-        await this.carregarSubordinacoes()
-        // Depois carrega os totais
-        await this.carregarTotalDespesas()
-        // Carrega a verba atual
-        await this.carregarVerbaAtual()
-        // Inicia o polling
-        this.iniciarPolling()
-      } catch (error) {
-        console.error("Erro ao inicializar dados:", error)
-      }
-    },
-    iniciarPolling() {
-      // Limpa o intervalo anterior se existir
-      if (this.intervaloAtualizacao) {
-        clearInterval(this.intervaloAtualizacao)
-      }
-      // Inicia o polling a cada 30 segundos
-      this.intervaloAtualizacao = setInterval(() => {
-        this.carregarTotalDespesas()
-        this.carregarVerbaAtual()
-        this.carregarDespesas()
-      }, 30000)
-    },
-    async carregarSubordinacoes() {
-      if (this.carregandoSubordinados) return
-      
-      this.carregandoSubordinados = true
-      try {
-        await this.coreStore.getSubordinacoes()
-      } catch (error) {
-        console.error("Erro ao carregar subordinações:", error)
-      } finally {
-        this.carregandoSubordinados = false
-      }
-    },
-    async carregarTotalDespesas() {
-      try {
-        const ano = this.anoSelecionado || new Date().getFullYear()
-        // Carrega despesas do departamento principal
-        const response = await this.coreStore.getTotalDespesasDepartamento(this.departamento.id)
-        this.totalDespesas = response.total_despesas_formatado
-
-        // Carrega as despesas dos subordinados
-        let totalSubordinados = 0
-        const subordinados = this.todosDepartamentosSubordinados
-        
-        if (subordinados.length > 0) {
-          for (const dept of subordinados) {
-            const responseSub = await this.coreStore.getTotalDespesasDepartamento(dept.id)
-            const valorSub = this.formatarValorMonetario(responseSub.total_despesas_formatado)
-            totalSubordinados += valorSub
-          }
-        }
-        
-        this.totalDespesasSubordinados = totalSubordinados.toLocaleString('pt-BR', {
-          style: 'currency',
-          currency: 'BRL'
-        })
-      } catch (error) {
-        console.error("Erro ao carregar total de despesas:", error)
-      }
-    },
     async carregarVerbaAtual() {
-      if (this.carregandoVerba) return
-      
       this.carregandoVerba = true
       try {
-        const ano = this.anoSelecionado || new Date().getFullYear()
-        const response = await this.coreStore.getVerbaDepartamentoAno(this.departamento.id, ano)
-        console.log('Resposta da verba:', response)
-        this.verbaAtual = response.verba || response
-        console.log('Verba atual:', this.verbaAtual)
+        this.verbaAtual = await this.coreStore.getUltimaVerbaDepartamento(this.departamento.id)
       } catch (error) {
         console.error("Erro ao carregar verba:", error)
-        this.verbaAtual = null
       } finally {
         this.carregandoVerba = false
       }
@@ -430,6 +344,49 @@ export default {
         hour: '2-digit',
         minute: '2-digit'
       })
+    },
+    iniciarAtualizacaoPeriodica() {
+      // Limpa o intervalo anterior se existir
+      if (this.intervaloAtualizacao) {
+        clearInterval(this.intervaloAtualizacao)
+      }
+      // Inicia o polling a cada 30 segundos
+      this.intervaloAtualizacao = setInterval(() => {
+        this.carregarTotalDespesas()
+        this.carregarVerbaAtual()
+        this.carregarDespesas()
+      }, 30000)
+    },
+    pararAtualizacaoPeriodica() {
+      if (this.intervaloAtualizacao) {
+        clearInterval(this.intervaloAtualizacao)
+      }
+    },
+    async carregarTotalDespesas() {
+      try {
+        // Carrega despesas do departamento principal
+        const response = await this.coreStore.getTotalDespesasDepartamento(this.departamento.id)
+        this.totalDespesas = response.total_despesas_formatado
+
+        // Carrega as despesas dos subordinados
+        let totalSubordinados = 0
+        const subordinados = this.todosDepartamentosSubordinados
+        
+        if (subordinados.length > 0) {
+          for (const dept of subordinados) {
+            const responseSub = await this.coreStore.getTotalDespesasDepartamento(dept.id)
+            const valorSub = this.formatarValorMonetario(responseSub.total_despesas_formatado)
+            totalSubordinados += valorSub
+          }
+        }
+        
+        this.totalDespesasSubordinados = totalSubordinados.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        })
+      } catch (error) {
+        console.error("Erro ao carregar total de despesas:", error)
+      }
     }
   },
   setup() {
