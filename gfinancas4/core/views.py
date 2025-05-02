@@ -873,3 +873,41 @@ def get_verba_departamento_ano(request, departamento_id, ano):
             {"error": "Erro interno do servidor"},
             status=500
         )
+    
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["GET"])
+def get_ultima_verba_departamento(request, departamento_id):
+    """
+    Retorna a última verba definida para um departamento específico.
+    
+    Args:
+        request: Requisição HTTP
+        departamento_id: ID do departamento
+        
+    Returns:
+        JsonResponse: Dados da última verba definida para o departamento
+        
+    Raises:
+        HTTP_404_NOT_FOUND: Se o departamento não for encontrado ou não houver verba
+        HTTP_500_INTERNAL_SERVER_ERROR: Se ocorrer um erro interno
+    """
+    logger.info(f"API get última verba departamento: departamento_id={departamento_id}")
+    
+    try:
+        # Obtém a última verba para o departamento
+        ultima_verba = service.get_ultima_verba_departamento(departamento_id)
+        
+        if not ultima_verba:
+            logger.info(f"Nenhuma verba encontrada para o departamento {departamento_id}")
+            return JsonResponse({'error': f'Nenhuma verba encontrada para o departamento {departamento_id}'}, status=404)
+        
+        logger.info(f"Última verba do departamento {departamento_id} recuperada com sucesso")
+        return JsonResponse(ultima_verba, status=200)
+        
+    except BusinessError as e:
+        logger.error(f"Erro de negócio ao buscar última verba do departamento {departamento_id}: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=404)
+    except Exception as e:
+        logger.error(f"Erro ao buscar última verba do departamento {departamento_id}: {str(e)}", exc_info=True)
+        return JsonResponse({'error': 'Erro interno ao buscar última verba'}, status=500)

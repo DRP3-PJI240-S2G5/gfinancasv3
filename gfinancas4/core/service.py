@@ -621,6 +621,43 @@ def get_verba_departamento_ano(departamento_id: int, ano: int) -> dict:
     except Exception as e:
         logger.error(f"Erro ao buscar verba do departamento: {str(e)}", exc_info=True)
         raise BusinessError(f"Erro ao buscar verba do departamento: {str(e)}")
+    
+def get_ultima_verba_departamento(departamento_id: int) -> dict:
+    """
+    Retorna a última verba definida para um departamento.
+    
+    Args:
+        departamento_id: ID do departamento
+        
+    Returns:
+        dict: Dados da última verba do departamento
+        
+    Raises:
+        BusinessError: Se o departamento não for encontrado ou se não houver verba registrada
+    """
+    logger.info(f"SERVICE get ultima verba departamento: departamento_id={departamento_id}")
+    
+    try:
+        # Busca o departamento
+        try:
+            departamento = Departamento.objects.get(id=departamento_id)
+        except Departamento.DoesNotExist:
+            raise BusinessError("Departamento não encontrado")
+        
+        # Busca a última verba registrada para o departamento (ordenado pelo ano de forma decrescente)
+        verba = Verba.objects.filter(departamento=departamento).order_by('-ano', '-id').first()
+        
+        if not verba:
+            raise BusinessError(f"Não há verba registrada para o departamento {departamento.nome}")
+        
+        logger.info(f"Última verba recuperada com sucesso: departamento={departamento.nome}, ano={verba.ano}")
+        return verba.to_dict_json()
+        
+    except BusinessError:
+        raise
+    except Exception as e:
+        logger.error(f"Erro ao buscar última verba do departamento: {str(e)}", exc_info=True)
+        raise BusinessError(f"Erro ao buscar última verba do departamento: {str(e)}")
 
 # SERVIÇOS PARA DESPESAS (existentes e já adequados)
 def add_despesa(user_id: int, departamento_id: int, valor: float, elemento_id: int, 

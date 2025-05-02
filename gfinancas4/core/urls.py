@@ -39,5 +39,6 @@ urlpatterns = [
     path("verbas/list", views.list_verbas, name="list_verbas"),
     path("verbas/departamento/<int:departamento_id>", views.list_verbas_departamento, name="list_verbas_departamento"),
     path("verbas/departamento/<int:departamento_id>/ano/<int:ano>", views.get_verba_departamento_ano, name="get_verba_departamento_ano"),
+    path("verbas/ultima-do-departamento/<int:departamento_id>", views.get_ultima_verba_departamento, name="get_ultima_verba_departamento"),
 ]
 
