@@ -101,6 +101,19 @@ export const useCoreStore = defineStore("coreStore", {
         throw e
       }
     },
+    async getDespesasPorDepartamentoAPartirData(departamentoId, data_inicio, page = 1, perPage = 10) {
+      this.despesasLoading = true
+      try {
+        const response = await coreApi.getDespesasPorDepartamentoAPartirData(departamentoId, data_inicio, page, perPage)
+        this.despesas = response.despesas  // Armazena as despesas no estado
+        this.despesasLoading = false
+        return response
+      } catch (e) {
+        console.error("Erro ao carregar despesas por departamento:", e)
+        this.despesasLoading = false
+        throw e
+      }
+    },
     // Função para deletar uma despesa
     async deleteDespesa(despesaId) {
       try {
@@ -116,6 +129,15 @@ export const useCoreStore = defineStore("coreStore", {
     async getTotalDespesasDepartamento(departamentoId) {
       try {
         const response = await coreApi.getTotalDespesasDepartamento(departamentoId);
+        return response;
+      } catch (e) {
+        console.error("Erro ao buscar total de despesas do departamento:", e);
+        throw e;
+      }
+    },
+    async getTotalDespesasDepartamentoAPartirData(departamentoId, data_inicio) {
+      try {
+        const response = await coreApi.getTotalDespesasDepartamentoAPartirData(departamentoId, data_inicio);
         return response;
       } catch (e) {
         console.error("Erro ao buscar total de despesas do departamento:", e);
@@ -280,6 +302,20 @@ export const useCoreStore = defineStore("coreStore", {
       } catch (err) {
         this.error = err.message
         console.error('Erro ao buscar verba do departamento por ano:', err)
+        throw err
+      } finally {
+        this.verbasLoading = false
+      }
+    },
+    async getUltimaVerbaDepartamento(departamentoId) {
+      this.verbasLoading = true
+      try {
+        const response = await coreApi.getUltimaVerbaDepartamento(departamentoId)
+        this.error = null
+        return response
+      } catch (err) {
+        this.error = err.message
+        console.error('Erro ao buscar ultima verba do departamento:', err)
         throw err
       } finally {
         this.verbasLoading = false

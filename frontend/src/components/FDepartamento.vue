@@ -317,10 +317,10 @@ export default {
       try {
         const ano = this.anoSelecionado || new Date().getFullYear()
         const response = await this.coreStore.getDespesasPorDepartamento(
-          this.departamento.id, 
+          this.departamento.id,
+          ano, 
           this.paginaAtual, 
-          this.itensPorPagina,
-          ano
+          this.itensPorPagina
         )
         this.despesas = response.despesas
         this.totalPaginas = response.totalPaginas
@@ -370,7 +370,7 @@ export default {
       try {
         const ano = this.anoSelecionado || new Date().getFullYear()
         // Carrega despesas do departamento principal
-        const response = await this.coreStore.getTotalDespesasDepartamento(this.departamento.id, ano)
+        const response = await this.coreStore.getTotalDespesasDepartamento(this.departamento.id)
         this.totalDespesas = response.total_despesas_formatado
 
         // Carrega as despesas dos subordinados
@@ -379,7 +379,7 @@ export default {
         
         if (subordinados.length > 0) {
           for (const dept of subordinados) {
-            const responseSub = await this.coreStore.getTotalDespesasDepartamento(dept.id, ano)
+            const responseSub = await this.coreStore.getTotalDespesasDepartamento(dept.id)
             const valorSub = this.formatarValorMonetario(responseSub.total_despesas_formatado)
             totalSubordinados += valorSub
           }
