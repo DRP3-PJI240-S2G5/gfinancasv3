@@ -883,14 +883,14 @@ def list_despesas_departamento_apartir_data(departamento_id: int, data_inicio: d
     except Departamento.DoesNotExist:
         raise ValueError("Departamento não encontrado.")
 
-def list_despesas_departamento_periodo(departamento_id, data_inicio, data_termino, page=1, page_size=10):
+def list_despesas_departamento_periodo(departamento_id, data_inicio, data_termino, page=1, per_page=10):
     """Lista despesas de um departamento em um período específico com paginação"""
     try:
         data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d')
         data_termino = datetime.strptime(data_termino, '%Y-%m-%d')
         
         # Calcula o offset para paginação
-        offset = (page - 1) * page_size
+        offset = (page - 1) * per_page
         
         # Busca as despesas do departamento no período
         despesas = Despesa.objects.filter(
@@ -900,7 +900,7 @@ def list_despesas_departamento_periodo(departamento_id, data_inicio, data_termin
         
         # Aplica paginação
         total = despesas.count()
-        despesas = despesas[offset:offset + page_size]
+        despesas = despesas[offset:offset + per_page]
         
         # Converte para dicionário
         despesas_list = [despesa.to_dict_json() for despesa in despesas]
@@ -908,7 +908,7 @@ def list_despesas_departamento_periodo(departamento_id, data_inicio, data_termin
         return {
             "total": total,
             "page": page,
-            "page_size": page_size,
+            "per_page": per_page,
             "results": despesas_list
         }
     except ValueError as e:
