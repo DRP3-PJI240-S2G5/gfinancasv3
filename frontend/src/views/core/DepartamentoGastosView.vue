@@ -2,7 +2,7 @@
   <v-container class="mt-10">
     <v-row justify="center">
       <v-col cols="12">
-        <f-departamento-header :departamento="departamento" />
+        <f-departamento-header v-if="departamento" :departamento="departamento" />
       </v-col>
     </v-row>
     <v-row justify="center">
@@ -175,7 +175,7 @@ export default {
     },
   },
   mounted() {
-    if (!this.departamentos.length) this.coreStore.getDepartamentos()
+    this.coreStore.getDepartamentos()
     if (!this.elementos.length) this.coreStore.getElementos()
     this.coreStore.getSubordinacoes()
   },
