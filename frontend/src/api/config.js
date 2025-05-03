@@ -14,10 +14,23 @@ const api = axios.create({
 })
 
 export function responseSuccess(response) {
+  console.log('Resposta da API:', {
+    url: response.config.url,
+    method: response.config.method,
+    status: response.status,
+    data: response.data
+  })
   return response
 }
 
 export function responseError(error) {
+  console.error('Erro na API:', {
+    url: error.config?.url,
+    method: error.config?.method,
+    status: error.response?.status,
+    data: error.response?.data,
+    message: error.message
+  })
   // Redireciona falha na comunicação com o BACKEND para página 500
   const baseStore = useBaseStore()
   if (!error.response && error.message === "Network Error") {

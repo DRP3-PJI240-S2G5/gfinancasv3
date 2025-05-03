@@ -1,7 +1,7 @@
 <template>
   <v-container class="mt-10">
     <v-row justify="center">
-      <v-col cols="12">
+      <v-col cols="12" class="ma-0 pa-0">
         <f-departamento-header v-if="departamento" :departamento="departamento" />
       </v-col>
     </v-row>
@@ -166,7 +166,9 @@ export default {
   watch: {
     departamentos: {
       handler(novosDepartamentos) {
+        console.log('Departamentos atualizados:', novosDepartamentos)
         if (novosDepartamentos.length && this.departamento) {
+          console.log('Carregando despesas e subordinações para o departamento:', this.departamento.id)
           this.carregarDespesas(1)
           this.coreStore.getSubordinacoes()
         }
@@ -175,18 +177,22 @@ export default {
     },
   },
   mounted() {
+    console.log('Componente DepartamentoGastosView montado')
+    console.log('Carregando dados iniciais...')
     this.coreStore.getDepartamentos()
     if (!this.elementos.length) this.coreStore.getElementos()
     this.coreStore.getSubordinacoes()
   },
   methods: {
     validarEntradaValor(event) {
+      console.log('Validando entrada de valor:', event.target.value)
       const valor = event.target.value;
       // Remove todos os caracteres que não são números, ponto ou vírgula
       const valorLimpo = valor.replace(/[^\d.,]/g, '');
       
       // Se houver alteração, atualiza após 300ms
       if (valorLimpo !== valor) {
+        console.log('Valor limpo:', valorLimpo)
         setTimeout(() => {
           this.valorFormatado = valorLimpo;
         }, 300);
@@ -195,6 +201,7 @@ export default {
       // Remove os pontos após 300ms
       setTimeout(() => {
         if (this.valorFormatado.includes('.')) {
+          console.log('Removendo pontos do valor')
           this.valorFormatado = this.valorFormatado.replace(/\./g, '');
         }
       }, 300);
@@ -207,8 +214,10 @@ export default {
       return numero.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     },
     async carregarDespesas(page = 1) {
+      console.log('Carregando despesas - Página:', page)
       try {
         const resultado = await this.coreStore.getDespesasPorDepartamento(this.departamento.id, page, this.perPage)
+        console.log('Despesas carregadas:', resultado.despesas)
         this.despesas = resultado.despesas
         this.totalPaginas = resultado.totalPaginas
       } catch (error) {
@@ -217,8 +226,10 @@ export default {
       }
     },
     async carregarTiposGasto() {
+      console.log('Carregando tipos de gasto para o elemento:', this.elementoSelecionado)
       try {
         const tipos = await this.coreStore.getTipoGastosPorElemento(this.elementoSelecionado)
+        console.log('Tipos de gasto carregados:', tipos)
         this.tipoGastosDisponiveis = tipos
         this.tipoGastoSelecionado = null
       } catch (error) {
@@ -227,17 +238,21 @@ export default {
       }
     },
     formatarValor() {
-      // Converte string com vírgula para número com ponto
+      console.log('Formatando valor:', this.valorFormatado)
       const numerico = parseFloat(this.valorFormatado.replace(',', '.'))
       if (!isNaN(numerico)) {
         this.valor = numerico
+        console.log('Valor formatado:', this.valor)
       } else {
         this.valor = null
+        console.log('Valor inválido')
       }
     },
     async lancarGasto() {
+      console.log('Iniciando lançamento de gasto')
       this.formatarValor()
       if (!this.valor || !this.elementoSelecionado || !this.tipoGastoSelecionado) {
+        console.log('Campos inválidos:', { valor: this.valor, elemento: this.elementoSelecionado, tipoGasto: this.tipoGastoSelecionado })
         this.baseStore.showSnackbar("Preencha todos os campos corretamente!")
         return
       }
@@ -251,24 +266,25 @@ export default {
         user_id: this.accountsStore.loggedUser?.id,
       }
 
+      console.log('Payload do gasto:', payload)
+
       try {
         let resultado;
         
         if (this.modoEdicao && this.despesaEmEdicao) {
-          // Modo de edição
+          console.log('Atualizando despesa existente:', this.despesaEmEdicao.id)
           payload.id = this.despesaEmEdicao.id;
           resultado = await this.coreStore.updateDespesa(payload);
           this.baseStore.showSnackbar("Despesa atualizada com sucesso!");
         } else {
-          // Modo de adição
+          console.log('Criando nova despesa')
           resultado = await this.coreStore.addDespesa(payload);
           this.baseStore.showSnackbar("Gasto lançado com sucesso!");
         }
 
-        // Resetar formulário
-        this.resetarFormulario();
+        console.log('Resultado da operação:', resultado)
 
-        // Recarregar lista de despesas
+        this.resetarFormulario();
         this.carregarDespesas(this.despesasPage);
       } catch (error) {
         console.error("Erro ao lançar/atualizar gasto:", error);
@@ -276,6 +292,7 @@ export default {
       }
     },
     resetarFormulario() {
+      console.log('Resetando formulário')
       this.valor = null;
       this.valorFormatado = '';
       this.elementoSelecionado = null;
@@ -289,24 +306,24 @@ export default {
       this.resetarFormulario();
     },
     podeDeletarDespesa(despesa) {
-      // Verifica se a despesa é do usuário logado
+      console.log('Verificando se pode deletar despesa:', despesa.id)
       if (despesa.usuario.id !== this.accountsStore.loggedUser?.id) {
+        console.log('Usuário não autorizado a deletar')
         return false;
       }
 
-      // Converte a data de criação para objeto Date
       const dataCriacao = new Date(despesa.created_at);
       const agora = new Date();
-      
-      // Calcula a diferença em minutos
       const diferencaMinutos = (agora - dataCriacao) / (1000 * 60);
       
-      // Retorna true se a despesa tiver menos de 5 minutos
+      console.log('Tempo desde a criação:', diferencaMinutos, 'minutos')
       return diferencaMinutos < 5;
     },
     podeEditarDespesa(despesa) {
-      // Verifica se a despesa é do usuário logado
-      return despesa.usuario.id === this.accountsStore.loggedUser?.id;
+      console.log('Verificando se pode editar despesa:', despesa.id)
+      const podeEditar = despesa.usuario.id === this.accountsStore.loggedUser?.id;
+      console.log('Pode editar:', podeEditar)
+      return podeEditar;
     },
     formatarData(dataString) {
       // Converte a string de data para objeto Date
@@ -323,10 +340,11 @@ export default {
       });
     },
     async deletarDespesa(despesaId) {
+      console.log('Iniciando exclusão da despesa:', despesaId)
       try {
         await this.coreStore.deleteDespesa(despesaId);
+        console.log('Despesa deletada com sucesso')
         this.baseStore.showSnackbar("Despesa deletada com sucesso!");
-        // Recarrega a lista de despesas
         this.carregarDespesas(this.despesasPage);
       } catch (error) {
         console.error("Erro ao deletar despesa:", error);
@@ -334,22 +352,26 @@ export default {
       }
     },
     editarDespesa(despesa) {
-      // Preenche o formulário com os dados da despesa
+      console.log('Iniciando edição da despesa:', despesa.id)
       const valorFormatado = this.formatarValorExibicao(despesa.valor);
-      this.valorFormatado = valorFormatado.replace(/\./g, ''); // Remove todos os pontos
+      this.valorFormatado = valorFormatado.replace(/\./g, '');
       this.elementoSelecionado = despesa.elemento.id;
       this.justificativa = despesa.justificativa;
       
-      // Carrega os tipos de gasto para o elemento selecionado
+      console.log('Dados da despesa carregados no formulário:', {
+        valor: this.valorFormatado,
+        elemento: this.elementoSelecionado,
+        justificativa: this.justificativa
+      })
+      
       this.carregarTiposGasto().then(() => {
         this.tipoGastoSelecionado = despesa.tipoGasto.id;
+        console.log('Tipo de gasto selecionado:', this.tipoGastoSelecionado)
       });
       
-      // Marca o modo de edição
       this.modoEdicao = true;
       this.despesaEmEdicao = despesa;
       
-      // Rola a página para o formulário
       this.$nextTick(() => {
         const formElement = document.querySelector('.v-form');
         if (formElement) {

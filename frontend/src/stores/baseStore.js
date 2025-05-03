@@ -10,10 +10,12 @@ export const useBaseStore = defineStore("baseStore", {
   }),
   actions: {
     setShowErrorMessage(errorMessage) {
+      console.log('Definindo mensagem de erro:', errorMessage)
       this.errorMessage = errorMessage
       this.showErrorMessage = !!errorMessage
     },
     showSnackbar(message, type) {
+      console.log('Mostrando snackbar:', { message, type })
       this.type = type
       this.snackbarMessage = message
       this.showSnackbarMessage = !!message
