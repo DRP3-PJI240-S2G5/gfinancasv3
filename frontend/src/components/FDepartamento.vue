@@ -45,12 +45,12 @@
           <!-- Indicador de Meta (Verba) -->
           <div v-if="ultrapassouLimite" class="position-absolute" :style="`left: ${Math.min(100, (100 / porcentagemGastos) * 100)}%`" style="z-index: 4;">
             <v-badge
-              color="black"
+              class="text-caption"
               dot
               inline
               style="z-index: 4;"
             ></v-badge>
-            <div class="text-caption text-black mt-n2" style="white-space: nowrap; transform: translateX(-50%); z-index: 4;">
+            <div class="text-caption mt-n2" style="white-space: nowrap; transform: translateX(-50%); z-index: 4;">
               {{ formatarValor(verbaAtual.valor) }}
             </div>
           </div>
