@@ -22,29 +22,14 @@ export const useCoreStore = defineStore("coreStore", {
   }),
   actions: {
     async getDepartamentos() {
-      console.log('Iniciando carregamento de departamentos')
       this.departamentosLoading = true
-      try {
-        const response = await coreApi.getDepartamentos()
-        console.log('Departamentos carregados:', response.departamentos)
-        this.departamentos = response.departamentos
-      } catch (error) {
-        console.error('Erro ao carregar departamentos:', error)
-        throw error
-      } finally {
-        this.departamentosLoading = false
-      }
+      const response = await coreApi.getDepartamentos()
+      this.departamentos = response.departamentos
+      this.departamentosLoading = false
     },
     async addNewDepartamento(departamento) {
-      console.log('Adicionando novo departamento:', departamento)
-      try {
-        const newDepartamento = await coreApi.addNewDepartamento(departamento)
-        console.log('Novo departamento criado:', newDepartamento)
-        return newDepartamento
-      } catch (error) {
-        console.error('Erro ao adicionar departamento:', error)
-        throw error
-      }
+      const newDepartamento = await coreApi.addNewDepartamento(departamento)
+      return newDepartamento
     },
     async updateDepartamento(updatedDepartamento) {
       const departamento = await coreApi.updateDepartamento(updatedDepartamento);
@@ -56,32 +41,16 @@ export const useCoreStore = defineStore("coreStore", {
       return departamento;
     },
     async getElementos() {
-      console.log('Iniciando carregamento de elementos')
       this.elementosLoading = true
-      try {
-        const response = await coreApi.getElementos()
-        console.log('Elementos carregados:', response.elementos)
-        this.elementos = response.elementos
-      } catch (error) {
-        console.error('Erro ao carregar elementos:', error)
-        throw error
-      } finally {
-        this.elementosLoading = false
-      }
+      const response = await coreApi.getElementos()
+      this.elementos = response.elementos
+      this.elementosLoading = false
     },
     async getTipoGastos() {
-      console.log('Iniciando carregamento de tipos de gasto')
       this.tipoGastosLoading = true
-      try {
-        const response = await coreApi.getTipoGastos()
-        console.log('Tipos de gasto carregados:', response.tipoGastos)
-        this.tipoGastos = response.tipoGastos
-      } catch (error) {
-        console.error('Erro ao carregar tipos de gasto:', error)
-        throw error
-      } finally {
-        this.tipoGastosLoading = false
-      }
+      const response = await coreApi.getTipoGastos()
+      this.tipoGastos = response.tipoGastos
+      this.tipoGastosLoading = false
     },
     async getTipoGastosPorElemento(elementoId) {
       try {
@@ -167,14 +136,11 @@ export const useCoreStore = defineStore("coreStore", {
       }
     },
     async getTotalDespesasDepartamentoAPartirData(departamentoId, data_inicio) {
-      console.log('Buscando total de despesas do departamento:', departamentoId, 'a partir de:', data_inicio)
       this.loading = true;
       try {
         const response = await coreApi.getTotalDespesasDepartamentoAPartirData(departamentoId, data_inicio);
-        console.log('Total de despesas encontrado:', response)
         return response;
       } catch (error) {
-        console.error('Erro ao buscar total de despesas:', error)
         this.error = error;
         throw error;
       } finally {
@@ -183,7 +149,6 @@ export const useCoreStore = defineStore("coreStore", {
     },
     // Busca despesas de um departamento em um período específico
     async getDespesasPorDepartamentoPeriodo(departamentoId, data_inicio, data_termino, page = 1, perPage = 10) {
-      console.log('Buscando despesas do departamento:', departamentoId, 'período:', data_inicio, 'a', data_termino)
       this.despesasLoading = true;
       try {
         const response = await coreApi.getDespesasPorDepartamentoPeriodo(
@@ -193,12 +158,10 @@ export const useCoreStore = defineStore("coreStore", {
           page,
           perPage
         );
-        console.log('Despesas encontradas:', response.despesas)
         this.despesas = response.despesas;
         this.totalPaginas = response.totalPaginas;
         return response;
       } catch (error) {
-        console.error('Erro ao buscar despesas:', error)
         this.error = error;
         throw error;
       } finally {
@@ -207,7 +170,6 @@ export const useCoreStore = defineStore("coreStore", {
     },
     // Busca o total de despesas de um departamento em um período específico
     async getTotalDespesasDepartamentoPeriodo(departamentoId, data_inicio, data_termino) {
-      console.log('Buscando total de despesas do departamento:', departamentoId, 'período:', data_inicio, 'a', data_termino)
       this.loading = true;
       try {
         const response = await coreApi.getTotalDespesasDepartamentoPeriodo(
@@ -215,10 +177,8 @@ export const useCoreStore = defineStore("coreStore", {
           data_inicio,
           data_termino
         );
-        console.log('Total de despesas encontrado:', response)
         return response;
       } catch (error) {
-        console.error('Erro ao buscar total de despesas:', error)
         this.error = error;
         throw error;
       } finally {
@@ -294,17 +254,15 @@ export const useCoreStore = defineStore("coreStore", {
     },
 
     async addVerba(verba) {
-      console.log('Adicionando nova verba:', verba)
       this.verbasLoading = true
       try {
         const data = await coreApi.addVerba(verba)
-        console.log('Nova verba criada:', data)
         this.verbas.push(data)
         this.error = null
         return data
       } catch (err) {
-        console.error('Erro ao adicionar verba:', err)
         this.error = err.message
+        console.error('Erro ao adicionar verba:', err)
         throw err
       } finally {
         this.verbasLoading = false
@@ -346,16 +304,14 @@ export const useCoreStore = defineStore("coreStore", {
     },
 
     async getVerba(id) {
-      console.log('Buscando verba:', id)
       this.verbasLoading = true
       try {
         const response = await coreApi.getVerba(id)
-        console.log('Verba encontrada:', response)
         this.error = null
         return response
       } catch (err) {
-        console.error('Erro ao buscar verba:', err)
         this.error = err.message
+        console.error('Erro ao buscar verba:', err)
         throw err
       } finally {
         this.verbasLoading = false

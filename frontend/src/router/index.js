@@ -22,30 +22,20 @@ const router = createRouter({
 
 // Guarda de rota
 router.beforeEach(async (to, from, next) => {
-  console.log('Navegação:', {
-    de: from.path,
-    para: to.path,
-    requerAutenticação: to.matched.some(record => record.meta.requiresAuth)
-  })
-
   const accountsStore = useAccountsStore()
 
   // Verifica se a rota requer autenticação
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    console.log('Rota requer autenticação, verificando usuário logado')
     // Verifica se o usuário está logado
     if (!accountsStore.loggedUser) {
-      console.log('Usuário não logado, verificando sessão atual')
       // Chama o whoAmI para verificar o login atual se o usuário não estiver no estado
       await accountsStore.whoAmI()
 
       if (!accountsStore.loggedUser) {
-        console.log('Usuário não autenticado, redirecionando para login')
         // Redireciona para a página de login se não estiver autenticado
         return next({ name: 'accounts-login' })
       }
     }
-    console.log('Usuário autenticado, permitindo acesso')
   }
 
   // Caso contrário, segue normalmente
