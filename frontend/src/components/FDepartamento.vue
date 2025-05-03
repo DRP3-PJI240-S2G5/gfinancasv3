@@ -25,7 +25,7 @@
           <v-progress-linear
             :color="corBarraProgresso"
             height="22"
-            :model-value="Math.min(porcentagemGastosDepartamento, 100)"
+            :model-value="ultrapassouLimite ? (porcentagemGastosDepartamento / porcentagemGastos) * 100 : Math.min(porcentagemGastosDepartamento, 100)"
             rounded="lg"
             class="position-absolute w-100"
             style="z-index: 2;"
@@ -35,21 +35,25 @@
           <v-progress-linear
             :color="corBarraProgressoSubordinados"
             height="22"
-            :model-value="Math.min(porcentagemGastosSubordinados + porcentagemGastosDepartamento, 100)"
-            rounded="lg"
-            class="position-absolute w-100"
+            :model-value="ultrapassouLimite ? 100 : Math.min(porcentagemGastosSubordinados + porcentagemGastosDepartamento, 100)"
+            :style="ultrapassouLimite ? `margin-left: ${(porcentagemGastosDepartamento / porcentagemGastos) * 100}%; width: ${100 - (porcentagemGastosDepartamento / porcentagemGastos) * 100}%` : ''"
+            :rounded="ultrapassouLimite ? 's-lg' : 'lg'"
+            class="position-absolute"
             style="z-index: 1;"
           ></v-progress-linear>
 
-          <!-- Indicador de Meta 
-          <v-badge
-            :style="`right: ${Math.min(porcentagemGastos, 100)}%`"
-            class="position-absolute"
-            color="yellow"
-            dot
-            inline
-            style="z-index: 3;"
-          ></v-badge>-->
+          <!-- Indicador de Meta (Verba) -->
+          <div v-if="ultrapassouLimite" class="position-absolute" :style="`left: ${Math.min(100, (100 / porcentagemGastos) * 100)}%`" style="z-index: 4;">
+            <v-badge
+              color="black"
+              dot
+              inline
+              style="z-index: 4;"
+            ></v-badge>
+            <div class="text-caption text-black mt-n2" style="white-space: nowrap; transform: translateX(-50%); z-index: 4;">
+              {{ formatarValor(verbaAtual.valor) }}
+            </div>
+          </div>
         </div>
 
         <div class="d-flex justify-space-between py-3">
@@ -225,10 +229,10 @@ export default {
       return this.porcentagemGastos > 100
     },
     corBarraProgresso() {
-      return this.ultrapassouLimite ? 'red-darken-3' : 'green-darken-3'
+      return this.ultrapassouLimite ? 'red-darken-4' : 'green-darken-3'
     },
     corBarraProgressoSubordinados() {
-      return this.ultrapassouLimite ? 'red-darken-1' : '#d6ae02'
+      return '#d6ae02'
     },
     // Computed properties para subordinação
     departamentosSubordinados() {
