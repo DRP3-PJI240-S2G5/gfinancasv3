@@ -952,3 +952,19 @@ def total_despesas_departamento_periodo(request, departamento_id, data_inicio, d
     except Exception as e:
         logger.error(f"Erro ao calcular total de despesas do departamento: {str(e)}")
         return JsonResponse({"error": "Erro interno do servidor"}, status=500)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["DELETE"])
+def delete_despesa(request, id):
+    """Remove uma despesa existente."""
+    logger.info(f"API delete despesa: {id}")
+    
+    try:
+        service.delete_despesa(id)
+        return JsonResponse({"success": True}, status=200)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao remover despesa: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)

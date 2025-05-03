@@ -1055,3 +1055,26 @@ def get_total_despesas_departamento_apartir_data(departamento_id: int, data_inic
 
     except Departamento.DoesNotExist:
         raise ValueError("Departamento não encontrado.")
+
+def delete_despesa(despesa_id: int) -> bool:
+    """
+    Remove uma despesa existente.
+    
+    Args:
+        despesa_id: ID da despesa a ser removida
+        
+    Returns:
+        bool: True se a despesa foi removida com sucesso
+        
+    Raises:
+        BusinessError: Se a despesa não for encontrada
+    """
+    try:
+        despesa = Despesa.objects.get(id=despesa_id)
+        despesa.delete()
+        return True
+    except Despesa.DoesNotExist:
+        raise BusinessError("Despesa não encontrada.")
+    except Exception as e:
+        logger.error(f"Erro ao remover despesa: {str(e)}")
+        raise BusinessError("Erro ao remover despesa.")
