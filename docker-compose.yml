@@ -37,7 +37,8 @@ services:
     env_file:
       - .env
     #command: bash -c "python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
-    command: bash -c "python manage.py collectstatic --noinput && uwsgi --http :8000 --module gfinancas4.gfinancas4.wsgi:application"
+    #command: bash -c "python manage.py collectstatic --noinput && uwsgi --http :8000 --module gfinancas4.gfinancas4.wsgi:application"
+    command: bash -c "python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
     ports:
       - 8000:8000
     develop:
