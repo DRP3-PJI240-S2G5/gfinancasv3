@@ -1242,11 +1242,8 @@ def list_tipo_gastos_por_elemento(elemento_id: int) -> List[dict]:
     """Lista todos os tipos de gasto associados a um elemento."""
     logger.info(f"SERVICE list tipo_gastos por elemento {elemento_id}")
     try:
-        # Verifica se o elemento existe
         elemento = Elemento.objects.get(id=elemento_id)
-        # Busca os tipos de gasto através do modelo ElementoTipoGasto
-        tipos_gasto = ElementoTipoGasto.objects.filter(elemento=elemento)
-        return [{"tipoGasto": tg.tipo_gasto.tipoGasto} for tg in tipos_gasto]
+        return [tg.to_dict_json() for tg in elemento.tipos_gasto.all()]
     except Elemento.DoesNotExist:
         raise BusinessError(f"Elemento com ID {elemento_id} não encontrado")
     except Exception as e:

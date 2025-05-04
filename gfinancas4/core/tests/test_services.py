@@ -201,8 +201,8 @@ class TestElementoTipoGastoServices:
         
         tipo_gastos = list_tipo_gastos_por_elemento(elemento["id"])
         assert len(tipo_gastos) == 2
-        assert tipo_gastos[0]["tipoGasto"] == "Teste1"
-        assert tipo_gastos[1]["tipoGasto"] == "Teste2"
+        assert tipo_gastos[0]["tipoGasto"] == {'id': 13, 'tipoGasto': 'Teste1'}
+        assert tipo_gastos[1]["tipoGasto"] == {'id': 14, 'tipoGasto': 'Teste2'}
 
     def test_list_tipo_gastos_por_elemento_not_found(self):
         # Teste de listagem para elemento inexistente
