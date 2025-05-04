@@ -23,10 +23,19 @@ urlpatterns = [
     #path("responsabilidades/delete/<int:id>", views.delete_responsabilidade, name="delete_responsabilidade"),
     # elementos
     path("elementos/list", views.list_elementos, name="list_elementos"),
+    path("elementos/add", views.add_elemento, name="add_elemento"),
+    path("elementos/update", views.update_elemento, name="update_elemento"),
+    path("elementos/delete/<int:id>", views.delete_elemento, name="delete_elemento"),
     # Tipo de Gastos
     path("tipo-gastos/list", views.list_tipo_gastos, name="list_tipo_gastos"),
+    path("tipo-gastos/add", views.add_tipo_gasto, name="add_tipo_gasto"),
+    path("tipo-gastos/update", views.update_tipo_gasto, name="update_tipo_gasto"),
+    path("tipo-gastos/delete/<int:id>", views.delete_tipo_gasto, name="delete_tipo_gasto"),
     path("tipo-gastos/por-elemento/<int:elemento_id>", views.list_tipo_gastos_por_elemento),
-     # Endpoints para Despesa
+    # Relacionamentos Elemento-TipoGasto
+    path("elemento-tipo-gasto/add", views.add_elemento_tipo_gasto, name="add_elemento_tipo_gasto"),
+    path("elemento-tipo-gasto/delete/<int:id>", views.delete_elemento_tipo_gasto, name="delete_elemento_tipo_gasto"),
+    # Endpoints para Despesa
     path("despesas/add", views.add_despesa_view, name="add_despesa"),
     path("despesas/update", views.update_despesa, name="update_despesa"),
     path("despesas/delete/<int:id>", views.delete_despesa, name="delete_despesa"),

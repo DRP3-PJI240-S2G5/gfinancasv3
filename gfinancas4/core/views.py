@@ -208,12 +208,13 @@ def list_elementos(request):
     logger.info("API list elementos.")
     
     try:
-        # Chama o serviço para listar as responsabilidades
         response_data = service.list_elementos()
         return JsonResponse({"elementos": response_data}, safe=False, status=200)
-    
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        logger.error(f"Erro ao listar elementos: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
 
 @csrf_exempt    
 @ajax_login_required
@@ -223,22 +224,29 @@ def list_tipo_gastos(request):
     logger.info("API list tipo gastos.")
     
     try:
-        # Chama o serviço para listar o tipo de gastos
         response_data = service.list_tipo_gastos()
         return JsonResponse({"tipoGastos": response_data}, safe=False, status=200)
-    
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        logger.error(f"Erro ao listar tipos de gasto: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
 
 @csrf_exempt
 @ajax_login_required
 @require_http_methods(["GET"])    
 def list_tipo_gastos_por_elemento(request, elemento_id):
+    """Lista todos os tipos de gasto associados a um elemento."""
+    logger.info(f"API list tipo gastos por elemento {elemento_id}")
+    
     try:
         response_data = service.list_tipo_gastos_por_elemento(elemento_id)
         return JsonResponse({"tipo_gastos": response_data}, safe=False, status=200)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        logger.error(f"Erro ao listar tipos de gasto do elemento: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
 
 @csrf_exempt
 @ajax_login_required
@@ -967,4 +975,171 @@ def delete_despesa(request, id):
         return JsonResponse({"error": str(e)}, status=400)
     except Exception as e:
         logger.error(f"Erro ao remover despesa: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["POST"])
+def add_elemento(request):
+    """Adiciona um novo elemento."""
+    logger.info("API add new elemento.")
+    body = json.loads(request.body)
+    
+    elemento = body.get("elemento", "")
+    descricao = body.get("descricao", "")
+
+    try:
+        new_elemento = service.add_elemento(
+            elemento=elemento,
+            descricao=descricao
+        )
+        return JsonResponse(new_elemento, status=201)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao adicionar elemento: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["PUT"])
+def update_elemento(request):
+    """Atualiza um elemento existente."""
+    logger.info("API update elemento.")
+    body = json.loads(request.body)
+    
+    elemento_id = body.get("id")
+    elemento = body.get("elemento", "")
+    descricao = body.get("descricao", "")
+
+    try:
+        updated_elemento = service.update_elemento(
+            elemento_id=elemento_id,
+            elemento=elemento,
+            descricao=descricao
+        )
+        return JsonResponse(updated_elemento, status=200)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao atualizar elemento: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["DELETE"])
+def delete_elemento(request, id):
+    """Deleta um elemento."""
+    logger.info(f"API delete elemento {id}.")
+    
+    try:
+        service.delete_elemento(id)
+        return JsonResponse({}, status=204)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao deletar elemento: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["POST"])
+def add_tipo_gasto(request):
+    """Adiciona um novo tipo de gasto."""
+    logger.info("API add new tipo_gasto.")
+    body = json.loads(request.body)
+    
+    tipo_gasto = body.get("tipoGasto", "")
+    descricao = body.get("descricao", "")
+
+    try:
+        new_tipo_gasto = service.add_tipo_gasto(
+            tipo_gasto=tipo_gasto,
+            descricao=descricao
+        )
+        return JsonResponse(new_tipo_gasto, status=201)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao adicionar tipo de gasto: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["PUT"])
+def update_tipo_gasto(request):
+    """Atualiza um tipo de gasto existente."""
+    logger.info("API update tipo_gasto.")
+    body = json.loads(request.body)
+    
+    tipo_gasto_id = body.get("id")
+    tipo_gasto = body.get("tipoGasto", "")
+    descricao = body.get("descricao", "")
+
+    try:
+        updated_tipo_gasto = service.update_tipo_gasto(
+            tipo_gasto_id=tipo_gasto_id,
+            tipo_gasto=tipo_gasto,
+            descricao=descricao
+        )
+        return JsonResponse(updated_tipo_gasto, status=200)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao atualizar tipo de gasto: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["DELETE"])
+def delete_tipo_gasto(request, id):
+    """Deleta um tipo de gasto."""
+    logger.info(f"API delete tipo_gasto {id}.")
+    
+    try:
+        service.delete_tipo_gasto(id)
+        return JsonResponse({}, status=204)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao deletar tipo de gasto: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["POST"])
+def add_elemento_tipo_gasto(request):
+    """Adiciona um relacionamento entre elemento e tipo de gasto."""
+    logger.info("API add elemento_tipo_gasto.")
+    body = json.loads(request.body)
+    
+    elemento_id = body.get("elemento_id")
+    tipo_gasto_id = body.get("tipo_gasto_id")
+
+    try:
+        new_relacao = service.add_elemento_tipo_gasto(
+            elemento_id=elemento_id,
+            tipo_gasto_id=tipo_gasto_id
+        )
+        return JsonResponse(new_relacao, status=201)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao adicionar relacionamento: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["DELETE"])
+def delete_elemento_tipo_gasto(request, id):
+    """Deleta um relacionamento entre elemento e tipo de gasto."""
+    logger.info(f"API delete elemento_tipo_gasto {id}.")
+    
+    try:
+        service.delete_elemento_tipo_gasto(id)
+        return JsonResponse({}, status=204)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao deletar relacionamento: {str(e)}")
         return JsonResponse({"error": "Erro interno do servidor"}, status=500)
