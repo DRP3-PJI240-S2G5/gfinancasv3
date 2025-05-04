@@ -79,7 +79,7 @@
             v-for="item in tipoGastosDoElemento"
             :key="item.id"
           >
-            <v-list-item-title>{{ item.tipoGasto }}</v-list-item-title>
+            <v-list-item-title>{{ item.tipoGasto.tipoGasto }}</v-list-item-title>
             <v-list-item-subtitle>{{ item.descricao }}</v-list-item-subtitle>
             <template v-slot:append>
               <v-btn
