@@ -18,7 +18,8 @@ export const useCoreStore = defineStore("coreStore", {
     verbasLoading: false,
     loading: false,
     error: null,
-    verbasPaginacao: null
+    verbasPaginacao: null,
+    totalDespesas: {}
   }),
   actions: {
     async getDepartamentos() {
@@ -129,6 +130,8 @@ export const useCoreStore = defineStore("coreStore", {
     async getTotalDespesasDepartamento(departamentoId) {
       try {
         const response = await coreApi.getTotalDespesasDepartamento(departamentoId);
+        // Atualiza o estado com o novo total
+        this.totalDespesas[departamentoId] = response;
         return response;
       } catch (e) {
         console.error("Erro ao buscar total de despesas do departamento:", e);

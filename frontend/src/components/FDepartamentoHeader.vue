@@ -157,16 +157,27 @@ export default {
       handler(newValue) {
         if (newValue) {
           this.carregarVerbaAtual()
+          this.carregarTotalDespesas()
         }
       }
     }
   },
   async mounted() {
     await this.carregarVerbaAtual()
-    this.iniciarAtualizacaoPeriodica()
+    await this.carregarTotalDespesas()
+    
+    // Adiciona listener para atualização de despesas
+    this.coreStore.$onAction(({ name, after }) => {
+      if (name === 'addDespesa' || name === 'updateDespesa' || name === 'deleteDespesa') {
+        after(() => {
+          this.carregarTotalDespesas()
+        })
+      }
+    })
   },
   beforeUnmount() {
-    this.pararAtualizacaoPeriodica()
+    // Remove o listener de ações do store
+    this.coreStore.$onAction(() => {})
   },
   methods: {
     formatarValorMonetario(valor) {
@@ -188,20 +199,6 @@ export default {
         style: 'currency',
         currency: 'BRL'
       })
-    },
-    iniciarAtualizacaoPeriodica() {
-      if (this.intervaloAtualizacao) {
-        clearInterval(this.intervaloAtualizacao)
-      }
-      this.intervaloAtualizacao = setInterval(() => {
-        this.carregarTotalDespesas()
-        this.carregarVerbaAtual()
-      }, 30000)
-    },
-    pararAtualizacaoPeriodica() {
-      if (this.intervaloAtualizacao) {
-        clearInterval(this.intervaloAtualizacao)
-      }
     },
     async carregarTotalDespesas() {
       try {

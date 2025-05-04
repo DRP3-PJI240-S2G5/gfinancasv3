@@ -268,8 +268,11 @@ export default {
         // Resetar formulário
         this.resetarFormulario();
 
-        // Recarregar lista de despesas
-        this.carregarDespesas(this.despesasPage);
+        // Recarregar lista de despesas e totais
+        await Promise.all([
+          this.carregarDespesas(this.despesasPage),
+          this.coreStore.getTotalDespesasDepartamento(this.departamento.id)
+        ]);
       } catch (error) {
         console.error("Erro ao lançar/atualizar gasto:", error);
         this.baseStore.showSnackbar("Erro ao lançar/atualizar o gasto. Tente novamente.");
@@ -326,8 +329,11 @@ export default {
       try {
         await this.coreStore.deleteDespesa(despesaId);
         this.baseStore.showSnackbar("Despesa deletada com sucesso!");
-        // Recarrega a lista de despesas
-        this.carregarDespesas(this.despesasPage);
+        // Recarrega a lista de despesas e totais
+        await Promise.all([
+          this.carregarDespesas(this.despesasPage),
+          this.coreStore.getTotalDespesasDepartamento(this.departamento.id)
+        ]);
       } catch (error) {
         console.error("Erro ao deletar despesa:", error);
         this.baseStore.showSnackbar("Erro ao deletar a despesa. Tente novamente.");
