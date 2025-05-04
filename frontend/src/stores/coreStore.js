@@ -62,6 +62,15 @@ export const useCoreStore = defineStore("coreStore", {
         return []
       }
     },
+    async deleteTipoGasto(tipoGastoId) {
+      try {
+        await coreApi.deleteTipoGasto(tipoGastoId)
+        this.tipoGastos = this.tipoGastos.filter(tg => tg.id !== tipoGastoId)
+      } catch (e) {
+        console.error("Erro ao deletar tipo de gasto:", e)
+        throw e
+      }
+    },
     // Função para adicionar uma nova despesa
     async addDespesa(novaDespesa) {
       try {

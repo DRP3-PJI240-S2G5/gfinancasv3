@@ -31,6 +31,10 @@ export default {
     const response = await api.get(`/api/core/tipo-gastos/por-elemento/${elementoId}`);
     return response.data;
   },
+  deleteTipoGasto: async (tipoGastoId) => {
+    const response = await api.delete(`/api/core/tipo-gastos/delete/${tipoGastoId}`);
+    return response.data;
+  },
   // Função para adicionar despesa
   addDespesa: async (novaDespesa) => {
     const response = await api.post(
