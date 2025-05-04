@@ -38,7 +38,7 @@
               <v-select
                 v-model="tipoGastoSelecionado"
                 :items="tipoGastosDisponiveis"
-                item-title="tipoGasto"
+                item-title="tipoGasto.tipoGasto"
                 item-value="id"
                 label="Tipo de Gasto"
                 :disabled="!elementoSelecionado"
@@ -219,7 +219,10 @@ export default {
     async carregarTiposGasto() {
       try {
         const tipos = await this.coreStore.getTipoGastosPorElemento(this.elementoSelecionado)
-        this.tipoGastosDisponiveis = tipos
+        this.tipoGastosDisponiveis = tipos.map(tipo => ({
+          id: tipo.tipoGasto.id, // ID do TipoGasto
+          tipoGasto: tipo.tipoGasto
+        }))
         this.tipoGastoSelecionado = null
       } catch (error) {
         console.error("Erro ao carregar tipos de gasto:", error)
@@ -245,7 +248,7 @@ export default {
       const payload = {
         valor: this.valor,
         elemento_id: this.elementoSelecionado,
-        tipo_gasto_id: this.tipoGastoSelecionado,
+        tipo_gasto_id: this.tipoGastoSelecionado, // ID do TipoGasto
         departamento_id: this.departamento.id,
         justificativa: this.justificativa,
         user_id: this.accountsStore.loggedUser?.id,
