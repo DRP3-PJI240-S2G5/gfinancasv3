@@ -937,6 +937,26 @@ def total_despesas_departamento_periodo(departamento_id, data_inicio, data_termi
         raise BusinessError("Erro ao calcular total de despesas do departamento")
 
 # SERVIÇOS PARA ELEMENTOS (implementados conforme práticas)
+def _normalizar_texto(texto: str) -> str:
+    """
+    Normaliza um texto removendo acentos e caracteres especiais.
+    
+    Args:
+        texto: Texto a ser normalizado
+        
+    Returns:
+        str: Texto normalizado
+    """
+    import unicodedata
+    # Remove acentos
+    texto = ''.join(c for c in unicodedata.normalize('NFD', texto)
+                   if unicodedata.category(c) != 'Mn')
+    # Converte para minúsculas
+    texto = texto.lower()
+    # Remove espaços extras
+    texto = ' '.join(texto.split())
+    return texto
+
 def add_elemento(elemento: str, descricao: str) -> dict:
     """Adiciona um novo elemento."""
     logger.info("SERVICE add new elemento")
@@ -949,9 +969,14 @@ def add_elemento(elemento: str, descricao: str) -> dict:
         if not descricao:
             raise BusinessError("O campo 'descricao' é obrigatório")
             
-        # Verifica se já existe um elemento com o mesmo nome
-        if Elemento.objects.filter(elemento=elemento).exists():
-            raise BusinessError(f"Já existe um elemento com o nome '{elemento}'")
+        # Normaliza o nome do elemento para comparação
+        elemento_normalizado = _normalizar_texto(elemento)
+            
+        # Verifica se já existe um elemento com o mesmo nome (considerando normalização)
+        elementos_existentes = Elemento.objects.all()
+        for elem in elementos_existentes:
+            if _normalizar_texto(elem.elemento) == elemento_normalizado:
+                raise BusinessError(f"Já existe um elemento com o nome '{elem.elemento}'. Use um nome diferente.")
             
         elemento_obj = Elemento(
             elemento=elemento,
@@ -1015,10 +1040,10 @@ def delete_elemento(elemento_id: int) -> None:
         raise BusinessError(f"Elemento com ID {elemento_id} não encontrado.")
 
 def list_elementos() -> List[dict]:
-    """Lista todos os elementos."""
+    """Lista todos os elementos ordenados alfabeticamente por nome."""
     logger.info("SERVICE list elementos")
     try:
-        return [el.to_dict_json() for el in Elemento.objects.all()]
+        return [item.to_dict_json() for item in Elemento.objects.all().order_by('elemento')]
     except Exception as e:
         logger.error(f"Erro ao listar elementos: {str(e)}")
         raise BusinessError("Erro ao listar elementos")

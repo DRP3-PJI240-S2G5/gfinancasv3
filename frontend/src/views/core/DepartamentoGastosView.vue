@@ -6,121 +6,121 @@
       </v-col>
     </v-row>
     <v-row justify="center">
-        <!-- Coluna do formulário (formulário de lançamento de gasto) -->
-        <v-col cols="12" md="8">
-        <v-card>
-          <v-card-title class="headline">
-            Lançar Gasto - {{ departamento?.nome || 'Departamento' }}
-          </v-card-title>
+  <!-- Coluna do formulário (formulário de lançamento de gasto) -->
+  <v-col cols="12" md="8">
+    <v-card>
+      <v-card-title class="headline">
+        Lançar Gasto - {{ departamento?.nome || 'Departamento' }}
+      </v-card-title>
 
-          <v-card-text>
-            <v-form ref="form" @submit.prevent="lancarGasto">
-              <!-- Campos do formulário -->
-              <v-text-field
-                v-model="valorFormatado"
-                label="Valor do Gasto"
-                type="text"
-                prefix="R$"
-                required
-                @input="validarEntradaValor"
-                @blur="formatarValor"
-              />
-              <v-select
-                v-model="elementoSelecionado"
-                :items="elementos"
-                item-title="elemento"
-                item-value="id"
-                label="Elemento"
-                @update:modelValue="carregarTiposGasto"
-                :loading="elementosLoading"
-                required
-              />
-              <v-select
-                v-model="tipoGastoSelecionado"
-                :items="tipoGastosDisponiveis"
+      <v-card-text>
+        <v-form ref="form" @submit.prevent="lancarGasto">
+          <!-- Campos do formulário -->
+          <v-text-field
+            v-model="valorFormatado"
+            label="Valor do Gasto"
+            type="text"
+            prefix="R$"
+            required
+            @input="validarEntradaValor"
+            @blur="formatarValor"
+          />
+          <v-select
+            v-model="elementoSelecionado"
+            :items="elementos"
+            item-title="elemento"
+            item-value="id"
+            label="Elemento"
+            @update:modelValue="carregarTiposGasto"
+            :loading="elementosLoading"
+            required
+          />
+          <v-select
+            v-model="tipoGastoSelecionado"
+            :items="tipoGastosDisponiveis"
                 item-title="tipoGasto.tipoGasto"
-                item-value="id"
-                label="Tipo de Gasto"
-                :disabled="!elementoSelecionado"
-                required
-              />
-              <v-textarea
-                v-model="justificativa"
-                label="Justificativa"
-                rows="3"
-                auto-grow
-                required
-              />
-              <v-btn type="submit" color="primary" class="mt-4">{{ modoEdicao ? 'Atualizar' : 'Lançar' }}</v-btn>
-              <v-btn v-if="modoEdicao" color="secondary" class="mt-4 ml-2" @click="cancelarEdicao">Cancelar</v-btn>
-            </v-form>
-          </v-card-text>
-        </v-card>
-      </v-col>
+            item-value="id"
+            label="Tipo de Gasto"
+            :disabled="!elementoSelecionado"
+            required
+          />
+          <v-textarea
+            v-model="justificativa"
+            label="Justificativa"
+            rows="3"
+            auto-grow
+            required
+          />
+          <v-btn type="submit" color="primary" class="mt-4">{{ modoEdicao ? 'Atualizar' : 'Lançar' }}</v-btn>
+          <v-btn v-if="modoEdicao" color="secondary" class="mt-4 ml-2" @click="cancelarEdicao">Cancelar</v-btn>
+        </v-form>
+      </v-card-text>
+    </v-card>
+  </v-col>
 
-      <!-- Coluna de despesas recentes (do lado direito) -->
-      <v-col cols="12" md="4">
-        <v-card>
-          <v-card-title class="headline">
-            Despesas Recentes
-          </v-card-title>
-          <v-card-text>
-            <v-list>
-              <template v-if="despesas.length">
-                <v-list-item
-                  v-for="despesa in despesas"
-                  :key="despesa.id"
-                  class="flex-column align-start"
-                >
-                  <div class="d-flex justify-space-between align-center w-100">
-                    <span class="text-body-1 font-weight-medium">
-                      R$ {{ formatarValorExibicao(despesa.valor) }} - {{ despesa.justificativa }}
-                    </span>
-                    <div class="d-flex">
-                      <v-btn
-                        v-if="podeEditarDespesa(despesa)"
-                        color="primary"
-                        size="small"
-                        icon
-                        class="mr-2"
-                        @click="editarDespesa(despesa)"
-                      >
-                        <v-icon>mdi-pencil</v-icon>
-                      </v-btn>
-                      <v-btn
-                        v-if="podeDeletarDespesa(despesa)"
-                        color="error"
-                        size="small"
-                        icon
-                        @click="deletarDespesa(despesa.id)"
-                      >
-                        <v-icon>mdi-delete</v-icon>
-                      </v-btn>
-                    </div>
-                  </div>
-                  <span class="text-caption text-grey-darken-1">
-                    {{ " " }} {{ formatarData(despesa.created_at) }}
-                  </span>
-                </v-list-item>
-              </template>
+  <!-- Coluna de despesas recentes (do lado direito) -->
+  <v-col cols="12" md="4">
+    <v-card>
+      <v-card-title class="headline">
+        Despesas Recentes
+      </v-card-title>
+      <v-card-text>
+        <v-list>
+          <template v-if="despesas.length">
+            <v-list-item
+              v-for="despesa in despesas"
+              :key="despesa.id"
+              class="flex-column align-start"
+            >
+              <div class="d-flex justify-space-between align-center w-100">
+                <span class="text-body-1 font-weight-medium">
+                  R$ {{ formatarValorExibicao(despesa.valor) }} - {{ despesa.justificativa }}
+                </span>
+                <div class="d-flex">
+                  <v-btn
+                    v-if="podeEditarDespesa(despesa)"
+                    color="primary"
+                    size="small"
+                    icon
+                    class="mr-2"
+                    @click="editarDespesa(despesa)"
+                  >
+                    <v-icon>mdi-pencil</v-icon>
+                  </v-btn>
+                  <v-btn
+                    v-if="podeDeletarDespesa(despesa)"
+                    color="error"
+                    size="small"
+                    icon
+                    @click="deletarDespesa(despesa.id)"
+                  >
+                    <v-icon>mdi-delete</v-icon>
+                  </v-btn>
+                </div>
+              </div>
+              <span class="text-caption text-grey-darken-1">
+                {{ " " }} {{ formatarData(despesa.created_at) }}
+              </span>
+            </v-list-item>
+          </template>
 
-              <v-alert v-else type="info" class="mt-2">
-                Nenhuma despesa registrada. 
-              </v-alert>
-            </v-list>
-            <!-- Paginação -->
-            <v-pagination
-              v-if="totalPaginas > 1"
-              v-model="despesasPage"
-              :length="totalPaginas"
-              :total-visible="5"
-              class="mt-4"
-              @update:modelValue="carregarDespesas"
-            />
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+          <v-alert v-else type="info" class="mt-2">
+            Nenhuma despesa registrada. 
+          </v-alert>
+        </v-list>
+        <!-- Paginação -->
+        <v-pagination
+          v-if="totalPaginas > 1"
+          v-model="despesasPage"
+          :length="totalPaginas"
+          :total-visible="5"
+          class="mt-4"
+          @update:modelValue="carregarDespesas"
+        />
+      </v-card-text>
+    </v-card>
+  </v-col>
+</v-row>
   </v-container>
 </template>
 

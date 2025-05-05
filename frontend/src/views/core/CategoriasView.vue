@@ -17,7 +17,13 @@
         </v-card>
 
         <div v-if="showFormElemento" class="mb-4">
-          <elemento-form :form-label="'Novo Elemento'" @new-elemento="addNewElemento" />
+          <elemento-form 
+            :form-label="formElementoLabel" 
+            :elemento="elementoEditando"
+            @new-elemento="addElemento"
+            @update-elemento="updateElemento"
+            @cancel="toggleFormElemento"
+          />
         </div>
 
         <v-list>
@@ -33,8 +39,16 @@
               <v-btn
                 icon
                 variant="text"
+                color="primary"
+                @click.stop="editElemento(item)"
+              >
+                <v-icon>mdi-pencil</v-icon>
+              </v-btn>
+              <v-btn
+                icon
+                variant="text"
                 color="error"
-                @click="deleteElemento(item)"
+                @click.stop="deleteElemento(item)"
               >
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
@@ -140,11 +154,15 @@ export default {
       tipoGastosDoElemento: [],
       showConfirmDialog: false,
       elementoToDelete: null,
-      confirmMessage: ''
+      confirmMessage: '',
+      elementoEditando: null
     }
   },
   computed: {
     ...mapState(useCoreStore, ["elementos", "elementosLoading", "tipoGastos", "tipoGastosLoading"]),
+    formElementoLabel() {
+      return this.elementoEditando ? 'Editar Elemento' : 'Novo Elemento'
+    }
   },
   watch: {
     elementoSelecionado: {
@@ -183,19 +201,23 @@ export default {
     getElementos() {
       this.coreStore.getElementos()
     },
-    async addNewElemento(elemento) {
+    async addElemento(elemento) {
       try {
-        const newElemento = await this.coreStore.addNewElemento(elemento)
+        const newElemento = await this.coreStore.addElemento(elemento)
         this.baseStore.showSnackbar(`Novo elemento adicionado: ${newElemento.elemento}`)
         this.getElementos()
         this.showFormElemento = false
       } catch (error) {
         console.error("Erro ao adicionar elemento:", error)
-        this.baseStore.showSnackbar("Erro ao adicionar elemento", "error")
+        const mensagemErro = error.response?.data?.detail || error.message || "Erro ao adicionar elemento"
+        this.baseStore.showSnackbar(mensagemErro, "error")
       }
     },
     toggleFormElemento() {
       this.showFormElemento = !this.showFormElemento
+      if (!this.showFormElemento) {
+        this.elementoEditando = null
+      }
     },
     selecionarElemento(elemento) {
       this.elementoSelecionado = elemento
@@ -240,6 +262,22 @@ export default {
     },
     cancelDelete() {
       this.elementoToDelete = null
+    },
+    editElemento(elemento) {
+      this.elementoEditando = { ...elemento }
+      this.showFormElemento = true
+    },
+    async updateElemento(elemento) {
+      try {
+        const elementoAtualizado = await this.coreStore.updateElemento(elemento)
+        this.baseStore.showSnackbar(`Elemento atualizado: ${elementoAtualizado.elemento}`)
+        await this.getElementos()
+        this.showFormElemento = false
+        this.elementoEditando = null
+      } catch (error) {
+        console.error('Erro ao atualizar elemento:', error)
+        this.baseStore.showSnackbar('Erro ao atualizar elemento', 'error')
+      }
     }
   },
 }

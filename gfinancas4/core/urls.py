@@ -35,7 +35,7 @@ urlpatterns = [
     # Relacionamentos Elemento-TipoGasto
     path("elemento-tipo-gasto/add", views.add_elemento_tipo_gasto, name="add_elemento_tipo_gasto"),
     path("elemento-tipo-gasto/delete/<int:id>", views.delete_elemento_tipo_gasto, name="delete_elemento_tipo_gasto"),
-    # Endpoints para Despesa
+     # Endpoints para Despesa
     path("despesas/add", views.add_despesa_view, name="add_despesa"),
     path("despesas/update", views.update_despesa, name="update_despesa"),
     path("despesas/delete/<int:id>", views.delete_despesa, name="delete_despesa"),
