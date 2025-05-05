@@ -255,7 +255,7 @@ export default {
         }
       } catch (error) {
         console.error('Erro ao excluir:', error)
-        this.baseStore.showSnackbar('Erro ao excluir', 'error')
+        this.baseStore.showSnackbar('Erro ao excluir. Verifique se está vinculado a alguma despesa.', 'error')
       } finally {
         this.elementoToDelete = null
         this.tipoGastoToDelete = null

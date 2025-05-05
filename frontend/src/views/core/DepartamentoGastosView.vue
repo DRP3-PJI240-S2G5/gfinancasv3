@@ -67,41 +67,49 @@
       <v-card-text>
         <v-list>
           <template v-if="despesas.length">
-            <v-list-item
+            <v-tooltip
               v-for="despesa in despesas"
               :key="despesa.id"
-              class="flex-column align-start"
+              :text="despesa.justificativa"
+              location="center"
             >
-              <div class="d-flex justify-space-between align-center w-100">
-                <span class="text-body-1 font-weight-medium">
-                  R$ {{ formatarValorExibicao(despesa.valor) }} - {{ despesa.justificativa }}
-                </span>
-                <div class="d-flex">
-                  <v-btn
-                    v-if="podeEditarDespesa(despesa)"
-                    color="primary"
-                    size="small"
-                    icon
-                    class="mr-2"
-                    @click="editarDespesa(despesa)"
-                  >
-                    <v-icon>mdi-pencil</v-icon>
-                  </v-btn>
-                  <v-btn
-                    v-if="podeDeletarDespesa(despesa)"
-                    color="error"
-                    size="small"
-                    icon
-                    @click="deletarDespesa(despesa.id)"
-                  >
-                    <v-icon>mdi-delete</v-icon>
-                  </v-btn>
-                </div>
-              </div>
-              <span class="text-caption text-grey-darken-1">
-                {{ " " }} {{ formatarData(despesa.created_at) }}
-              </span>
-            </v-list-item>
+              <template v-slot:activator="{ props }">
+                <v-list-item
+                  v-bind="props"
+                  class="flex-column align-start"
+                >
+                  <div class="d-flex justify-space-between align-center w-100">
+                    <span class="text-body-1 font-weight-medium">
+                      R$ {{ formatarValorExibicao(despesa.valor) }} - {{ despesa.tipoGasto.tipoGasto }}
+                    </span>
+                    <div class="d-flex">
+                      <v-btn
+                        v-if="podeEditarDespesa(despesa)"
+                        color="primary"
+                        size="small"
+                        icon
+                        class="mr-2"
+                        @click="editarDespesa(despesa)"
+                      >
+                        <v-icon>mdi-pencil</v-icon>
+                      </v-btn>
+                      <v-btn
+                        v-if="podeDeletarDespesa(despesa)"
+                        color="error"
+                        size="small"
+                        icon
+                        @click="deletarDespesa(despesa.id)"
+                      >
+                        <v-icon>mdi-delete</v-icon>
+                      </v-btn>
+                    </div>
+                  </div>
+                  <span class="text-caption text-grey-darken-1">
+                    {{ " " }} {{ formatarData(despesa.created_at) }}
+                  </span>
+                </v-list-item>
+              </template>
+            </v-tooltip>
           </template>
 
           <v-alert v-else type="info" class="mt-2">

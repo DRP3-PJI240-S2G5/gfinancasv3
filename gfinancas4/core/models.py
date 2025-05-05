@@ -46,7 +46,7 @@ class Departamento(models.Model):
     done = models.BooleanField(default=False)
     responsavelId = models.ForeignKey(
         User, 
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="departamentos",
         verbose_name="responsavel"
     )
@@ -67,12 +67,12 @@ class Departamento(models.Model):
 class Subordinacao(models.Model):
     superior = models.ForeignKey(  
         Departamento,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="departamentos_superiores"
     )
     subordinado = models.ForeignKey( 
         Departamento,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="departamentos_subordinados"
     )
     data_subordinacao = models.DateTimeField(auto_now_add=True) 
@@ -146,7 +146,7 @@ class Responsabilidade(models.Model):
 
 class Verba(models.Model):
     valor = models.DecimalField(max_digits=10, decimal_places=2)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="verbas_estipuladas", verbose_name="usuário que atribuiu")
+    user = models.ForeignKey(User, on_delete=models.SET_DEFAULT, default=0, related_name="verbas_estipuladas", verbose_name="usuário que atribuiu")
     departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE, related_name="verbas", verbose_name="verbas atribuidas", db_index=True)
     ano = models.IntegerField(verbose_name="Ano", db_index=True)
     descricao = models.TextField()
@@ -257,11 +257,11 @@ class ElementoTipoGasto(models.Model):
         }
 
 class Despesa(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="despesas")
+    user = models.ForeignKey(User, on_delete=models.SET_DEFAULT, default=0, related_name="despesas")
     valor = models.DecimalField(max_digits=10, decimal_places=2)
-    elemento = models.ForeignKey(Elemento, on_delete=models.CASCADE, related_name="despesas_elemento")
-    tipoGasto = models.ForeignKey(TipoGasto, on_delete=models.CASCADE, related_name="despesas_tipoGasto")
-    departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE, related_name="despesas_departamento")
+    elemento = models.ForeignKey(Elemento, on_delete=models.PROTECT, related_name="despesas_elemento")
+    tipoGasto = models.ForeignKey(TipoGasto, on_delete=models.PROTECT, related_name="despesas_tipoGasto")
+    departamento = models.ForeignKey(Departamento, on_delete=models.PROTECT, related_name="despesas_departamento")
     justificativa = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
