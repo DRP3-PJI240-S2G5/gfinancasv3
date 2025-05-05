@@ -193,7 +193,8 @@ export default {
         this.showFormTipoGasto = false
       } catch (error) {
         console.error("Erro ao adicionar tipo de gasto:", error)
-        this.baseStore.showSnackbar("Erro ao adicionar tipo de gasto", "error")
+        const mensagemErro = error.response?.data?.detail || error.message || "Erro ao adicionar tipo de gasto"
+        this.baseStore.showSnackbar(mensagemErro, "error")
       }
     },
     toggleFormTipoGasto() {
