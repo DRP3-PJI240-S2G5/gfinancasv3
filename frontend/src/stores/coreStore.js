@@ -1,5 +1,6 @@
 import { defineStore } from "pinia"
 import coreApi from "@/api/core.api.js"
+import { useBaseStore } from './baseStore'
 
 export const useCoreStore = defineStore("coreStore", {
   state: () => ({
@@ -19,7 +20,8 @@ export const useCoreStore = defineStore("coreStore", {
     loading: false,
     error: null,
     verbasPaginacao: null,
-    totalDespesas: {}
+    totalDespesas: {},
+    responsabilidades: []
   }),
   actions: {
     async getDepartamentos() {
@@ -372,6 +374,239 @@ export const useCoreStore = defineStore("coreStore", {
         throw err
       } finally {
         this.verbasLoading = false
+      }
+    },
+    // Elementos
+    async addElemento(elemento) {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        // Validações
+        if (!elemento.elemento || !elemento.descricao) {
+          throw new Error('Elemento e descrição são obrigatórios')
+        }
+        if (elemento.elemento.length > 256 || elemento.descricao.length > 256) {
+          throw new Error('Elemento e descrição não podem ter mais de 256 caracteres')
+        }
+
+        const novoElemento = await coreApi.addNewElemento(elemento)
+        this.elementos.push(novoElemento)
+        baseStore.showSnackbar('Elemento adicionado com sucesso!')
+        return novoElemento
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async updateElemento(elemento) {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        // Validações
+        if (!elemento.id) {
+          throw new Error('ID do elemento é obrigatório')
+        }
+        if (!elemento.elemento || !elemento.descricao) {
+          throw new Error('Elemento e descrição são obrigatórios')
+        }
+        if (elemento.elemento.length > 256 || elemento.descricao.length > 256) {
+          throw new Error('Elemento e descrição não podem ter mais de 256 caracteres')
+        }
+
+        const elementoAtualizado = await coreApi.updateElemento(elemento)
+        const index = this.elementos.findIndex(e => e.id === elemento.id)
+        if (index !== -1) {
+          this.elementos[index] = elementoAtualizado
+        }
+        baseStore.showSnackbar('Elemento atualizado com sucesso!')
+        return elementoAtualizado
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async deleteElemento(id) {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        // Validações
+        if (!id) {
+          throw new Error('ID do elemento é obrigatório')
+        }
+
+        await coreApi.deleteElemento(id)
+        this.elementos = this.elementos.filter(e => e.id !== id)
+        baseStore.showSnackbar('Elemento removido com sucesso!')
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // Tipo de Gastos
+    async addTipoGasto(tipoGasto) {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        // Validações
+        if (!tipoGasto.tipoGasto || !tipoGasto.descricao) {
+          throw new Error('Tipo de gasto e descrição são obrigatórios')
+        }
+        if (tipoGasto.tipoGasto.length > 256 || tipoGasto.descricao.length > 256) {
+          throw new Error('Tipo de gasto e descrição não podem ter mais de 256 caracteres')
+        }
+
+        const novoTipoGasto = await coreApi.addNewTipoGasto(tipoGasto)
+        this.tipoGastos.push(novoTipoGasto)
+        baseStore.showSnackbar('Tipo de gasto adicionado com sucesso!')
+        return novoTipoGasto
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async updateTipoGasto(tipoGasto) {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        // Validações
+        if (!tipoGasto.id) {
+          throw new Error('ID do tipo de gasto é obrigatório')
+        }
+        if (!tipoGasto.tipoGasto || !tipoGasto.descricao) {
+          throw new Error('Tipo de gasto e descrição são obrigatórios')
+        }
+        if (tipoGasto.tipoGasto.length > 256 || tipoGasto.descricao.length > 256) {
+          throw new Error('Tipo de gasto e descrição não podem ter mais de 256 caracteres')
+        }
+
+        const tipoGastoAtualizado = await coreApi.updateTipoGasto(tipoGasto)
+        const index = this.tipoGastos.findIndex(tg => tg.id === tipoGasto.id)
+        if (index !== -1) {
+          this.tipoGastos[index] = tipoGastoAtualizado
+        }
+        baseStore.showSnackbar('Tipo de gasto atualizado com sucesso!')
+        return tipoGastoAtualizado
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // Elemento-TipoGasto
+    async addElementoTipoGasto(elementoId, tipoGastoId) {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        // Validações
+        if (!elementoId || !tipoGastoId) {
+          throw new Error('ID do elemento e ID do tipo de gasto são obrigatórios')
+        }
+
+        const relacionamento = await coreApi.addElementoTipoGasto(elementoId, tipoGastoId)
+        baseStore.showSnackbar('Relacionamento adicionado com sucesso!')
+        return relacionamento
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async deleteElementoTipoGasto(id) {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        // Validações
+        if (!id) {
+          throw new Error('ID do relacionamento é obrigatório')
+        }
+
+        await coreApi.deleteElementoTipoGasto(id)
+        baseStore.showSnackbar('Relacionamento removido com sucesso!')
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // Responsabilidades
+    async addResponsabilidade(responsabilidade) {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        // Validações
+        if (!responsabilidade.usuario_id || !responsabilidade.departamento_id) {
+          throw new Error('ID do usuário e ID do departamento são obrigatórios')
+        }
+
+        const novaResponsabilidade = await coreApi.addResponsabilidade(responsabilidade)
+        this.responsabilidades.push(novaResponsabilidade)
+        baseStore.showSnackbar('Responsabilidade adicionada com sucesso!')
+        return novaResponsabilidade
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async getResponsabilidades() {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        const responsabilidades = await coreApi.getResponsabilidades()
+        this.responsabilidades = responsabilidades
+        return responsabilidades
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
       }
     }
   },

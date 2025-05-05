@@ -29,6 +29,16 @@
           >
             <v-list-item-title>{{ item.elemento }}</v-list-item-title>
             <v-list-item-subtitle>{{ item.descricao }}</v-list-item-subtitle>
+            <template v-slot:append>
+              <v-btn
+                icon
+                variant="text"
+                color="error"
+                @click="deleteElemento(item)"
+              >
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </template>
           </v-list-item>
         </v-list>
       </v-col>
@@ -95,6 +105,14 @@
         </v-list>
       </v-col>
     </v-row>
+
+    <confirm-dialog
+      v-model="showConfirmDialog"
+      title="Excluir Elemento"
+      :message="confirmMessage"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </v-container>
 </template>
 
@@ -104,10 +122,11 @@ import { useBaseStore } from "@/stores/baseStore"
 import { useCoreStore } from "@/stores/coreStore"
 import TipoGastoForm from "@/components/TipoGastoForm.vue"
 import ElementoForm from "@/components/ElementoForm.vue"
+import ConfirmDialog from "@/components/ConfirmDialog.vue"
 
 export default {
   name: "CategoriasView",
-  components: { TipoGastoForm, ElementoForm },
+  components: { TipoGastoForm, ElementoForm, ConfirmDialog },
   setup() {
     const baseStore = useBaseStore()
     const coreStore = useCoreStore()
@@ -118,7 +137,10 @@ export default {
       showFormTipoGasto: false,
       showFormElemento: false,
       elementoSelecionado: null,
-      tipoGastosDoElemento: []
+      tipoGastosDoElemento: [],
+      showConfirmDialog: false,
+      elementoToDelete: null,
+      confirmMessage: ''
     }
   },
   computed: {
@@ -197,6 +219,27 @@ export default {
         console.error("Erro ao deletar tipo de gasto:", error)
         this.baseStore.showSnackbar("Erro ao deletar tipo de gasto", "error")
       }
+    },
+    deleteElemento(elemento) {
+      this.elementoToDelete = elemento
+      this.confirmMessage = `Tem certeza que deseja excluir o elemento "${elemento.elemento}"?`
+      this.showConfirmDialog = true
+    },
+    async confirmDelete() {
+      try {
+        await this.coreStore.deleteElemento(this.elementoToDelete.id)
+        this.baseStore.showSnackbar('Elemento excluído com sucesso')
+        await this.getElementos()
+        if (this.elementoSelecionado?.id === this.elementoToDelete.id) {
+          this.elementoSelecionado = null
+        }
+      } catch (error) {
+        console.error('Erro ao excluir elemento:', error)
+        this.baseStore.showSnackbar('Erro ao excluir elemento', 'error')
+      }
+    },
+    cancelDelete() {
+      this.elementoToDelete = null
     }
   },
 }

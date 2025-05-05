@@ -42,7 +42,6 @@ export default {
       novaDespesa);
     return response.data;
   },
-
   // Função para atualizar despesa
   updateDespesa: async (updatedDespesa) => {
     const response = await api.put("/api/core/despesas/update", updatedDespesa);
@@ -175,5 +174,111 @@ export default {
     }
     const response = await api.get(`/api/core/verbas/departamento/${departamentoId}/ano/${ano}`)
     return response.data
-  }
+  },
+  // Elementos
+  addNewElemento: async (elemento) => {
+    try {
+      const response = await api.post("/api/core/elementos/add", elemento);
+      return response.data;
+    } catch (error) {
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error);
+      }
+      throw new Error('Erro ao adicionar elemento');
+    }
+  },
+  updateElemento: async (elemento) => {
+    try {
+      const response = await api.put("/api/core/elementos/update", elemento);
+      return response.data;
+    } catch (error) {
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error);
+      }
+      throw new Error('Erro ao atualizar elemento');
+    }
+  },
+  deleteElemento: async (id) => {
+    try {
+      const response = await api.delete(`/api/core/elementos/delete/${id}`);
+      return response.data;
+    } catch (error) {
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error);
+      }
+      throw new Error('Erro ao deletar elemento');
+    }
+  },
+  // Tipo de Gastos
+  addNewTipoGasto: async (tipoGasto) => {
+    try {
+      const response = await api.post("/api/core/tipo-gastos/add", tipoGasto);
+      return response.data;
+    } catch (error) {
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error);
+      }
+      throw new Error('Erro ao adicionar tipo de gasto');
+    }
+  },
+  updateTipoGasto: async (tipoGasto) => {
+    try {
+      const response = await api.put("/api/core/tipo-gastos/update", tipoGasto);
+      return response.data;
+    } catch (error) {
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error);
+      }
+      throw new Error('Erro ao atualizar tipo de gasto');
+    }
+  },
+  // Elemento-TipoGasto
+  addElementoTipoGasto: async (elementoId, tipoGastoId) => {
+    try {
+      const response = await api.post("/api/core/elemento-tipo-gasto/add", {
+        elemento_id: elementoId,
+        tipo_gasto_id: tipoGastoId
+      });
+      return response.data;
+    } catch (error) {
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error);
+      }
+      throw new Error('Erro ao adicionar relacionamento elemento-tipo de gasto');
+    }
+  },
+  deleteElementoTipoGasto: async (id) => {
+    try {
+      const response = await api.delete(`/api/core/elemento-tipo-gasto/delete/${id}`);
+      return response.data;
+    } catch (error) {
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error);
+      }
+      throw new Error('Erro ao deletar relacionamento elemento-tipo de gasto');
+    }
+  },
+  // Responsabilidades
+  addResponsabilidade: async (responsabilidade) => {
+    try {
+      const response = await api.post("/api/core/responsabilidades/add", responsabilidade);
+      return response.data;
+    } catch (error) {
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error);
+      }
+      throw new Error('Erro ao adicionar responsabilidade');
+    }
+  },
+  getResponsabilidades: async () => {
+    try {
+      const response = await api.get("/api/core/responsabilidades/list");
+      return response.data;
+    } catch (error) {
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error);
+      }
+      throw new Error('Erro ao listar responsabilidades');
+    }
+  },
 }
