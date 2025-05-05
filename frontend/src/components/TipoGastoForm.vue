@@ -18,10 +18,10 @@
 
       <v-btn 
         color="primary" 
-        @click="addNewTipoGasto"
+        @click="addTipoGasto"
         :disabled="!tipoGasto || !descricao || !elementoId"
       >
-        Criar Tipo de Gasto
+        Adicionar
       </v-btn>
     </v-card-text>
   </v-card>
@@ -47,7 +47,7 @@ export default {
     };
   },
   methods: {
-    addNewTipoGasto() {
+    addTipoGasto() {
       const newTipoGasto = {
         tipoGasto: this.tipoGasto,
         descricao: this.descricao,

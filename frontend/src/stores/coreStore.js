@@ -448,6 +448,15 @@ export const useCoreStore = defineStore("coreStore", {
           throw new Error('ID do elemento é obrigatório')
         }
 
+        // Primeiro busca os tipos de gasto relacionados
+        const tiposGasto = await this.getTipoGastosPorElemento(id)
+        
+        // Deleta cada tipo de gasto e seu relacionamento
+        for (const tipoGasto of tiposGasto) {
+          await this.deleteTipoGasto(tipoGasto.tipoGasto.id)
+        }
+
+        // Depois deleta o elemento
         await coreApi.deleteElemento(id)
         this.elementos = this.elementos.filter(e => e.id !== id)
         baseStore.showSnackbar('Elemento removido com sucesso!')
@@ -475,7 +484,16 @@ export const useCoreStore = defineStore("coreStore", {
           throw new Error('Tipo de gasto e descrição não podem ter mais de 256 caracteres')
         }
 
+        // Primeiro cria o tipo de gasto
         const novoTipoGasto = await coreApi.addNewTipoGasto(tipoGasto)
+        
+        if (!novoTipoGasto || !novoTipoGasto.id) {
+          throw new Error('Erro ao criar tipo de gasto: resposta inválida do servidor')
+        }
+        
+        // Depois cria o relacionamento com o elemento
+        await coreApi.addElementoTipoGasto(tipoGasto.elemento_id, novoTipoGasto.id)
+        
         this.tipoGastos.push(novoTipoGasto)
         baseStore.showSnackbar('Tipo de gasto adicionado com sucesso!')
         return novoTipoGasto

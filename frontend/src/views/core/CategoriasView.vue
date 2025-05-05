@@ -86,7 +86,7 @@
           <tipo-gasto-form 
             :form-label="'Novo Tipo de Gasto'" 
             :elemento-id="elementoSelecionado?.id"
-            @new-tipo-gasto="addNewTipoGasto" 
+            @new-tipo-gasto="addTipoGasto" 
           />
         </div>
 
@@ -110,7 +110,7 @@
                 icon
                 variant="text"
                 color="error"
-                @click="deletarTipoGasto(item.id)"
+                @click="deletarTipoGasto(item)"
               >
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
@@ -154,6 +154,7 @@ export default {
       tipoGastosDoElemento: [],
       showConfirmDialog: false,
       elementoToDelete: null,
+      tipoGastoToDelete: null,
       confirmMessage: '',
       elementoEditando: null
     }
@@ -183,9 +184,9 @@ export default {
     getTipoGastos() {
       this.coreStore.getTipoGastos()
     },
-    async addNewTipoGasto(tipoGasto) {
+    async addTipoGasto(tipoGasto) {
       try {
-        const newTipoGasto = await this.coreStore.addNewTipoGasto(tipoGasto)
+        const newTipoGasto = await this.coreStore.addTipoGasto(tipoGasto)
         this.baseStore.showSnackbar(`Novo tipo de gasto adicionado: ${newTipoGasto.tipoGasto}`)
         this.getTipoGastos()
         this.carregarTiposGastoDoElemento(this.elementoSelecionado.id)
@@ -232,36 +233,38 @@ export default {
         this.baseStore.showSnackbar("Erro ao carregar tipos de gasto", "error")
       }
     },
-    async deletarTipoGasto(tipoGastoId) {
-      try {
-        await this.coreStore.deleteTipoGasto(tipoGastoId)
-        this.baseStore.showSnackbar("Tipo de gasto deletado com sucesso")
-        this.carregarTiposGastoDoElemento(this.elementoSelecionado.id)
-      } catch (error) {
-        console.error("Erro ao deletar tipo de gasto:", error)
-        this.baseStore.showSnackbar("Erro ao deletar tipo de gasto", "error")
-      }
-    },
-    deleteElemento(elemento) {
-      this.elementoToDelete = elemento
-      this.confirmMessage = `Tem certeza que deseja excluir o elemento "${elemento.elemento}"?`
+    async deletarTipoGasto(tipoGasto) {
+      this.tipoGastoToDelete = tipoGasto
+      this.confirmMessage = `Tem certeza que deseja excluir o tipo de gasto "${tipoGasto.tipoGasto.tipoGasto}"?`
       this.showConfirmDialog = true
     },
     async confirmDelete() {
       try {
-        await this.coreStore.deleteElemento(this.elementoToDelete.id)
-        this.baseStore.showSnackbar('Elemento excluído com sucesso')
-        await this.getElementos()
-        if (this.elementoSelecionado?.id === this.elementoToDelete.id) {
-          this.elementoSelecionado = null
+        if (this.elementoToDelete) {
+          await this.coreStore.deleteElemento(this.elementoToDelete.id)
+          this.baseStore.showSnackbar('Elemento excluído com sucesso')
+          await this.getElementos()
+          if (this.elementoSelecionado?.id === this.elementoToDelete.id) {
+            this.elementoSelecionado = null
+          }
+        } else if (this.tipoGastoToDelete) {
+          await this.coreStore.deleteTipoGasto(this.tipoGastoToDelete.tipoGasto.id)
+          this.baseStore.showSnackbar('Tipo de gasto excluído com sucesso')
+          await this.carregarTiposGastoDoElemento(this.elementoSelecionado.id)
         }
       } catch (error) {
-        console.error('Erro ao excluir elemento:', error)
-        this.baseStore.showSnackbar('Erro ao excluir elemento', 'error')
+        console.error('Erro ao excluir:', error)
+        this.baseStore.showSnackbar('Erro ao excluir', 'error')
+      } finally {
+        this.elementoToDelete = null
+        this.tipoGastoToDelete = null
+        this.showConfirmDialog = false
       }
     },
     cancelDelete() {
       this.elementoToDelete = null
+      this.tipoGastoToDelete = null
+      this.showConfirmDialog = false
     },
     editElemento(elemento) {
       this.elementoEditando = { ...elemento }
@@ -278,6 +281,11 @@ export default {
         console.error('Erro ao atualizar elemento:', error)
         this.baseStore.showSnackbar('Erro ao atualizar elemento', 'error')
       }
+    },
+    deleteElemento(elemento) {
+      this.elementoToDelete = elemento
+      this.confirmMessage = `Tem certeza que deseja excluir o elemento "${elemento.elemento}"?`
+      this.showConfirmDialog = true
     }
   },
 }
