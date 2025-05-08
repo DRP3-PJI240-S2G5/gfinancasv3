@@ -1,7 +1,7 @@
 import pytest
 
 from gfinancas4.core.models import Departamento
-from gfinancas4.core.service import departamentos_svc
+import gfinancas4.core.service
 
 
 @pytest.mark.django_db

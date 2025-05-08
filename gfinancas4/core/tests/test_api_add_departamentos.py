@@ -21,7 +21,11 @@ def test_nao_deve_permitir_criar_departamento_sem_login(client):
 @pytest.mark.django_db
 def test_deve_criar_departamento_com_login(client, logged_jon):
     # Dado um usuario logado
-    payload = {"description": "estudar pytest"}
+    payload = {"nome": "dep1",
+        "tipoEntidade": "A",
+        "responsavelId": 1,
+        "description": "estudar pytest"
+    }
 
     # Quando adicionamos um item
     resp = client.post(
@@ -31,7 +35,10 @@ def test_deve_criar_departamento_com_login(client, logged_jon):
     # Entao
     assert resp.status_code == 201
     assert resp.json() == {
-        "id": ANY,
+        "id": 1,
+        "nome": "dep1",
+        "tipoEntidade": "A",
+        "responsavelId": 1,
         "description": "estudar pytest",
         "done": False,
     }
