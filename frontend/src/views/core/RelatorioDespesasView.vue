@@ -1,10 +1,21 @@
 <template>
     <v-container class="mt-10">
         <v-row justify="center">
-            <v-col cols="12">
+            <v-col cols="12" md="6">
                 <v-card>
                     <v-card-title class="headline">
                         Relatório de Despesas por Departamento
+                    </v-card-title>
+
+                    <v-card-text style="height: 400px;">
+                        <canvas ref="chartCanvas"></canvas>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+            <v-col cols="12" md="6">
+                <v-card>
+                    <v-card-title class="headline">
+                        Tabela de Despesas
                     </v-card-title>
 
                     <v-card-text>
@@ -22,7 +33,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useCoreStore } from '@/stores/coreStore'
 
 export default {
@@ -31,6 +42,8 @@ export default {
         const coreStore = useCoreStore()
         const loading = ref(false)
         const despesasPorDepartamento = ref([])
+        const chartCanvas = ref(null)
+        let chart = null
 
         const headers = [
             { title: 'Departamento', key: 'departamento_nome' },
@@ -44,13 +57,72 @@ export default {
             }).format(valor)
         }
 
+        function carregarChartJS() {
+            return new Promise((resolve) => {
+                if (window.Chart) {
+                    resolve(window.Chart)
+                } else {
+                    const script = document.createElement('script')
+                    script.src = 'https://cdn.jsdelivr.net/npm/chart.js'
+                    script.onload = () => resolve(window.Chart)
+                    document.head.appendChild(script)
+                }
+            })
+        }
+
+        async function criarGrafico() {
+            if (chart) {
+                chart.destroy()
+            }
+
+            const Chart = await carregarChartJS()
+            const ctx = chartCanvas.value.getContext('2d')
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: despesasPorDepartamento.value.map(item => item.departamento_nome),
+                    datasets: [{
+                        label: 'Total de Despesas',
+                        data: despesasPorDepartamento.value.map(item => item.total_despesas),
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Despesas por Departamento'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('pt-BR', {
+                                        style: 'currency',
+                                        currency: 'BRL'
+                                    }).format(value)
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+        }
+
         async function carregarDados() {
             loading.value = true
             try {
-                // Primeiro carrega os departamentos
                 await coreStore.getDepartamentos()
 
-                // Para cada departamento, carrega o total de despesas
                 const dados = await Promise.all(
                     coreStore.departamentos.map(async (departamento) => {
                         const resultado = await coreStore.getTotalDespesasDepartamento(departamento.id)
@@ -69,6 +141,12 @@ export default {
             }
         }
 
+        watch(despesasPorDepartamento, () => {
+            if (chartCanvas.value) {
+                criarGrafico()
+            }
+        }, { deep: true })
+
         onMounted(() => {
             carregarDados()
         })
@@ -77,10 +155,15 @@ export default {
             loading,
             despesasPorDepartamento,
             headers,
-            formatarValor
+            formatarValor,
+            chartCanvas
         }
     }
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.v-card {
+    height: 100%;
+}
+</style>
