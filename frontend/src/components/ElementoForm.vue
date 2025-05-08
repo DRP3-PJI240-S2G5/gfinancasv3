@@ -1,42 +1,101 @@
 <template>
   <v-card>
     <v-card-text>
-      <v-text-field v-model="elemento" label="Elemento" outlined append-icon="fa-user" />
-      <v-text-field v-model="descricao" label="descricao" required outlined append-icon="fa-user" />
-      <!-- <v-select v-model="role" :items="roleOptions" label="Função" required outlined append-icon="fa-cogs" /> -->
+      <v-form ref="form" @submit.prevent="submit">
+        <v-text-field 
+          v-model="elementoForm.elemento" 
+          label="Elemento" 
+          outlined 
+          append-icon="fa-user" 
+          :rules="[v => !!v || 'Elemento é obrigatório']"
+          required
+        />
+        <v-text-field 
+          v-model="elementoForm.descricao" 
+          label="Descrição" 
+          required 
+          outlined 
+          append-icon="fa-user"
+          :rules="[v => !!v || 'Descrição é obrigatória']"
+        />
 
-      <v-btn color="primary" @click="addNewElemento">Criar Elemento</v-btn>
+        <div class="d-flex justify-end">
+          <v-btn 
+            class="mr-2"
+            @click="$emit('cancel')"
+          >
+            Cancelar
+          </v-btn>
+          <v-btn 
+            color="primary" 
+            type="submit"
+          >
+            {{ elemento?.id ? 'Atualizar' : 'Adicionar' }}
+          </v-btn>
+        </div>
+      </v-form>
     </v-card-text>
   </v-card>
 </template>
 
 <script>
 export default {
+  name: 'ElementoForm',
   props: {
     formLabel: {
       type: String,
-      default: "Novo Elemento",
+      required: true
     },
+    elemento: {
+      type: Object,
+      default: null
+    }
   },
-  emits: ["newElemento"],
-  data: () => {
+  emits: ['new-elemento', 'update-elemento', 'cancel'],
+  data() {
     return {
-      elemento: "",
-      descricao: "",
-    };
+      elementoForm: {
+        elemento: '',
+        descricao: ''
+      }
+    }
+  },
+  watch: {
+    elemento: {
+      handler(newElemento) {
+        if (newElemento) {
+          this.elementoForm = { ...newElemento }
+        } else {
+          this.resetForm()
+        }
+      },
+      immediate: true
+    }
   },
   methods: {
-    addNewElemento() {
-      const newElemento = {
-        elemento: this.elemento,
-        descricao: this.descricao,
-      };
-      this.$emit("newElemento", newElemento);
-      this.elemento = "";
-      this.descricao = "";
+    resetForm() {
+      this.elementoForm = {
+        elemento: '',
+        descricao: ''
+      }
+      if (this.$refs.form) {
+        this.$refs.form.resetValidation()
+      }
     },
-  },
-};
+    async submit() {
+      if (!this.$refs.form.validate()) {
+        return
+      }
+
+      if (this.elemento?.id) {
+        this.$emit('update-elemento', { ...this.elementoForm, id: this.elemento.id })
+      } else {
+        this.$emit('new-elemento', this.elementoForm)
+      }
+      this.resetForm()
+    }
+  }
+}
 </script>
 
 <style scoped></style>

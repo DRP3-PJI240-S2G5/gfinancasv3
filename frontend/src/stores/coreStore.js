@@ -1,5 +1,6 @@
 import { defineStore } from "pinia"
 import coreApi from "@/api/core.api.js"
+import { useBaseStore } from './baseStore'
 
 export const useCoreStore = defineStore("coreStore", {
   state: () => ({
@@ -18,7 +19,9 @@ export const useCoreStore = defineStore("coreStore", {
     verbasLoading: false,
     loading: false,
     error: null,
-    verbasPaginacao: null
+    verbasPaginacao: null,
+    totalDespesas: {},
+    responsabilidades: []
   }),
   actions: {
     async getDepartamentos() {
@@ -61,6 +64,15 @@ export const useCoreStore = defineStore("coreStore", {
         return []
       }
     },
+    async deleteTipoGasto(tipoGastoId) {
+      try {
+        await coreApi.deleteTipoGasto(tipoGastoId)
+        this.tipoGastos = this.tipoGastos.filter(tg => tg.id !== tipoGastoId)
+      } catch (e) {
+        console.error("Erro ao deletar tipo de gasto:", e)
+        throw e
+      }
+    },
     // Função para adicionar uma nova despesa
     async addDespesa(novaDespesa) {
       try {
@@ -101,6 +113,19 @@ export const useCoreStore = defineStore("coreStore", {
         throw e
       }
     },
+    async getDespesasPorDepartamentoAPartirData(departamentoId, data_inicio, page = 1, perPage = 10) {
+      this.despesasLoading = true
+      try {
+        const response = await coreApi.getDespesasPorDepartamentoAPartirData(departamentoId, data_inicio, page, perPage)
+        this.despesas = response.despesas  // Armazena as despesas no estado
+        this.despesasLoading = false
+        return response
+      } catch (e) {
+        console.error("Erro ao carregar despesas por departamento:", e)
+        this.despesasLoading = false
+        throw e
+      }
+    },
     // Função para deletar uma despesa
     async deleteDespesa(despesaId) {
       try {
@@ -116,10 +141,62 @@ export const useCoreStore = defineStore("coreStore", {
     async getTotalDespesasDepartamento(departamentoId) {
       try {
         const response = await coreApi.getTotalDespesasDepartamento(departamentoId);
+        // Atualiza o estado com o novo total
+        this.totalDespesas[departamentoId] = response;
         return response;
       } catch (e) {
         console.error("Erro ao buscar total de despesas do departamento:", e);
         throw e;
+      }
+    },
+    async getTotalDespesasDepartamentoAPartirData(departamentoId, data_inicio) {
+      this.loading = true;
+      try {
+        const response = await coreApi.getTotalDespesasDepartamentoAPartirData(departamentoId, data_inicio);
+        return response;
+      } catch (error) {
+        this.error = error;
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+    // Busca despesas de um departamento em um período específico
+    async getDespesasPorDepartamentoPeriodo(departamentoId, data_inicio, data_termino, page = 1, perPage = 10) {
+      this.despesasLoading = true;
+      try {
+        const response = await coreApi.getDespesasPorDepartamentoPeriodo(
+          departamentoId,
+          data_inicio,
+          data_termino,
+          page,
+          perPage
+        );
+        this.despesas = response.despesas;
+        this.totalPaginas = response.totalPaginas;
+        return response;
+      } catch (error) {
+        this.error = error;
+        throw error;
+      } finally {
+        this.despesasLoading = false;
+      }
+    },
+    // Busca o total de despesas de um departamento em um período específico
+    async getTotalDespesasDepartamentoPeriodo(departamentoId, data_inicio, data_termino) {
+      this.loading = true;
+      try {
+        const response = await coreApi.getTotalDespesasDepartamentoPeriodo(
+          departamentoId,
+          data_inicio,
+          data_termino
+        );
+        return response;
+      } catch (error) {
+        this.error = error;
+        throw error;
+      } finally {
+        this.loading = false;
       }
     },
     // Ações para gerenciar subordinações
@@ -283,6 +360,271 @@ export const useCoreStore = defineStore("coreStore", {
         throw err
       } finally {
         this.verbasLoading = false
+      }
+    },
+    async getUltimaVerbaDepartamento(departamentoId) {
+      this.verbasLoading = true
+      try {
+        const response = await coreApi.getUltimaVerbaDepartamento(departamentoId)
+        this.error = null
+        return response
+      } catch (err) {
+        this.error = err.message
+        console.error('Erro ao buscar ultima verba do departamento:', err)
+        throw err
+      } finally {
+        this.verbasLoading = false
+      }
+    },
+    // Elementos
+    async addElemento(elemento) {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        // Validações
+        if (!elemento.elemento || !elemento.descricao) {
+          throw new Error('Elemento e descrição são obrigatórios')
+        }
+        if (elemento.elemento.length > 256 || elemento.descricao.length > 256) {
+          throw new Error('Elemento e descrição não podem ter mais de 256 caracteres')
+        }
+
+        const novoElemento = await coreApi.addNewElemento(elemento)
+        this.elementos.push(novoElemento)
+        baseStore.showSnackbar('Elemento adicionado com sucesso!')
+        return novoElemento
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async updateElemento(elemento) {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        // Validações
+        if (!elemento.id) {
+          throw new Error('ID do elemento é obrigatório')
+        }
+        if (!elemento.elemento || !elemento.descricao) {
+          throw new Error('Elemento e descrição são obrigatórios')
+        }
+        if (elemento.elemento.length > 256 || elemento.descricao.length > 256) {
+          throw new Error('Elemento e descrição não podem ter mais de 256 caracteres')
+        }
+
+        const elementoAtualizado = await coreApi.updateElemento(elemento)
+        const index = this.elementos.findIndex(e => e.id === elemento.id)
+        if (index !== -1) {
+          this.elementos[index] = elementoAtualizado
+        }
+        baseStore.showSnackbar('Elemento atualizado com sucesso!')
+        return elementoAtualizado
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async deleteElemento(id) {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        // Validações
+        if (!id) {
+          throw new Error('ID do elemento é obrigatório')
+        }
+
+        // Primeiro busca os tipos de gasto relacionados
+        const tiposGasto = await this.getTipoGastosPorElemento(id)
+        
+        // Deleta cada tipo de gasto e seu relacionamento
+        for (const tipoGasto of tiposGasto) {
+          await this.deleteTipoGasto(tipoGasto.tipoGasto.id)
+        }
+
+        // Depois deleta o elemento
+        await coreApi.deleteElemento(id)
+        this.elementos = this.elementos.filter(e => e.id !== id)
+        baseStore.showSnackbar('Elemento removido com sucesso!')
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // Tipo de Gastos
+    async addTipoGasto(tipoGasto) {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        // Validações
+        if (!tipoGasto.tipoGasto || !tipoGasto.descricao) {
+          throw new Error('Tipo de gasto e descrição são obrigatórios')
+        }
+        if (tipoGasto.tipoGasto.length > 256 || tipoGasto.descricao.length > 256) {
+          throw new Error('Tipo de gasto e descrição não podem ter mais de 256 caracteres')
+        }
+
+        // Primeiro cria o tipo de gasto
+        const novoTipoGasto = await coreApi.addNewTipoGasto(tipoGasto)
+        
+        if (!novoTipoGasto || !novoTipoGasto.id) {
+          throw new Error('Erro ao criar tipo de gasto: resposta inválida do servidor')
+        }
+        
+        // Depois cria o relacionamento com o elemento
+        await coreApi.addElementoTipoGasto(tipoGasto.elemento_id, novoTipoGasto.id)
+        
+        this.tipoGastos.push(novoTipoGasto)
+        baseStore.showSnackbar('Tipo de gasto adicionado com sucesso!')
+        return novoTipoGasto
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async updateTipoGasto(tipoGasto) {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        // Validações
+        if (!tipoGasto.id) {
+          throw new Error('ID do tipo de gasto é obrigatório')
+        }
+        if (!tipoGasto.tipoGasto || !tipoGasto.descricao) {
+          throw new Error('Tipo de gasto e descrição são obrigatórios')
+        }
+        if (tipoGasto.tipoGasto.length > 256 || tipoGasto.descricao.length > 256) {
+          throw new Error('Tipo de gasto e descrição não podem ter mais de 256 caracteres')
+        }
+
+        const tipoGastoAtualizado = await coreApi.updateTipoGasto(tipoGasto)
+        const index = this.tipoGastos.findIndex(tg => tg.id === tipoGasto.id)
+        if (index !== -1) {
+          this.tipoGastos[index] = tipoGastoAtualizado
+        }
+        baseStore.showSnackbar('Tipo de gasto atualizado com sucesso!')
+        return tipoGastoAtualizado
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // Elemento-TipoGasto
+    async addElementoTipoGasto(elementoId, tipoGastoId) {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        // Validações
+        if (!elementoId || !tipoGastoId) {
+          throw new Error('ID do elemento e ID do tipo de gasto são obrigatórios')
+        }
+
+        const relacionamento = await coreApi.addElementoTipoGasto(elementoId, tipoGastoId)
+        baseStore.showSnackbar('Relacionamento adicionado com sucesso!')
+        return relacionamento
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async deleteElementoTipoGasto(id) {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        // Validações
+        if (!id) {
+          throw new Error('ID do relacionamento é obrigatório')
+        }
+
+        await coreApi.deleteElementoTipoGasto(id)
+        baseStore.showSnackbar('Relacionamento removido com sucesso!')
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // Responsabilidades
+    async addResponsabilidade(responsabilidade) {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        // Validações
+        if (!responsabilidade.usuario_id || !responsabilidade.departamento_id) {
+          throw new Error('ID do usuário e ID do departamento são obrigatórios')
+        }
+
+        const novaResponsabilidade = await coreApi.addResponsabilidade(responsabilidade)
+        this.responsabilidades.push(novaResponsabilidade)
+        baseStore.showSnackbar('Responsabilidade adicionada com sucesso!')
+        return novaResponsabilidade
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async getResponsabilidades() {
+      const baseStore = useBaseStore()
+      this.loading = true
+      this.error = null
+
+      try {
+        const responsabilidades = await coreApi.getResponsabilidades()
+        this.responsabilidades = responsabilidades
+        return responsabilidades
+      } catch (error) {
+        this.error = error.message
+        baseStore.showSnackbar(error.message, 'error')
+        throw error
+      } finally {
+        this.loading = false
       }
     }
   },

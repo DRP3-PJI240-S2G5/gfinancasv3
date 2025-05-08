@@ -11,15 +11,6 @@
         </div>
       </v-card-title>
       <v-card-text>
-        <!-- essa parte coloca um indicador de meta
-        <div
-          :style="`right: calc(${Math.min(porcentagemGastos, 100)}% - 0px)`"
-          class="position-absolute mt-n8 text-caption"
-          :class="`text-${corBarraProgresso}`"
-        >
-          Meta
-        </div>
-        -->
         <div class="position-relative" style="height: 22px;">
           <!-- Barra do departamento principal -->
           <v-progress-linear
@@ -79,90 +70,7 @@
             </div>
           </span>
         </div>
-
-        <!-- Informações de Subordinação -->
-        <v-divider class="my-3"></v-divider>
-        <div class="d-flex flex-column">
-          <div class="text-subtitle-1 font-weight-medium mb-2">
-            Relações de Subordinação:
-          </div>
-          <div v-if="departamentosSubordinados.length > 0" class="mb-2">
-            <div class="text-body-2 font-weight-medium">Supervisor de:</div>
-            <v-chip
-              v-for="dept in departamentosSubordinados"
-              :key="dept.id"
-              class="ma-1"
-              color="#d6ae02"
-              variant="outlined"
-            >
-              {{ dept.nome }}
-            </v-chip>
-          </div>
-          <div v-if="departamentoSuperior" class="mb-2">
-            <div class="text-body-2 font-weight-medium">Subordinado a:</div>
-            <v-chip
-              class="ma-1"
-              color="#2E7D32"
-              variant="outlined"
-            >
-              {{ departamentoSuperior.nome }}
-            </v-chip>
-          </div>
-          <div v-if="!departamentosSubordinados.length && !departamentoSuperior" class="text-body-2">
-            Nenhuma relação de subordinação definida
-          </div>
-        </div>
       </v-card-text>
-
-      <v-divider></v-divider>
-
-      <v-list-item
-        append-icon="mdi-chevron-right"
-        lines="two"
-        subtitle="Detalhes"
-        link
-        @click="toggleDetails"
-      ></v-list-item>
-
-      <v-expand-transition>
-        <div v-show="isActive" class="smooth-transition">
-          <v-progress-linear
-            v-if="despesasLoading"
-            indeterminate
-            color="primary"
-          ></v-progress-linear>
-          <div v-else>
-            <v-list dense>
-              <template v-if="despesas.length">
-                <v-list-item
-                  v-for="despesa in despesas"
-                  :key="despesa.id"
-                >
-                  <v-list-item-title>{{ despesa.justificativa }}</v-list-item-title>
-                  <v-list-item-subtitle>
-                    R$ {{ formatarValor(despesa.valor) }} - {{ formatarData(despesa.created_at) }}
-                  </v-list-item-subtitle>
-                </v-list-item>
-              </template>
-              <v-list-item v-else>
-                <v-list-item-title class="text-medium-emphasis">
-                  Nenhuma despesa registrada
-                </v-list-item-title>
-              </v-list-item>
-            </v-list>
-
-            <!-- Paginação -->
-            <v-pagination
-              v-if="totalPaginas > 1"
-              v-model="paginaAtual"
-              :length="totalPaginas"
-              :total-visible="5"
-              class="mt-4"
-              @update:model-value="mudarPagina"
-            ></v-pagination>
-          </div>
-        </div>
-      </v-expand-transition>
     </v-card>
   </v-container>
 </template>
@@ -174,26 +82,14 @@ import { storeToRefs } from "pinia"
 
 export default {
   data: () => ({ 
-    review: "30%",
-    despesas: [],
-    paginaAtual: 1,
-    totalPaginas: 0,
-    itensPorPagina: 10,
     totalDespesas: "R$ 0,00",
     totalDespesasSubordinados: "R$ 0,00",
-    verbaTotal: 30000.00,
-    intervaloAtualizacao: null,
-    carregandoSubordinados: false,
     verbaAtual: null,
     carregandoVerba: false
   }),
   props: {
     departamento: {
       type: Object,
-      required: true,
-    },
-    isActive: {
-      type: Boolean,
       required: true,
     }
   },
@@ -213,13 +109,10 @@ export default {
       return this.porcentagemGastosDepartamento + this.porcentagemGastosSubordinados
     },
     valorRestante() {
-      // Extrai o valor numérico do totalDespesas usando a função utilitária
       const valorTotal = this.formatarValorMonetario(this.totalDespesas)
       const valorSubordinados = this.formatarValorMonetario(this.totalDespesasSubordinados)
       const verbaAtual = this.verbaAtual ? parseFloat(this.verbaAtual.valor) : 0
-      // Calcula o valor restante considerando o total + subordinados
       const restante = verbaAtual - (valorTotal + valorSubordinados)
-      // Formata o valor restante
       return restante.toLocaleString('pt-BR', {
         style: 'currency',
         currency: 'BRL'
@@ -233,18 +126,6 @@ export default {
     },
     corBarraProgressoSubordinados() {
       return '#d6ae02'
-    },
-    // Computed properties para subordinação
-    departamentosSubordinados() {
-      return this.coreStore.subordinacoes
-        .filter(s => s.superior.id === this.departamento.id)
-        .map(s => s.subordinado)
-    },
-    departamentoSuperior() {
-      const subordinacao = this.coreStore.subordinacoes.find(
-        s => s.subordinado.id === this.departamento.id
-      )
-      return subordinacao ? subordinacao.superior : null
     },
     // Retorna todos os departamentos subordinados (diretos e indiretos)
     todosDepartamentosSubordinados() {
@@ -266,15 +147,6 @@ export default {
     }
   },
   watch: {
-    isActive: {
-      immediate: true,
-      handler(newValue) {
-        if (newValue) {
-          this.carregarDespesas()
-        }
-      }
-    },
-    // Observa mudanças nas subordinações para recarregar os totais
     'coreStore.subordinacoes': {
       handler() {
         this.carregarTotalDespesas()
@@ -284,39 +156,32 @@ export default {
     'departamento.id': {
       handler(newValue) {
         if (newValue) {
-          this.carregarDespesas()
           this.carregarVerbaAtual()
+          this.carregarTotalDespesas()
         }
       }
     }
   },
   async mounted() {
     await this.carregarVerbaAtual()
-    await this.carregarDespesas()
-    this.iniciarAtualizacaoPeriodica()
+    await this.carregarTotalDespesas()
+    
+    // Adiciona listener para atualização de despesas
+    this.coreStore.$onAction(({ name, after }) => {
+      if (name === 'addDespesa' || name === 'updateDespesa' || name === 'deleteDespesa') {
+        after(() => {
+          this.carregarTotalDespesas()
+        })
+      }
+    })
   },
   beforeUnmount() {
-    this.pararAtualizacaoPeriodica()
+    // Remove o listener de ações do store
+    this.coreStore.$onAction(() => {})
   },
   methods: {
-    toggleDetails() {
-      this.$emit("toggle-department", this.departamento.id);
-    },
     formatarValorMonetario(valor) {
       return parseFloat(valor.replace(/\s/g, '').replace('R$', '').replace(/\./g, '').replace(',', '.'))
-    },
-    async carregarDespesas() {
-      try {
-        const response = await this.coreStore.getDespesasPorDepartamento(
-          this.departamento.id,
-          this.paginaAtual, 
-          this.itensPorPagina
-        )
-        this.despesas = response.despesas
-        this.totalPaginas = response.totalPaginas
-      } catch (error) {
-        console.error("Erro ao carregar despesas:", error)
-      }
     },
     async carregarVerbaAtual() {
       this.carregandoVerba = true
@@ -328,43 +193,12 @@ export default {
         this.carregandoVerba = false
       }
     },
-    async mudarPagina(novaPagina) {
-      this.paginaAtual = novaPagina
-      await this.carregarDespesas()
-    },
     formatarValor(valor) {
       if (!valor) return 'R$ 0,00'
       return parseFloat(valor).toLocaleString('pt-BR', {
         style: 'currency',
         currency: 'BRL'
       })
-    },
-    formatarData(dataString) {
-      const data = new Date(dataString)
-      return data.toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    },
-    iniciarAtualizacaoPeriodica() {
-      // Limpa o intervalo anterior se existir
-      if (this.intervaloAtualizacao) {
-        clearInterval(this.intervaloAtualizacao)
-      }
-      // Inicia o polling a cada 30 segundos
-      this.intervaloAtualizacao = setInterval(() => {
-        this.carregarTotalDespesas()
-        this.carregarVerbaAtual()
-        this.carregarDespesas()
-      }, 30000)
-    },
-    pararAtualizacaoPeriodica() {
-      if (this.intervaloAtualizacao) {
-        clearInterval(this.intervaloAtualizacao)
-      }
     },
     async carregarTotalDespesas() {
       try {

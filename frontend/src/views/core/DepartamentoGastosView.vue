@@ -1,6 +1,11 @@
 <template>
   <v-container class="mt-10">
     <v-row justify="center">
+      <v-col cols="12" class="ma-0 pa-0">
+        <f-departamento-header v-if="departamento" :departamento="departamento" />
+      </v-col>
+    </v-row>
+    <v-row justify="center">
   <!-- Coluna do formulário (formulário de lançamento de gasto) -->
   <v-col cols="12" md="8">
     <v-card>
@@ -33,7 +38,7 @@
           <v-select
             v-model="tipoGastoSelecionado"
             :items="tipoGastosDisponiveis"
-            item-title="tipoGasto"
+                item-title="tipoGasto.tipoGasto"
             item-value="id"
             label="Tipo de Gasto"
             :disabled="!elementoSelecionado"
@@ -62,41 +67,49 @@
       <v-card-text>
         <v-list>
           <template v-if="despesas.length">
-            <v-list-item
+            <v-tooltip
               v-for="despesa in despesas"
               :key="despesa.id"
-              class="flex-column align-start"
+              :text="despesa.justificativa"
+              location="center"
             >
-              <div class="d-flex justify-space-between align-center w-100">
-                <span class="text-body-1 font-weight-medium">
-                  R$ {{ formatarValorExibicao(despesa.valor) }} - {{ despesa.justificativa }}
-                </span>
-                <div class="d-flex">
-                  <v-btn
-                    v-if="podeEditarDespesa(despesa)"
-                    color="primary"
-                    size="small"
-                    icon
-                    class="mr-2"
-                    @click="editarDespesa(despesa)"
-                  >
-                    <v-icon>mdi-pencil</v-icon>
-                  </v-btn>
-                  <v-btn
-                    v-if="podeDeletarDespesa(despesa)"
-                    color="error"
-                    size="small"
-                    icon
-                    @click="deletarDespesa(despesa.id)"
-                  >
-                    <v-icon>mdi-delete</v-icon>
-                  </v-btn>
-                </div>
-              </div>
-              <span class="text-caption text-grey-darken-1">
-                {{ " " }} {{ formatarData(despesa.created_at) }}
-              </span>
-            </v-list-item>
+              <template v-slot:activator="{ props }">
+                <v-list-item
+                  v-bind="props"
+                  class="flex-column align-start"
+                >
+                  <div class="d-flex justify-space-between align-center w-100">
+                    <span class="text-body-1 font-weight-medium">
+                      R$ {{ formatarValorExibicao(despesa.valor) }} - {{ despesa.tipoGasto.tipoGasto }}
+                    </span>
+                    <div class="d-flex">
+                      <v-btn
+                        v-if="podeEditarDespesa(despesa)"
+                        color="primary"
+                        size="small"
+                        icon
+                        class="mr-2"
+                        @click="editarDespesa(despesa)"
+                      >
+                        <v-icon>mdi-pencil</v-icon>
+                      </v-btn>
+                      <v-btn
+                        v-if="podeDeletarDespesa(despesa)"
+                        color="error"
+                        size="small"
+                        icon
+                        @click="deletarDespesa(despesa.id)"
+                      >
+                        <v-icon>mdi-delete</v-icon>
+                      </v-btn>
+                    </div>
+                  </div>
+                  <span class="text-caption text-grey-darken-1">
+                    {{ " " }} {{ formatarData(despesa.created_at) }}
+                  </span>
+                </v-list-item>
+              </template>
+            </v-tooltip>
           </template>
 
           <v-alert v-else type="info" class="mt-2">
@@ -124,9 +137,11 @@ import { useCoreStore } from "@/stores/coreStore"
 import { useBaseStore } from "@/stores/baseStore"
 import { useAccountsStore } from "@/stores/accountsStore"
 import { mapState } from "pinia"
+import FDepartamentoHeader from "@/components/FDepartamentoHeader.vue"
 
 export default {
   name: "DepartamentoGastosView",
+  components: { FDepartamentoHeader },
   setup() {
     const coreStore = useCoreStore()
     const baseStore = useBaseStore()
@@ -161,14 +176,16 @@ export default {
       handler(novosDepartamentos) {
         if (novosDepartamentos.length && this.departamento) {
           this.carregarDespesas(1)
+          this.coreStore.getSubordinacoes()
         }
       },
       immediate: true,
     },
   },
   mounted() {
-    if (!this.departamentos.length) this.coreStore.getDepartamentos()
+    this.coreStore.getDepartamentos()
     if (!this.elementos.length) this.coreStore.getElementos()
+    this.coreStore.getSubordinacoes()
   },
   methods: {
     validarEntradaValor(event) {
@@ -210,7 +227,10 @@ export default {
     async carregarTiposGasto() {
       try {
         const tipos = await this.coreStore.getTipoGastosPorElemento(this.elementoSelecionado)
-        this.tipoGastosDisponiveis = tipos
+        this.tipoGastosDisponiveis = tipos.map(tipo => ({
+          id: tipo.tipoGasto.id, // ID do TipoGasto
+          tipoGasto: tipo.tipoGasto
+        }))
         this.tipoGastoSelecionado = null
       } catch (error) {
         console.error("Erro ao carregar tipos de gasto:", error)
@@ -236,7 +256,7 @@ export default {
       const payload = {
         valor: this.valor,
         elemento_id: this.elementoSelecionado,
-        tipo_gasto_id: this.tipoGastoSelecionado,
+        tipo_gasto_id: this.tipoGastoSelecionado, // ID do TipoGasto
         departamento_id: this.departamento.id,
         justificativa: this.justificativa,
         user_id: this.accountsStore.loggedUser?.id,
@@ -259,8 +279,11 @@ export default {
         // Resetar formulário
         this.resetarFormulario();
 
-        // Recarregar lista de despesas
-        this.carregarDespesas(this.despesasPage);
+        // Recarregar lista de despesas e totais
+        await Promise.all([
+          this.carregarDespesas(this.despesasPage),
+          this.coreStore.getTotalDespesasDepartamento(this.departamento.id)
+        ]);
       } catch (error) {
         console.error("Erro ao lançar/atualizar gasto:", error);
         this.baseStore.showSnackbar("Erro ao lançar/atualizar o gasto. Tente novamente.");
@@ -317,8 +340,11 @@ export default {
       try {
         await this.coreStore.deleteDespesa(despesaId);
         this.baseStore.showSnackbar("Despesa deletada com sucesso!");
-        // Recarrega a lista de despesas
-        this.carregarDespesas(this.despesasPage);
+        // Recarrega a lista de despesas e totais
+        await Promise.all([
+          this.carregarDespesas(this.despesasPage),
+          this.coreStore.getTotalDespesasDepartamento(this.departamento.id)
+        ]);
       } catch (error) {
         console.error("Erro ao deletar despesa:", error);
         this.baseStore.showSnackbar("Erro ao deletar a despesa. Tente novamente.");

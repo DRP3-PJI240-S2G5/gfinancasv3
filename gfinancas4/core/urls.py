@@ -8,7 +8,8 @@ urlpatterns = [
     path("departamentos/list", views.list_departamentos, name="list_departamentos"),
     path("departamentos/update", views.update_departamento, name="update_departamento"),
     path("departamentos/total-despesas/<int:departamento_id>", views.total_despesas_departamento, name="total_despesas_departamento"),
-    
+    path("departamentos/total-despesas-apartir-data/<int:departamento_id>/data/<str:data_inicio>", views.total_despesas_departamento_apartir_data, name="total_despesas_departamento_apartir_data"),
+    path("departamentos/total-despesas-periodo/<int:departamento_id>/data/<str:data_inicio>/<str:data_termino>", views.total_despesas_departamento_periodo, name="total_despesas_departamento_periodo"),
     # Endpoints para Subordinação
     path("subordinacoes/add", views.add_subordinacao, name="add_subordinacao"),
     path("subordinacoes/list", views.list_subordinacoes, name="list_subordinacoes"),
@@ -22,14 +23,26 @@ urlpatterns = [
     #path("responsabilidades/delete/<int:id>", views.delete_responsabilidade, name="delete_responsabilidade"),
     # elementos
     path("elementos/list", views.list_elementos, name="list_elementos"),
+    path("elementos/add", views.add_elemento, name="add_elemento"),
+    path("elementos/update", views.update_elemento, name="update_elemento"),
+    path("elementos/delete/<int:id>", views.delete_elemento, name="delete_elemento"),
     # Tipo de Gastos
     path("tipo-gastos/list", views.list_tipo_gastos, name="list_tipo_gastos"),
+    path("tipo-gastos/add", views.add_tipo_gasto, name="add_tipo_gasto"),
+    path("tipo-gastos/update", views.update_tipo_gasto, name="update_tipo_gasto"),
+    path("tipo-gastos/delete/<int:id>", views.delete_tipo_gasto, name="delete_tipo_gasto"),
     path("tipo-gastos/por-elemento/<int:elemento_id>", views.list_tipo_gastos_por_elemento),
+    # Relacionamentos Elemento-TipoGasto
+    path("elemento-tipo-gasto/add", views.add_elemento_tipo_gasto, name="add_elemento_tipo_gasto"),
+    path("elemento-tipo-gasto/delete/<int:id>", views.delete_elemento_tipo_gasto, name="delete_elemento_tipo_gasto"),
      # Endpoints para Despesa
     path("despesas/add", views.add_despesa_view, name="add_despesa"),
     path("despesas/update", views.update_despesa, name="update_despesa"),
+    path("despesas/delete/<int:id>", views.delete_despesa, name="delete_despesa"),
     path("despesas/list", views.list_despesas, name="list_despesas"),
     path('despesas/list/<int:departamento_id>', views.list_despesas_departamento, name="list_despesas_departamento"),
+    path('despesas/list/departamento/<int:departamento_id>/apartir-data/<str:data_inicio>',views.list_despesas_departamento_apartir_data,name="list_despesas_departamento_apartir_data"),
+    path('despesas/list/departamento/<int:departamento_id>/periodo/<str:data_inicio>/<str:data_termino>', views.list_despesas_departamento_periodo, name="list_despesas_departamento_periodo"),
     # Endpoints de verbas
     path("verbas/add", views.add_verba, name="add_verba"),
     path("verbas/update/<int:id>", views.update_verba, name="update_verba"),
@@ -38,5 +51,6 @@ urlpatterns = [
     path("verbas/list", views.list_verbas, name="list_verbas"),
     path("verbas/departamento/<int:departamento_id>", views.list_verbas_departamento, name="list_verbas_departamento"),
     path("verbas/departamento/<int:departamento_id>/ano/<int:ano>", views.get_verba_departamento_ano, name="get_verba_departamento_ano"),
+    path("verbas/ultima-do-departamento/<int:departamento_id>", views.get_ultima_verba_departamento, name="get_ultima_verba_departamento"),
 ]
 

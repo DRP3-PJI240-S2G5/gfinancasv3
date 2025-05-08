@@ -11,7 +11,8 @@ from gfinancas4.base.exceptions import BusinessError
 from django.core.exceptions import ValidationError
 from decimal import Decimal, InvalidOperation
 from django.shortcuts import get_object_or_404
-
+from datetime import datetime, date
+from django.db import models
 
 logger = logging.getLogger(__name__)
 
@@ -621,6 +622,43 @@ def get_verba_departamento_ano(departamento_id: int, ano: int) -> dict:
     except Exception as e:
         logger.error(f"Erro ao buscar verba do departamento: {str(e)}", exc_info=True)
         raise BusinessError(f"Erro ao buscar verba do departamento: {str(e)}")
+    
+def get_ultima_verba_departamento(departamento_id: int) -> dict:
+    """
+    Retorna a última verba definida para um departamento.
+    
+    Args:
+        departamento_id: ID do departamento
+        
+    Returns:
+        dict: Dados da última verba do departamento
+        
+    Raises:
+        BusinessError: Se o departamento não for encontrado ou se não houver verba registrada
+    """
+    logger.info(f"SERVICE get ultima verba departamento: departamento_id={departamento_id}")
+    
+    try:
+        # Busca o departamento
+        try:
+            departamento = Departamento.objects.get(id=departamento_id)
+        except Departamento.DoesNotExist:
+            raise BusinessError("Departamento não encontrado")
+        
+        # Busca a última verba registrada para o departamento (ordenado pelo ano de forma decrescente)
+        verba = Verba.objects.filter(departamento=departamento).order_by('-ano', '-id').first()
+        
+        if not verba:
+            raise BusinessError(f"Não há verba registrada para o departamento {departamento.nome}")
+        
+        logger.info(f"Última verba recuperada com sucesso: departamento={departamento.nome}, ano={verba.ano}")
+        return verba.to_dict_json()
+        
+    except BusinessError:
+        raise
+    except Exception as e:
+        logger.error(f"Erro ao buscar última verba do departamento: {str(e)}", exc_info=True)
+        raise BusinessError(f"Erro ao buscar última verba do departamento: {str(e)}")
 
 # SERVIÇOS PARA DESPESAS (existentes e já adequados)
 def add_despesa(user_id: int, departamento_id: int, valor: float, elemento_id: int, 
@@ -799,67 +837,340 @@ def list_despesas_departamento(departamento_id, page=1, per_page=10) -> List[dic
 
     except Departamento.DoesNotExist:
         raise ValueError("Departamento não encontrado")
-    
-# SERVIÇOS PARA ELEMENTOS (implementados conforme práticas)
-def add_elemento(novo_elemento: str, descricao: str) -> dict:
-    logger.info(f"SERVICE add elemento: {novo_elemento}")
-    elemento = Elemento(elemento=novo_elemento, descricao=descricao)
-    elemento.save()
-    return elemento.to_dict_json()
 
-def update_elemento(elemento: Elemento, descricao: str = None) -> dict:
-    """Atualiza a descrição de um elemento existente."""
-    logger.info(f"SERVICE update elemento: {elemento.id}")
+def list_despesas_departamento_apartir_data(departamento_id: int, data_inicio: date, page=1, per_page=10) -> dict:
+    """
+    Lista despesas de um departamento a partir de uma data específica, com paginação.
     
-    if not elemento.pk:
-        raise BusinessError("Elemento não encontrado para atualização.")
+    Args:
+        departamento_id: ID do departamento.
+        data_inicio: Data inicial (inclusive) para filtragem.
+        page: Número da página.
+        per_page: Quantidade de itens por página.
     
-    if descricao:
-        elemento.descricao = descricao
+    Returns:
+        dict: Dicionário contendo despesas paginadas.
     
-    elemento.save()
-    return elemento.to_dict_json()
+    Raises:
+        ValueError: Se o departamento não existir.
+    """
+    try:
+        departamento = Departamento.objects.get(id=departamento_id)
+
+        despesas = Despesa.objects.filter(
+            departamento=departamento,
+            created_at__date__gte=data_inicio
+        ).select_related(
+            'user', 'elemento', 'tipoGasto'
+        ).order_by("-created_at")
+
+        paginator = Paginator(despesas, per_page)
+        page_obj = paginator.get_page(page)
+
+        despesas_serializadas = [d.to_dict_json() for d in page_obj.object_list]
+
+        return {
+            "despesas": despesas_serializadas,
+            "paginacao": {
+                "pagina_atual": page_obj.number,
+                "total_paginas": paginator.num_pages,
+                "total_despesas": paginator.count,
+                "tem_proxima": page_obj.has_next(),
+                "tem_anterior": page_obj.has_previous(),
+            }
+        }
+
+    except Departamento.DoesNotExist:
+        raise ValueError("Departamento não encontrado.")
+
+def list_despesas_departamento_periodo(departamento_id, data_inicio, data_termino, page=1, per_page=10):
+    """Lista despesas de um departamento em um período específico com paginação"""
+    try:
+        data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d')
+        data_termino = datetime.strptime(data_termino, '%Y-%m-%d')
+        
+        # Calcula o offset para paginação
+        offset = (page - 1) * per_page
+        
+        # Busca as despesas do departamento no período
+        despesas = Despesa.objects.filter(
+            departamento_id=departamento_id,
+            created_at__range=[data_inicio, data_termino]
+        ).order_by('-created_at')
+        
+        # Aplica paginação
+        total = despesas.count()
+        despesas = despesas[offset:offset + per_page]
+        
+        # Converte para dicionário
+        despesas_list = [despesa.to_dict_json() for despesa in despesas]
+        
+        return {
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "results": despesas_list
+        }
+    except ValueError as e:
+        raise BusinessError("Formato de data inválido. Use o formato YYYY-MM-DD")
+    except Exception as e:
+        logger.error(f"Erro ao listar despesas do departamento: {str(e)}")
+        raise BusinessError("Erro ao listar despesas do departamento")
+
+def total_despesas_departamento_periodo(departamento_id, data_inicio, data_termino):
+    """Calcula o valor total das despesas de um departamento em um período específico"""
+    try:
+        data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d')
+        data_termino = datetime.strptime(data_termino, '%Y-%m-%d')
+        
+        # Soma o valor das despesas do departamento no período
+        total = Despesa.objects.filter(
+            departamento_id=departamento_id,
+            created_at__range=[data_inicio, data_termino]
+        ).aggregate(total=models.Sum('valor'))['total'] or Decimal('0.00')
+        
+        return total
+    except ValueError as e:
+        raise BusinessError("Formato de data inválido. Use o formato YYYY-MM-DD")
+    except Exception as e:
+        logger.error(f"Erro ao calcular total de despesas do departamento: {str(e)}")
+        raise BusinessError("Erro ao calcular total de despesas do departamento")
+
+# SERVIÇOS PARA ELEMENTOS (implementados conforme práticas)
+def _normalizar_texto(texto: str) -> str:
+    """
+    Normaliza um texto removendo acentos e caracteres especiais.
+    
+    Args:
+        texto: Texto a ser normalizado
+        
+    Returns:
+        str: Texto normalizado
+    """
+    import unicodedata
+    # Remove acentos
+    texto = ''.join(c for c in unicodedata.normalize('NFD', texto)
+                   if unicodedata.category(c) != 'Mn')
+    # Converte para minúsculas
+    texto = texto.lower()
+    # Remove espaços extras
+    texto = ' '.join(texto.split())
+    return texto
+
+def add_elemento(elemento: str, descricao: str) -> dict:
+    """Adiciona um novo elemento."""
+    logger.info("SERVICE add new elemento")
+    
+    try:
+        # Validação dos campos obrigatórios
+        if not elemento:
+            raise BusinessError("O campo 'elemento' é obrigatório")
+            
+        if not descricao:
+            raise BusinessError("O campo 'descricao' é obrigatório")
+            
+        # Normaliza o nome do elemento para comparação
+        elemento_normalizado = _normalizar_texto(elemento)
+            
+        # Verifica se já existe um elemento com o mesmo nome (considerando normalização)
+        elementos_existentes = Elemento.objects.all()
+        for elem in elementos_existentes:
+            if _normalizar_texto(elem.elemento) == elemento_normalizado:
+                raise BusinessError(f"Já existe um elemento com o nome '{elem.elemento}'. Use um nome diferente.")
+            
+        elemento_obj = Elemento(
+            elemento=elemento,
+            descricao=descricao
+        )
+        
+        elemento_obj.save()
+        logger.info("SERVICE elemento created.")
+        return elemento_obj.to_dict_json()
+        
+    except BusinessError:
+        raise
+    except Exception as e:
+        logger.error(f"Erro ao adicionar elemento: {str(e)}")
+        raise BusinessError("Erro ao adicionar elemento")
+
+def update_elemento(elemento_id: int, elemento: str, descricao: str) -> dict:
+    """Atualiza um elemento existente."""
+    logger.info(f"SERVICE update elemento {elemento_id}")
+    
+    try:
+        # Validação dos campos obrigatórios
+        if not elemento:
+            raise BusinessError("O campo 'elemento' é obrigatório")
+            
+        if not descricao:
+            raise BusinessError("O campo 'descricao' é obrigatório")
+            
+        # Verifica se o elemento existe
+        try:
+            elemento_obj = Elemento.objects.get(id=elemento_id)
+        except Elemento.DoesNotExist:
+            raise BusinessError(f"Elemento com ID {elemento_id} não encontrado")
+            
+        # Verifica se já existe outro elemento com o mesmo nome (exceto o atual)
+        if Elemento.objects.filter(elemento=elemento).exclude(id=elemento_id).exists():
+            raise BusinessError(f"Já existe um elemento com o nome '{elemento}'")
+            
+        elemento_obj.elemento = elemento
+        elemento_obj.descricao = descricao
+        elemento_obj.save()
+        
+        logger.info("SERVICE elemento updated.")
+        return elemento_obj.to_dict_json()
+        
+    except BusinessError:
+        raise
+    except Exception as e:
+        logger.error(f"Erro ao atualizar elemento: {str(e)}")
+        raise BusinessError("Erro ao atualizar elemento")
+
+def delete_elemento(elemento_id: int) -> None:
+    """Deleta um elemento."""
+    logger.info(f"SERVICE delete elemento {elemento_id}")
+    
+    try:
+        elemento = Elemento.objects.get(id=elemento_id)
+        elemento.delete()
+        logger.info("SERVICE elemento deleted.")
+    except Elemento.DoesNotExist:
+        raise BusinessError(f"Elemento com ID {elemento_id} não encontrado.")
 
 def list_elementos() -> List[dict]:
+    """Lista todos os elementos ordenados alfabeticamente por nome."""
     logger.info("SERVICE list elementos")
-    return [el.to_dict_json() for el in Elemento.objects.all()]
+    try:
+        return [item.to_dict_json() for item in Elemento.objects.all().order_by('elemento')]
+    except Exception as e:
+        logger.error(f"Erro ao listar elementos: {str(e)}")
+        raise BusinessError("Erro ao listar elementos")
 
 # SERVIÇOS PARA TIPOS DE GASTO (implementados conforme práticas)
-def add_tipo_gasto(novo_tipo_gasto: str, descricao: str) -> dict:
-    logger.info(f"SERVICE add tipo_gasto: {novo_tipo_gasto}")
-    tipo_gasto = TipoGasto(tipoGasto=novo_tipo_gasto, descricao=descricao)
-    tipo_gasto.save()
-    return tipo_gasto.to_dict_json()
+def add_tipo_gasto(tipo_gasto: str, descricao: str) -> dict:
+    """Adiciona um novo tipo de gasto."""
+    logger.info("SERVICE add new tipo_gasto")
+    
+    try:
+        # Validação dos campos obrigatórios
+        if not tipo_gasto:
+            raise BusinessError("O campo 'tipoGasto' é obrigatório")
+            
+        if not descricao:
+            raise BusinessError("O campo 'descricao' é obrigatório")
+            
+        # Verifica se já existe um tipo de gasto com o mesmo nome
+        if TipoGasto.objects.filter(tipoGasto=tipo_gasto).exists():
+            raise BusinessError(f"Já existe um tipo de gasto com o nome '{tipo_gasto}'")
+            
+        tipo_gasto_obj = TipoGasto(
+            tipoGasto=tipo_gasto,
+            descricao=descricao
+        )
+        
+        tipo_gasto_obj.save()
+        logger.info("SERVICE tipo_gasto created.")
+        return tipo_gasto_obj.to_dict_json()
+        
+    except BusinessError:
+        raise
+    except Exception as e:
+        logger.error(f"Erro ao adicionar tipo de gasto: {str(e)}")
+        raise BusinessError("Erro ao adicionar tipo de gasto")
 
-def update_tipo_gasto(tipo_gasto: TipoGasto, descricao: str = None) -> dict:
-    """Atualiza a descrição de um tipo de gasto existente."""
-    logger.info(f"SERVICE update tipo_gasto: {tipo_gasto.id}")
+def update_tipo_gasto(tipo_gasto_id: int, tipo_gasto: str, descricao: str) -> dict:
+    """Atualiza um tipo de gasto existente."""
+    logger.info(f"SERVICE update tipo_gasto {tipo_gasto_id}")
     
-    if not tipo_gasto.pk:
-        raise BusinessError("Tipo de gasto não encontrado para atualização.")
-    
-    if descricao:
-        tipo_gasto.descricao = descricao
-    
-    tipo_gasto.save()
-    return tipo_gasto.to_dict_json()
+    try:
+        # Validação dos campos obrigatórios
+        if not tipo_gasto:
+            raise BusinessError("O campo 'tipoGasto' é obrigatório")
+            
+        if not descricao:
+            raise BusinessError("O campo 'descricao' é obrigatório")
+            
+        # Verifica se o tipo de gasto existe
+        try:
+            tipo_gasto_obj = TipoGasto.objects.get(id=tipo_gasto_id)
+        except TipoGasto.DoesNotExist:
+            raise BusinessError(f"Tipo de Gasto com ID {tipo_gasto_id} não encontrado")
+            
+        # Verifica se já existe outro tipo de gasto com o mesmo nome (exceto o atual)
+        if TipoGasto.objects.filter(tipoGasto=tipo_gasto).exclude(id=tipo_gasto_id).exists():
+            raise BusinessError(f"Já existe um tipo de gasto com o nome '{tipo_gasto}'")
+            
+        tipo_gasto_obj.tipoGasto = tipo_gasto
+        tipo_gasto_obj.descricao = descricao
+        tipo_gasto_obj.save()
+        
+        logger.info("SERVICE tipo_gasto updated.")
+        return tipo_gasto_obj.to_dict_json()
+        
+    except BusinessError:
+        raise
+    except Exception as e:
+        logger.error(f"Erro ao atualizar tipo de gasto: {str(e)}")
+        raise BusinessError("Erro ao atualizar tipo de gasto")
 
-def list_tipo_gastos() -> List[dict]:
-    logger.info("SERVICE list tipos_gasto")
-    return [tg.to_dict_json() for tg in TipoGasto.objects.all()]
-
-def list_tipo_gastos_por_elemento(elemento_id: int) -> List[dict]:
-    logger.info(f"SERVICE list tipos_gasto por elemento {elemento_id}")
+def delete_tipo_gasto(tipo_gasto_id: int) -> None:
+    """Deleta um tipo de gasto."""
+    logger.info(f"SERVICE delete tipo_gasto {tipo_gasto_id}")
     
-    relacoes = ElementoTipoGasto.objects.filter(elemento_id=elemento_id).select_related("tipo_gasto")
-    return [
-        {
-            "id": r.tipo_gasto.id,
-            "tipoGasto": r.tipo_gasto.tipoGasto,
-            "descricao": r.tipo_gasto.descricao,
-        }
-        for r in relacoes
-    ]
+    try:
+        tipo_gasto = TipoGasto.objects.get(id=tipo_gasto_id)
+        tipo_gasto.delete()
+        logger.info("SERVICE tipo_gasto deleted.")
+    except TipoGasto.DoesNotExist:
+        raise BusinessError(f"Tipo de Gasto com ID {tipo_gasto_id} não encontrado.")
+
+def add_elemento_tipo_gasto(elemento_id: int, tipo_gasto_id: int) -> dict:
+    """Adiciona um relacionamento entre elemento e tipo de gasto."""
+    logger.info(f"SERVICE add elemento_tipo_gasto {elemento_id} - {tipo_gasto_id}")
+    
+    try:
+        # Primeiro verifica se o elemento existe
+        try:
+            elemento = Elemento.objects.get(id=elemento_id)
+        except Elemento.DoesNotExist:
+            raise BusinessError(f"Elemento com ID {elemento_id} não encontrado.")
+            
+        # Depois verifica se o tipo de gasto existe
+        try:
+            tipo_gasto = TipoGasto.objects.get(id=tipo_gasto_id)
+        except TipoGasto.DoesNotExist:
+            raise BusinessError(f"Tipo de Gasto com ID {tipo_gasto_id} não encontrado.")
+        
+        # Por fim, verifica se o relacionamento já existe
+        if ElementoTipoGasto.objects.filter(elemento=elemento, tipo_gasto=tipo_gasto).exists():
+            raise BusinessError("Este relacionamento já existe.")
+        
+        elemento_tipo_gasto = ElementoTipoGasto(
+            elemento=elemento,
+            tipo_gasto=tipo_gasto
+        )
+        
+        elemento_tipo_gasto.save()
+        logger.info("SERVICE elemento_tipo_gasto created.")
+        return elemento_tipo_gasto.to_dict_json()
+    except BusinessError:
+        raise
+    except Exception as e:
+        logger.error(f"Erro ao adicionar relacionamento elemento-tipo_gasto: {str(e)}")
+        raise BusinessError("Erro ao adicionar relacionamento elemento-tipo_gasto")
+
+def delete_elemento_tipo_gasto(id: int) -> None:
+    """Deleta um relacionamento entre elemento e tipo de gasto."""
+    logger.info(f"SERVICE delete elemento_tipo_gasto {id}")
+    
+    try:
+        elemento_tipo_gasto = ElementoTipoGasto.objects.get(id=id)
+        elemento_tipo_gasto.delete()
+        logger.info("SERVICE elemento_tipo_gasto deleted.")
+    except ElementoTipoGasto.DoesNotExist:
+        raise BusinessError(f"Relacionamento com ID {id} não encontrado.")
 
 def get_total_despesas_departamento(departamento_id: int) -> dict:
     """
@@ -890,3 +1201,76 @@ def get_total_despesas_departamento(departamento_id: int) -> dict:
     except Exception as e:
         logger.error(f"Erro ao calcular total de despesas: {str(e)}")
         raise BusinessError(f"Erro ao calcular total de despesas: {str(e)}")
+    
+def get_total_despesas_departamento_apartir_data(departamento_id: int, data_inicio: date) -> dict:
+    """
+    Retorna o total de despesas de um departamento a partir de uma data específica.
+    
+    Args:
+        departamento_id: ID do departamento.
+        data_inicio: Data inicial (inclusive) para filtragem.
+    
+    Returns:
+        dict: Total das despesas em formato decimal.
+    
+    Raises:
+        ValueError: Se o departamento não existir.
+    """
+    try:
+        departamento = Departamento.objects.get(id=departamento_id)
+
+        total = Despesa.objects.filter(
+            departamento=departamento,
+            created_at__date__gte=data_inicio
+        ).aggregate(
+            total=Sum("valor")
+        )["total"] or Decimal("0.00")
+
+        return {"total": round(total, 2)}
+
+    except Departamento.DoesNotExist:
+        raise ValueError("Departamento não encontrado.")
+
+def delete_despesa(despesa_id: int) -> bool:
+    """
+    Remove uma despesa existente.
+    
+    Args:
+        despesa_id: ID da despesa a ser removida
+        
+    Returns:
+        bool: True se a despesa foi removida com sucesso
+        
+    Raises:
+        BusinessError: Se a despesa não for encontrada
+    """
+    try:
+        despesa = Despesa.objects.get(id=despesa_id)
+        despesa.delete()
+        return True
+    except Despesa.DoesNotExist:
+        raise BusinessError("Despesa não encontrada.")
+    except Exception as e:
+        logger.error(f"Erro ao remover despesa: {str(e)}")
+        raise BusinessError("Erro ao remover despesa.")
+
+def list_tipo_gastos() -> List[dict]:
+    """Lista todos os tipos de gasto."""
+    logger.info("SERVICE list tipo_gastos")
+    try:
+        return [tg.to_dict_json() for tg in TipoGasto.objects.all()]
+    except Exception as e:
+        logger.error(f"Erro ao listar tipos de gasto: {str(e)}")
+        raise BusinessError("Erro ao listar tipos de gasto")
+
+def list_tipo_gastos_por_elemento(elemento_id: int) -> List[dict]:
+    """Lista todos os tipos de gasto associados a um elemento."""
+    logger.info(f"SERVICE list tipo_gastos por elemento {elemento_id}")
+    try:
+        elemento = Elemento.objects.get(id=elemento_id)
+        return [tg.to_dict_json() for tg in elemento.tipos_gasto.all()]
+    except Elemento.DoesNotExist:
+        raise BusinessError(f"Elemento com ID {elemento_id} não encontrado")
+    except Exception as e:
+        logger.error(f"Erro ao listar tipos de gasto do elemento: {str(e)}")
+        raise BusinessError("Erro ao listar tipos de gasto do elemento")
