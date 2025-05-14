@@ -32,9 +32,17 @@ def add_departamento(nome: str, description: str, tipoEntidade: str, responsavel
         dict: Dados do departamento criado
         
     Raises:
-        BusinessError: Se o responsável não for encontrado
+        BusinessError: Se o responsável não for encontrado ou se campos obrigatórios estiverem vazios
     """
     logger.info("SERVICE add new departamento")
+    
+    # Validação dos campos obrigatórios
+    if not nome:
+        raise BusinessError("O campo 'nome' é obrigatório")
+    if not description:
+        raise BusinessError("O campo 'description' é obrigatório")
+    if not tipoEntidade:
+        raise BusinessError("O campo 'tipoEntidade' é obrigatório")
     
     try:
         responsavel = User.objects.get(id=responsavelId)
@@ -1274,3 +1282,25 @@ def list_tipo_gastos_por_elemento(elemento_id: int) -> List[dict]:
     except Exception as e:
         logger.error(f"Erro ao listar tipos de gasto do elemento: {str(e)}")
         raise BusinessError("Erro ao listar tipos de gasto do elemento")
+
+def delete_departamento(departamento_id: int) -> None:
+    """
+    Remove um departamento existente.
+    
+    Args:
+        departamento_id: ID do departamento a ser removido
+        
+    Raises:
+        BusinessError: Se o departamento não for encontrado
+    """
+    logger.info(f"SERVICE delete departamento: {departamento_id}")
+    
+    try:
+        departamento = Departamento.objects.get(id=departamento_id)
+        departamento.delete()
+        logger.info(f"Departamento {departamento_id} removido com sucesso.")
+    except Departamento.DoesNotExist:
+        raise BusinessError(f"Departamento com ID {departamento_id} não encontrado.")
+    except Exception as e:
+        logger.error(f"Erro ao remover departamento: {str(e)}")
+        raise BusinessError("Erro ao remover departamento.")

@@ -17,18 +17,22 @@ def test_deve_retornar_usuario_logado(client, logged_jon):
     data = resp.json()
     assert resp.status_code == 200
     assert data == {
-        "user": {
-            "id": ANY,
-            "name": "Jon Snow",
-            "username": "jon",
-            "first_name": "Jon",
-            "last_name": "Snow",
-            "email": "jon@example.com",
-            "avatar": None,
-            "bio": "bio",
-            "permissions": {"ADMIN": False, "STAFF": False},
-        },
-        "authenticated": True,
+        'authenticated': True, 
+         'user': {
+            'id': 1, 
+            'name': 'Jon Snow', 
+            'username': 'jon', 
+            'first_name': 'Jon', 
+            'last_name': 'Snow', 
+            'email': 'jon@example.com', 
+            'avatar': None, 
+            'bio': 'bio', 
+            'permissions': {
+                'ADMIN': False, 
+                'STAFF': False
+            }, 
+            'grupo': ''
+        }
     }
 
 
@@ -57,18 +61,22 @@ def test_deve_fazer_login(client):
     data = resp.json()
 
     assert data == {
-        "user": {
-            "id": ANY,
-            "name": "Jon Snow",
-            "username": "jon",
-            "first_name": "Jon",
-            "last_name": "Snow",
-            "email": "jon@example.com",
-            "avatar": None,
-            "bio": "bio",
-            "permissions": {"ADMIN": False, "STAFF": False},
-        },
-        "authenticated": True,
+        'authenticated': True, 
+        'user': {
+            'id': 2, 
+            'name': 'Jon Snow', 
+            'username': 'jon', 
+            'first_name': 'Jon', 
+            'last_name': 'Snow', 
+            'email': 'jon@example.com', 
+            'avatar': None, 
+            'bio': 'bio', 
+            'permissions': {
+                'ADMIN': False, 
+                'STAFF': False
+            }, 
+            'grupo': ''
+        }
     }
 
 

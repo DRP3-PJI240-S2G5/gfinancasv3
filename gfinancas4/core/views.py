@@ -28,10 +28,9 @@ def add_departamento(request):
     
     logger.info("API add new departamento.")
     body = json.loads(request.body)
-    vazio = "Vazio"
-    nome = body.get("nome", vazio)
-    description = body.get("description", vazio)
-    tipoEntidade = body.get("tipoEntidade", vazio)
+    nome = body.get("nome")
+    description = body.get("description")
+    tipoEntidade = body.get("tipoEntidade")
     responsavelId = body.get("responsavelId", 1)
     done = body.get("done", False)
 
