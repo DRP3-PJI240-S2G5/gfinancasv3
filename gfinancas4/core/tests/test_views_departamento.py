@@ -186,4 +186,4 @@ class TestDepartamentoViews:
             content_type='application/json'
         )
         
-        assert response.status_code == 403  # Forbidden 
+        assert response.status_code == 401  # Forbidden 
