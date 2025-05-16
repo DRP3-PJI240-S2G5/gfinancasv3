@@ -10,23 +10,23 @@
         <card-option cardOptionTitle="Departamentos/Entidades" cardOptionDescription="Cadastro de novos departamentos/entidades" cardOptionLink="/gestao/gestao-departamentos" cardOptionIcon="mdi-store-plus">
         </card-option>
       </v-col>
-
+      <!--
       <v-col cols="4">
         <card-option cardOptionTitle="Permissionamentos" cardOptionDescription="Atribuição de acessos e permissões" cardOptionLink="/gestao/permissoes" cardOptionIcon="mdi-account-lock">
         </card-option>
       </v-col>
 
-      <!-- Vou deixar esse laço for aqui para refatorar. Colocar todos os botões em um laço for
+      -- Vou deixar esse laço for aqui para refatorar. Colocar todos os botões em um laço for
       <v-col v-for=" item in departamentos" :key="item.id" cols="12">
 
       </v-col>
       -->
-    </v-row>
-    <v-row justify="center">
       <v-col cols="4">
         <card-option cardOptionTitle="Elementos/Tipos de Gastos" cardOptionDescription="Listagem de categorias" cardOptionLink="/gestao/categorias" cardOptionIcon="mdi-currency-usd">
         </card-option>
       </v-col>
+    </v-row>
+    <v-row justify="center">
       <v-col cols="4">
         <card-option cardOptionTitle="Subordinações" cardOptionDescription="Relações de subordinação/supervisão" cardOptionLink="/gestao/subordinacoes" cardOptionIcon="mdi-graph">
         </card-option>
