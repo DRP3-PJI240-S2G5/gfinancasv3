@@ -9,6 +9,7 @@
           append-icon="fa-user" 
           :rules="[v => !!v || 'Elemento é obrigatório']"
           required
+          @keyup.enter="submit"
         />
         <v-text-field 
           v-model="elementoForm.descricao" 
@@ -17,6 +18,7 @@
           outlined 
           append-icon="fa-user"
           :rules="[v => !!v || 'Descrição é obrigatória']"
+          @keyup.enter="submit"
         />
 
         <div class="d-flex justify-end">

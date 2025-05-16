@@ -5,14 +5,16 @@
         v-model="tipoGasto" 
         label="Tipo de Gasto" 
         outlined 
-        append-icon="mdi-currency-usd" 
+        append-icon="mdi-currency-usd"
+        @keyup.enter="addTipoGasto"
       />
       <v-text-field 
         v-model="descricao" 
         label="Descrição" 
         required 
         outlined 
-        append-icon="mdi-text" 
+        append-icon="mdi-text"
+        @keyup.enter="addTipoGasto"
       />
       <!-- <v-select v-model="role" :items="roleOptions" label="Função" required outlined append-icon="fa-cogs" /> -->
 
