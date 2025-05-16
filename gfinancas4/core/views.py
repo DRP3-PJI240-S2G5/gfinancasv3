@@ -1143,3 +1143,19 @@ def delete_elemento_tipo_gasto(request, id):
     except Exception as e:
         logger.error(f"Erro ao deletar relacionamento: {str(e)}")
         return JsonResponse({"error": "Erro interno do servidor"}, status=500)
+
+@csrf_exempt
+@ajax_login_required
+@require_http_methods(["GET"])
+def total_despesas_departamento_elemento(request, departamento_id, elemento_id):
+    """Retorna o total de despesas de um departamento para um elemento específico."""
+    logger.info(f"API total despesas departamento {departamento_id} elemento {elemento_id}")
+    
+    try:
+        total = service.total_despesas_departamento_elemento(departamento_id, elemento_id)
+        return JsonResponse({"total_despesas": float(total)}, status=200)
+    except BusinessError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao buscar total de despesas do departamento por elemento: {str(e)}")
+        return JsonResponse({"error": "Erro interno do servidor"}, status=500)

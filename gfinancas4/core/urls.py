@@ -8,6 +8,7 @@ urlpatterns = [
     path("departamentos/list", views.list_departamentos, name="list_departamentos"),
     path("departamentos/update", views.update_departamento, name="update_departamento"),
     path("departamentos/total-despesas/<int:departamento_id>", views.total_despesas_departamento, name="total_despesas_departamento"),
+    path("departamentos/total-despesas/<int:departamento_id>/elemento/<int:elemento_id>", views.total_despesas_departamento_elemento, name="total_despesas_departamento_elemento"),
     path("departamentos/total-despesas-apartir-data/<int:departamento_id>/data/<str:data_inicio>", views.total_despesas_departamento_apartir_data, name="total_despesas_departamento_apartir_data"),
     path("departamentos/total-despesas-periodo/<int:departamento_id>/data/<str:data_inicio>/<str:data_termino>", views.total_despesas_departamento_periodo, name="total_despesas_departamento_periodo"),
     # Endpoints para Subordinação

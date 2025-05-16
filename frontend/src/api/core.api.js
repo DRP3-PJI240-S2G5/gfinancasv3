@@ -90,6 +90,10 @@ export default {
     const response = await api.get(`/api/core/departamentos/total-despesas/${departamentoId}`);
     return response.data;
   },
+  getTotalDespesasPorElemento: async (departamentoId, elementoId) => {
+    const response = await api.get(`/api/core/departamentos/total-despesas/${departamentoId}/elemento/${elementoId}`);
+    return response.data;
+  },
   getTotalDespesasDepartamentoAPartirData: async (departamentoId, data_inicio) => {
     const response = await api.get(`/api/core/departamentos/total-despesas-apartir-data/${departamentoId}/data/${data_inicio}`);
     return response.data;

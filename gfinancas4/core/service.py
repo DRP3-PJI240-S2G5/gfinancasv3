@@ -1274,3 +1274,19 @@ def list_tipo_gastos_por_elemento(elemento_id: int) -> List[dict]:
     except Exception as e:
         logger.error(f"Erro ao listar tipos de gasto do elemento: {str(e)}")
         raise BusinessError("Erro ao listar tipos de gasto do elemento")
+
+def total_despesas_departamento_elemento(departamento_id, elemento_id):
+    """Calcula o total de despesas de um departamento para um elemento específico."""
+    try:
+        departamento = get_object_or_404(Departamento, id=departamento_id)
+        elemento = get_object_or_404(Elemento, id=elemento_id)
+        
+        total = Despesa.objects.filter(
+            departamento=departamento,
+            elemento=elemento
+        ).aggregate(total=models.Sum('valor'))['total'] or Decimal('0.00')
+        
+        return total
+    except Exception as e:
+        logger.error(f"Erro ao calcular total de despesas do departamento por elemento: {str(e)}")
+        raise BusinessError(f"Erro ao calcular total de despesas: {str(e)}")

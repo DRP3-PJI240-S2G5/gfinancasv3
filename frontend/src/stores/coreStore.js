@@ -626,6 +626,16 @@ export const useCoreStore = defineStore("coreStore", {
       } finally {
         this.loading = false
       }
+    },
+
+    async getTotalDespesasPorElemento(departamentoId, elementoId) {
+      try {
+        const response = await coreApi.getTotalDespesasPorElemento(departamentoId, elementoId);
+        return response;
+      } catch (error) {
+        console.error("Erro ao buscar total de despesas por elemento:", error);
+        throw error;
+      }
     }
   },
 })
