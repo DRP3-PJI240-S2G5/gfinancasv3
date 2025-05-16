@@ -32,7 +32,7 @@
           outlined
         ></v-select>
 
-        <v-btn color="primary" @click="addNewDepartamento">Salvar Departamento</v-btn>
+        <v-btn color="primary" @click="addNewDepartamento">Salvar</v-btn>
 
       </v-card-text>
     </v-card>

@@ -43,6 +43,17 @@ export const useCoreStore = defineStore("coreStore", {
       }
       return departamento;
     },
+    async deleteDepartamento(departamentoId) {
+      try {
+        await coreApi.deleteDepartamento(departamentoId);
+        // Remove o departamento da lista
+        this.departamentos = this.departamentos.filter(d => d.id !== departamentoId);
+        return true;
+      } catch (error) {
+        console.error("Erro ao deletar departamento:", error);
+        throw error;
+      }
+    },
     async getElementos() {
       this.elementosLoading = true
       const response = await coreApi.getElementos()

@@ -98,7 +98,7 @@
     </v-card-text>
 
     <!-- Botões de Ação -->
-    <v-card-actions class="pa-4">
+    <div class="pa-4">
       <v-btn 
         v-if="!isEditing && !hideFields" 
         @click="startEditing" 
@@ -111,12 +111,13 @@
       <v-btn 
         v-if="isEditing" 
         @click="saveChanges" 
-        color="success" 
+        color="primary" 
         class="mr-2"
         elevation="2">
         <v-icon left>mdi-check</v-icon>
         Salvar
       </v-btn>
+      
       <v-btn 
         v-if="isEditing" 
         @click="cancelEditing" 
@@ -125,13 +126,39 @@
         <v-icon left>mdi-close</v-icon>
         Cancelar
       </v-btn>
-    </v-card-actions>
+      <v-btn 
+        v-if="!isEditing && !hideFields" 
+        @click="confirmDelete" 
+        color="error"
+        elevation="2"
+        variant="flat"
+        class="text-white">
+        <v-icon color="white" left>mdi-delete</v-icon>
+        Excluir
+      </v-btn>
+    </div>
+
+    <!-- Modal de confirmação de deleção -->
+    <v-dialog v-model="dialogDelete" max-width="400">
+      <v-card>
+        <v-card-title class="headline">Confirmar Exclusão</v-card-title>
+        <v-card-text>
+          Tem certeza que deseja excluir o departamento <b>{{ departamento.nome }}</b>?
+        </v-card-text>
+        <div class="pa-4">
+          <v-spacer></v-spacer>
+          <v-btn class="mr-2" color="grey" text @click="dialogDelete = false">Cancelar</v-btn>
+          <v-btn class="mr-2" color="error" text @click="deleteDepartamento">Excluir</v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
 <script>
 import { useAccountsStore } from "@/stores/accountsStore";
 import { useCoreStore } from "@/stores/coreStore";
+import { useBaseStore } from "@/stores/baseStore";
 import { ref, computed, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 
@@ -146,10 +173,11 @@ export default {
       default: false, // Por padrão, os campos são visíveis
     },
   },
-  emits: ["updateDepartamento"],
+  emits: ["updateDepartamento", "deleteDepartamento"],
   setup(props, { emit }) {
     const accountStore = useAccountsStore();
     const coreStore = useCoreStore();
+    const baseStore = useBaseStore();
     const { users } = storeToRefs(accountStore);
     const { departamentos, subordinacoes } = storeToRefs(coreStore);
 
@@ -310,6 +338,25 @@ export default {
       editDepartamentoSuperior.value = departamentoSuperior.value ? departamentoSuperior.value.id : null;
     };
 
+    // Dados para deleção
+    const dialogDelete = ref(false);
+
+    const confirmDelete = () => {
+      dialogDelete.value = true;
+    };
+
+    const deleteDepartamento = async () => {
+      try {
+        await coreStore.deleteDepartamento(props.departamento.id);
+        baseStore.showSnackbar(`Departamento #${props.departamento.id} excluído com sucesso`);
+        emit("deleteDepartamento", props.departamento.id);
+      } catch (error) {
+        baseStore.showSnackbar('Erro ao excluir departamento.');
+      } finally {
+        dialogDelete.value = false;
+      }
+    };
+
     return {
       isEditing,
       editNome,
@@ -327,6 +374,9 @@ export default {
       departamentoSuperior,
       editDepartamentosSubordinados,
       editDepartamentoSuperior,
+      dialogDelete,
+      confirmDelete,
+      deleteDepartamento,
     };
   },
 };
@@ -368,8 +418,5 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
 }
 
-.v-btn {
-  text-transform: none;
-  font-weight: 500;
-}
+
 </style>

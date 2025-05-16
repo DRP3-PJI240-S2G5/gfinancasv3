@@ -19,6 +19,10 @@ export default {
     );
     return response.data;
   },
+  deleteDepartamento: async (departamentoId) => {
+    const response = await api.delete(`/api/core/departamentos/delete/${departamentoId}`);
+    return response.data;
+  },
   getElementos: async () => {
     const response = await api.get("/api/core/elementos/list")
     return response.data

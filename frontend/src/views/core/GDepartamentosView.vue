@@ -12,7 +12,10 @@
             </v-col>
             <!-- Botão "+" posicionado no canto direito -->
             <v-col class="d-flex justify-end">
-              <v-btn @click="toggleForm" color="primary" fab small>
+              <v-btn 
+                @click="toggleForm" 
+                color="primary" 
+                fab small>
                 <v-icon>mdi-plus</v-icon>
               </v-btn>
             </v-col>
@@ -25,7 +28,11 @@
       </v-col>
 
       <v-col v-for="item in departamentos" :key="item.id" cols="12">
-        <departamento :departamento="item" @updateDepartamento="updateDepartamento" />
+        <departamento 
+          :departamento="item" 
+          @updateDepartamento="updateDepartamento"
+          @deleteDepartamento="handleDeleteDepartamento" 
+        />
       </v-col>
     </v-row>
   </v-container>
@@ -74,6 +81,9 @@ export default {
     },
     toggleForm() {
       this.showForm = !this.showForm; // Alterna a visibilidade do formulário
+    },
+    handleDeleteDepartamento(departamentoId) {
+      this.getDepartamentos();
     },
   },
 }

@@ -42,7 +42,7 @@ def verificar_ciclo_subordinacao(superior, subordinado, visitados=None):
 class Departamento(models.Model):
     nome = models.CharField(max_length=256)
     description = models.CharField(max_length=512)
-    tipoEntidade = models.CharField(max_length=256)
+    tipoEntidade = models.CharField(max_length=256, blank=True, null=True)
     done = models.BooleanField(default=False)
     responsavelId = models.ForeignKey(
         User, 

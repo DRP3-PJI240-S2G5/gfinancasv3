@@ -41,8 +41,6 @@ def add_departamento(nome: str, description: str, tipoEntidade: str, responsavel
         raise BusinessError("O campo 'nome' é obrigatório")
     if not description:
         raise BusinessError("O campo 'description' é obrigatório")
-    if not tipoEntidade:
-        raise BusinessError("O campo 'tipoEntidade' é obrigatório")
     
     try:
         responsavel = User.objects.get(id=responsavelId)
@@ -1282,3 +1280,45 @@ def list_tipo_gastos_por_elemento(elemento_id: int) -> List[dict]:
     except Exception as e:
         logger.error(f"Erro ao listar tipos de gasto do elemento: {str(e)}")
         raise BusinessError("Erro ao listar tipos de gasto do elemento")
+
+def delete_departamento(departamento_id):
+    """
+    Deleta um departamento.
+    
+    Args:
+        departamento_id: ID do departamento a ser deletado
+        
+    Returns:
+        dict: Dicionário com mensagem de sucesso
+        
+    Raises:
+        BusinessError: Se o departamento não existir ou tiver dependências
+    """
+    try:
+        departamento = Departamento.objects.get(id=departamento_id)
+        
+        # Verifica se existem despesas associadas
+        if departamento.despesas_departamento.exists():
+            raise BusinessError("Não é possível excluir o departamento pois existem despesas associadas a ele.")
+            
+        # Verifica se existem verbas associadas
+        if departamento.verbas.exists():
+            raise BusinessError("Não é possível excluir o departamento pois existem verbas associadas a ele.")
+            
+        # Verifica se existem subordinações associadas
+        if departamento.departamentos_superiores.exists() or departamento.departamentos_subordinados.exists():
+            raise BusinessError("Não é possível excluir o departamento pois existem subordinações associadas a ele.")
+            
+        # Verifica se existem responsabilidades associadas
+        if departamento.responsaveis.exists():
+            raise BusinessError("Não é possível excluir o departamento pois existem responsabilidades associadas a ele.")
+            
+        # Se não houver dependências, deleta o departamento
+        departamento.delete()
+        
+        return {"message": "Departamento excluído com sucesso."}
+        
+    except Departamento.DoesNotExist:
+        raise BusinessError("Departamento não encontrado.")
+    except Exception as e:
+        raise BusinessError(f"Erro ao excluir departamento: {str(e)}")
